@@ -275,15 +275,50 @@ export default function CompletarPerfilPage() {
         </div>
 
         {/* Step indicator */}
-        <div className="step-tabs">
-          {STEPS.map((label,i) => (
-            <div key={label}
-              onClick={()=>{ if(i<step) setStep(i); }}
-              className={`step-tab ${i===step?"active":i<step?"done":"upcoming"}`}
-            >
-              {i<step ? "✓ " : ""}{label.split(". ")[1]}
+        <div style={{marginBottom:32}}>
+
+          {/* Progress bar */}
+          <div style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+              <span style={{
+                fontSize:11.5,fontFamily:"var(--font-jetbrains),monospace",
+                color:"var(--mute)",fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",
+              }}>
+                Paso {step+1} de {STEPS.length}
+              </span>
+              <span style={{
+                fontSize:11.5,fontFamily:"var(--font-jetbrains),monospace",
+                color:"var(--orange)",fontWeight:700,
+              }}>
+                {Math.round(((step+1)/STEPS.length)*100)}%
+              </span>
             </div>
-          ))}
+            <div style={{height:5,background:"var(--line)",position:"relative",overflow:"hidden"}}>
+              <div style={{
+                position:"absolute",top:0,left:0,height:"100%",
+                background:"var(--orange)",
+                width:`${((step+1)/STEPS.length)*100}%`,
+                transition:"width 0.35s ease",
+              }}/>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="step-tabs">
+            {STEPS.map((label,i) => {
+              const name = label.split(". ")[1];
+              const isDone = i < step;
+              return (
+                <div key={label}
+                  onClick={()=>{ if(isDone){ setStep(i); setErrors([]); window.scrollTo(0,0); } }}
+                  className={`step-tab ${i===step?"active":isDone?"done":"upcoming"}`}
+                  title={isDone ? `Volver a ${name}` : undefined}
+                >
+                  {isDone ? `✓ ${i+1}. ${name}` : `${i+1}. ${name}`}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Errors */}

@@ -464,19 +464,21 @@ section.block { padding: 64px 0; }
 @media (max-width: 380px) { .galeria-grid { grid-template-columns: 1fr; } }
 
 /* === Multi-step form: step tabs compact on mobile === */
-.step-tabs { display: flex; border: 1px solid var(--line); overflow: hidden; margin-bottom: 32px; }
+.step-tabs { display: flex; border: 1px solid var(--line); overflow: hidden; margin-bottom: 0; }
 .step-tab {
   flex: 1; padding: 12px 8px; text-align: center; cursor: default;
   font-family: "JetBrains Mono", monospace;
   font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
   transition: all .15s; border-right: 1px solid var(--line);
+  user-select: none;
 }
 .step-tab:last-child { border-right: none; }
-.step-tab.done   { background: var(--bg-2); color: var(--orange); cursor: pointer; }
-.step-tab.active { background: var(--navy); color: #fff; }
-.step-tab.upcoming { background: #fff; color: var(--mute); }
+.step-tab.done          { background: var(--bg-2); color: var(--orange); cursor: pointer; }
+.step-tab.done:hover    { background: var(--navy); color: #fff; }
+.step-tab.active        { background: var(--navy); color: #fff; }
+.step-tab.upcoming      { background: #fff; color: var(--mute); }
 @media (max-width: 460px) {
-  .step-tab { padding: 10px 4px; font-size: 8.5px; letter-spacing: 0; }
+  .step-tab { padding: 10px 4px; font-size: 8px; letter-spacing: 0; }
 }
 
 /* === Tighten wrap on very small screens === */
