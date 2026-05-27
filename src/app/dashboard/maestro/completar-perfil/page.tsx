@@ -165,6 +165,7 @@ interface FormState {
   formasPago: string[]; modalidad: string;
   galeria: GaleriaItem[];
   terminos: boolean;
+  autorizaPerfil: boolean;
 }
 
 const INITIAL: FormState = {
@@ -179,6 +180,7 @@ const INITIAL: FormState = {
   formasPago:[], modalidad:"",
   galeria: Array.from({length:6}, () => ({file:null,preview:"",caption:""})),
   terminos:false,
+  autorizaPerfil:false,
 };
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -218,7 +220,8 @@ export default function CompletarPerfilPage() {
       if (form.comunas.length===0) e.push("Selecciona al menos una comuna.");
     }
     if (step===3) {
-      if (!form.terminos) e.push("Debes aceptar los términos para publicar tu perfil.");
+      if (!form.terminos) e.push("Debes aceptar los Términos de uso para publicar tu perfil.");
+      if (!form.autorizaPerfil) e.push("Debes autorizar que tu perfil sea visible públicamente.");
     }
     return e;
   }
@@ -663,16 +666,46 @@ export default function CompletarPerfilPage() {
             </div>
           </Section>
 
-          <Section title="Publicación">
-            <div style={{background:"#FFF8F0",border:"1.5px solid #FED7AA",padding:"16px 18px",marginBottom:20}}>
-              <p style={{margin:0,fontSize:13.5,color:"#92400E",lineHeight:1.6}}>
-                <strong>Importante:</strong> Al publicar tu perfil, aceptas que OBRABIEN actúa como
-                plataforma de conexión. <strong>OBRABIEN no se hace responsable de los acuerdos,
-                pagos ni trabajos pactados entre maestros y clientes.</strong> Los acuerdos son
-                exclusivamente entre las partes.
+          <Section title="Términos y política">
+            {/* Scrollable full terms box */}
+            <div style={{
+              border:"1.5px solid var(--line)", background:"#FAFAFA",
+              borderRadius:2, padding:"14px 16px", marginBottom:20,
+              maxHeight:220, overflowY:"auto", fontSize:13.5, color:"var(--ink-soft)", lineHeight:1.7,
+            }}>
+              <p style={{margin:"0 0 10px",fontFamily:"var(--font-archivo),sans-serif",fontWeight:700,color:"var(--navy)",fontSize:14}}>
+                Términos de uso y política de la plataforma — OBRABIEN
               </p>
+              <ol style={{margin:0,paddingLeft:18,display:"flex",flexDirection:"column",gap:8}}>
+                <li>
+                  <strong>Plataforma de conexión:</strong> OBRABIEN actúa exclusivamente como plataforma de conexión entre maestros y clientes. No es empleador, intermediario ni parte de los contratos de servicio.
+                </li>
+                <li>
+                  <strong>Acuerdos directos:</strong> Los acuerdos de precio, plazo y calidad son exclusivamente entre el maestro y el cliente. OBRABIEN no interviene en dichas negociaciones.
+                </li>
+                <li>
+                  <strong>Exención de responsabilidad:</strong> OBRABIEN no se hace responsable por trabajos mal ejecutados, disputas de pago, incumplimientos de contrato ni daños derivados de los servicios prestados entre las partes.
+                </li>
+                <li>
+                  <strong>Veracidad de la información:</strong> El maestro declara que toda la información ingresada en su perfil (nombre, RUT, especialidades, fotografías y datos de contacto) es verídica y le pertenece.
+                </li>
+                <li>
+                  <strong>Visibilidad del perfil:</strong> Al publicar, el maestro autoriza que su perfil sea visible públicamente en la plataforma OBRABIEN y en los resultados de búsqueda del sitio.
+                </li>
+                <li>
+                  <strong>Moderación y suspensión:</strong> OBRABIEN puede suspender o eliminar perfiles que contengan información falsa, reportes reiterados de clientes u otras infracciones a estos términos.
+                </li>
+                <li>
+                  <strong>Protección de datos:</strong> Los datos personales son tratados conforme a la Ley N.º 19.628 sobre protección de la vida privada de Chile. No se comparten con terceros sin consentimiento expreso del titular.
+                </li>
+                <li>
+                  <strong>Derecho a eliminar:</strong> El maestro puede solicitar la eliminación de su perfil y sus datos personales en cualquier momento escribiendo a contacto@obrabien.cl.
+                </li>
+              </ol>
             </div>
-            <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
+
+            {/* Checkbox 1: términos */}
+            <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",marginBottom:14}}>
               <input type="checkbox" checked={form.terminos}
                 onChange={e=>upd({terminos:e.target.checked})}
                 style={{width:18,height:18,accentColor:"var(--navy)",marginTop:2,cursor:"pointer",flexShrink:0}}/>
@@ -680,6 +713,16 @@ export default function CompletarPerfilPage() {
                 He leído y acepto los{" "}
                 <Link href="/terminos" style={{color:"var(--navy)",fontWeight:700}}>Términos de uso</Link>
                 {" "}y entiendo que OBRABIEN no se hace responsable de los acuerdos entre maestro y cliente. *
+              </span>
+            </label>
+
+            {/* Checkbox 2: visibilidad */}
+            <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
+              <input type="checkbox" checked={form.autorizaPerfil}
+                onChange={e=>upd({autorizaPerfil:e.target.checked})}
+                style={{width:18,height:18,accentColor:"var(--navy)",marginTop:2,cursor:"pointer",flexShrink:0}}/>
+              <span style={{fontSize:14,color:"var(--ink)",lineHeight:1.55}}>
+                Autorizo que mi perfil sea visible públicamente en OBRABIEN y aparezca en los resultados de búsqueda del sitio. *
               </span>
             </label>
           </Section>
