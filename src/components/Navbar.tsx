@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { LogoMark } from "./LogoMark";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Show, UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -36,7 +36,7 @@ export default function Navbar() {
             <Link href="/como-funciona" className={path === "/como-funciona" ? "active" : ""}>Cómo funciona</Link>
             <Link href="/comunidad" className={path.startsWith("/comunidad") ? "active" : ""}>Comunidad</Link>
             <Link href="/marketplace" className={path.startsWith("/marketplace") ? "active" : ""}>Marketplace</Link>
-            <SignedOut>
+            <Show when="signed-out">
               <Link
                 href="/login"
                 style={{
@@ -55,8 +55,8 @@ export default function Navbar() {
                 <span className="hide-mobile">Soy maestro</span>
                 <span className="mobile-only" style={{ fontSize: 18 }}>⛑</span>
               </Link>
-            </SignedOut>
-            <SignedIn>
+            </Show>
+            <Show when="signed-in">
               <Link
                 href="/dashboard"
                 style={{
@@ -70,7 +70,7 @@ export default function Navbar() {
               <div style={{ marginLeft: 12, display: "flex", alignItems: "center" }}>
                 <UserButton afterSignOutUrl="/" />
               </div>
-            </SignedIn>
+            </Show>
           </nav>
 
           {/* Hamburger (mobile) */}
@@ -102,7 +102,7 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <SignedOut>
+          <Show when="signed-out">
             <Link
               href="/login"
               onClick={() => setOpen(false)}
@@ -117,8 +117,8 @@ export default function Navbar() {
             >
               Soy maestro
             </Link>
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          <Show when="signed-in">
             <Link
               href="/dashboard"
               onClick={() => setOpen(false)}
@@ -130,7 +130,7 @@ export default function Navbar() {
               <span style={{ fontSize: 13, color: "var(--mute)" }}>Cuenta</span>
               <UserButton afterSignOutUrl="/" />
             </div>
-          </SignedIn>
+          </Show>
         </div>
       )}
     </header>
