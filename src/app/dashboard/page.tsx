@@ -29,7 +29,9 @@ export default async function DashboardPage({
     const user = await currentUser();
     metadata = (user?.publicMetadata ?? {}) as Record<string, unknown>;
     role = metadata.role as string | undefined;
-  } catch {
+    console.log("[dashboard] userId:", userId, "metadata:", JSON.stringify(metadata));
+  } catch (e) {
+    console.log("[dashboard] currentUser() failed:", e);
     role = roleParam;
   }
 

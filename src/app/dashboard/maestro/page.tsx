@@ -13,12 +13,14 @@ export default async function MaestroDashboard() {
   if (role && role !== "maestro") redirect("/dashboard/cliente");
 
   const profile = user.publicMetadata?.profile as Record<string, unknown> | undefined;
+  console.log("[dashboard/maestro] userId:", user.id, "metadata:", JSON.stringify(user.publicMetadata));
   const isComplete = !!(
     profile?.nombre &&
     profile?.rut &&
     profile?.telefono &&
     Array.isArray(profile?.especialidades) && (profile.especialidades as unknown[]).length > 0
   );
+  console.log("[dashboard/maestro] profile:", JSON.stringify(profile), "isComplete:", isComplete);
   if (!isComplete) redirect("/dashboard/maestro/completar-perfil");
 
   return (
