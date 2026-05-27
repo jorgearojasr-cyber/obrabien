@@ -175,51 +175,6 @@ export default function Home() {
         <FeaturedCarousel />
       </FadeIn>
 
-      {/* ESPECIALIDADES */}
-      <FadeIn>
-        <section className="block">
-          <div className="wrap">
-            <div className="row between center wrap-flex gap-12" style={{ marginBottom: 32 }}>
-              <div>
-                <span className="label">// Especialidades</span>
-                <h2 className="display" style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, marginTop: 6 }}>
-                  Todos los oficios de la construcción.
-                </h2>
-              </div>
-            </div>
-
-            <div className="spec-grid">
-              {SPECIALTIES.map((s, idx) => {
-                const count = SAMPLE_MASTERS.filter(m => m.specialties.includes(s)).length;
-                const num = String(idx + 1).padStart(2, "0");
-                return (
-                  <Link key={s} href={`/buscar?esp=${encodeURIComponent(s)}`}
-                    className="spec-card"
-                    aria-label={`Buscar ${s} — ${count} ${count === 1 ? "maestro" : "maestros"}`}
-                  >
-                    <span className="spec-card-illust-wrap">
-                      {getIllustration(s)}
-                    </span>
-                    <div className="spec-card-info">
-                      <div className="spec-card-meta">
-                        <span className="spec-card-num">#{num}</span>
-                        <span className="spec-card-icon">
-                          <SpecialtyIcon name={s} size={13} />
-                        </span>
-                        <span className="spec-card-name">{s}</span>
-                      </div>
-                      <div className={"spec-card-count" + (count === 0 ? " is-zero" : "")}>
-                        <strong>{count}</strong> {count === 1 ? "maestro" : "maestros"}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      </FadeIn>
-
       {/* COMUNIDAD */}
       <FadeIn>
         <section style={{ background: "var(--navy)", color: "#fff" }}>
@@ -285,6 +240,51 @@ export default function Home() {
       {/* MARKETPLACE */}
       <FadeIn>
         <MarketSection />
+      </FadeIn>
+
+      {/* ESPECIALIDADES */}
+      <FadeIn>
+        <section className="block">
+          <div className="wrap">
+            <div className="row between center wrap-flex gap-12" style={{ marginBottom: 32 }}>
+              <div>
+                <span className="label">// Especialidades</span>
+                <h2 className="display" style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, marginTop: 6 }}>
+                  Todos los oficios de la construcción.
+                </h2>
+              </div>
+            </div>
+
+            <div className="spec-grid">
+              {SPECIALTIES.map((s, idx) => {
+                const count = SAMPLE_MASTERS.filter(m => m.specialties.includes(s)).length;
+                const num = String(idx + 1).padStart(2, "0");
+                return (
+                  <Link key={s} href={`/buscar?esp=${encodeURIComponent(s)}`}
+                    className="spec-card"
+                    aria-label={`Buscar ${s} — ${count} ${count === 1 ? "maestro" : "maestros"}`}
+                  >
+                    <span className="spec-card-illust-wrap">
+                      {getIllustration(s)}
+                    </span>
+                    <div className="spec-card-info">
+                      <div className="spec-card-meta">
+                        <span className="spec-card-num">#{num}</span>
+                        <span className="spec-card-icon">
+                          <SpecialtyIcon name={s} size={13} />
+                        </span>
+                        <span className="spec-card-name">{s}</span>
+                      </div>
+                      <div className={"spec-card-count" + (count === 0 ? " is-zero" : "")}>
+                        <strong>{count}</strong> {count === 1 ? "maestro" : "maestros"}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
       </FadeIn>
 
       {/* CTA FINAL */}
