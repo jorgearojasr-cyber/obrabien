@@ -75,6 +75,46 @@ const MODALIDADES  = ["50% al inicio / 50% al finalizar","Pago al finalizar","Po
 
 const STEPS = ["01. Identidad","02. Cobertura","03. Servicio","04. Publicar"];
 
+const PHONE_PREFIX = "+56 9 ";
+
+// ── RUT helpers ───────────────────────────────────────────────────────────────
+
+function formatRUT(raw: string): string {
+  const clean = raw.replace(/[^0-9kK]/g, "").toUpperCase().slice(0, 9);
+  if (clean.length <= 1) return clean;
+  const body = clean.slice(0, -1);
+  const verifier = clean.slice(-1);
+  const dotted = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${dotted}-${verifier}`;
+}
+
+function validateRUT(rut: string): boolean {
+  const clean = rut.replace(/[^0-9kK]/g, "").toUpperCase();
+  if (clean.length < 2) return false;
+  const body = clean.slice(0, -1);
+  const verifier = clean.slice(-1);
+  let sum = 0, mul = 2;
+  for (let i = body.length - 1; i >= 0; i--) {
+    sum += parseInt(body[i]) * mul;
+    mul = mul === 7 ? 2 : mul + 1;
+  }
+  const rem = 11 - (sum % 11);
+  const expected = rem === 11 ? "0" : rem === 10 ? "K" : String(rem);
+  return verifier === expected;
+}
+
+// ── Phone helpers ─────────────────────────────────────────────────────────────
+
+function formatPhone(raw: string): string {
+  if (!raw.startsWith(PHONE_PREFIX)) return PHONE_PREFIX;
+  const digits = raw.slice(PHONE_PREFIX.length).replace(/\D/g, "").slice(0, 8);
+  return PHONE_PREFIX + digits;
+}
+
+function phoneComplete(val: string): boolean {
+  return val.slice(PHONE_PREFIX.length).replace(/\D/g, "").length === 8;
+}
+
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const SL: React.CSSProperties = {
@@ -122,9 +162,9 @@ type GaleriaItem = { file: File | null; preview: string; caption: string };
 
 interface FormState {
   fotoFile: File | null; fotoPreview: string;
-  nombre: string; rut: string;
+  nombre: string; rut: string; rutError: string;
   telefono: string; esWhatsapp: boolean;
-  whatsapp: string; instagram: string; facebook: string;
+  whatsapp: string; instagram: string; facebook: string; tiktok: string;
   especialidades: string[];
   region: string; comunas: string[];
   horario: string; horarioCustom: string;
@@ -136,9 +176,9 @@ interface FormState {
 
 const INITIAL: FormState = {
   fotoFile:null, fotoPreview:"",
-  nombre:"", rut:"",
-  telefono:"", esWhatsapp:true,
-  whatsapp:"", instagram:"", facebook:"",
+  nombre:"", rut:"", rutError:"",
+  telefono:PHONE_PREFIX, esWhatsapp:true,
+  whatsapp:PHONE_PREFIX, instagram:"", facebook:"", tiktok:"",
   especialidades:[],
   region:"", comunas:[],
   horario:"", horarioCustom:"",
@@ -175,7 +215,9 @@ export default function CompletarPerfilPage() {
     const e: string[] = [];
     if (step===0) {
       if (!form.nombre.trim()) e.push("El nombre completo es obligatorio.");
-      if (!form.telefono.trim()) e.push("El teléfono es obligatorio.");
+      if (!form.rut.trim()) e.push("El RUT es obligatorio.");
+      else if (!validateRUT(form.rut)) e.push("El RUT ingresado no es válido.");
+      if (!phoneComplete(form.telefono)) e.push("Ingresa los 8 dígitos del teléfono.");
     }
     if (step===1) {
       if (form.especialidades.length===0) e.push("Selecciona al menos una especialidad.");
@@ -200,7 +242,7 @@ export default function CompletarPerfilPage() {
         body: JSON.stringify({
           nombre:form.nombre, rut:form.rut,
           telefono:form.telefono, esWhatsapp:form.esWhatsapp,
-          redes:{ whatsapp:form.whatsapp, instagram:form.instagram, facebook:form.facebook },
+          redes:{ whatsapp:form.whatsapp, instagram:form.instagram, facebook:form.facebook, tiktok:form.tiktok },
           especialidades:form.especialidades,
           region:form.region, comunas:form.comunas,
           horario: form.horario==="A convenir" ? form.horarioCustom : form.horario,
@@ -292,19 +334,48 @@ export default function CompletarPerfilPage() {
                   onChange={e=>upd({nombre:e.target.value})}/>
               </div>
               <div>
-                <label style={SL}>RUT (opcional)</label>
-                <input style={SI} value={form.rut} placeholder="12.345.678-9"
-                  onChange={e=>upd({rut:e.target.value})}/>
+                <label style={SL}>RUT *</label>
+                <input
+                  style={{...SI, borderColor: form.rutError ? "#DC2626" : "var(--line)"}}
+                  value={form.rut}
+                  placeholder="12.345.678-9"
+                  inputMode="numeric"
+                  onChange={e => {
+                    const formatted = formatRUT(e.target.value);
+                    const digits = formatted.replace(/[^0-9kK]/g, "");
+                    const err = digits.length >= 2 && !validateRUT(formatted)
+                      ? "RUT inválido" : "";
+                    upd({ rut: formatted, rutError: err });
+                  }}
+                />
+                {form.rutError && (
+                  <p style={{margin:"4px 0 0",fontSize:12,color:"#DC2626"}}>{form.rutError}</p>
+                )}
               </div>
               <div>
                 <label style={SL}>Teléfono *</label>
-                <input style={SI} value={form.telefono} placeholder="+56 9 1234 5678" type="tel"
-                  onChange={e=>upd({telefono:e.target.value})}/>
+                <input
+                  style={SI}
+                  value={form.telefono}
+                  inputMode="numeric"
+                  onChange={e => {
+                    const val = formatPhone(e.target.value);
+                    const patch: Partial<FormState> = { telefono: val };
+                    if (form.esWhatsapp) patch.whatsapp = val;
+                    upd(patch);
+                  }}
+                />
+                <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>
+                  {form.telefono.slice(PHONE_PREFIX.length).length}/8 dígitos
+                </p>
               </div>
             </div>
             <label style={{display:"flex",alignItems:"center",gap:10,marginTop:14,cursor:"pointer"}}>
               <input type="checkbox" checked={form.esWhatsapp}
-                onChange={e=>upd({esWhatsapp:e.target.checked})}
+                onChange={e => {
+                  const checked = e.target.checked;
+                  upd({ esWhatsapp: checked, whatsapp: checked ? form.telefono : PHONE_PREFIX });
+                }}
                 style={{width:18,height:18,accentColor:"var(--orange)",cursor:"pointer"}}/>
               <span style={{fontSize:13.5,color:"var(--ink)"}}>
                 Este número tiene <strong>WhatsApp</strong> (los clientes podrán contactarte directamente)
@@ -314,11 +385,33 @@ export default function CompletarPerfilPage() {
 
           <Section title="Redes sociales (opcional)">
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              {[
-                {key:"whatsapp" as const, icon:"💬", label:"WhatsApp", placeholder:"+56 9 1234 5678"},
+
+              {/* WhatsApp — synced from teléfono when checkbox on */}
+              <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                <span style={{fontSize:20,width:28,textAlign:"center",flexShrink:0,paddingTop:28}}>💬</span>
+                <div style={{flex:1}}>
+                  <span style={{...SL,display:"inline-block",marginBottom:4}}>WhatsApp</span>
+                  <input
+                    style={{...SI, background: form.esWhatsapp ? "#f5f5f5" : "#fff", color: form.esWhatsapp ? "var(--mute)" : "var(--ink)"}}
+                    value={form.whatsapp}
+                    inputMode="numeric"
+                    readOnly={form.esWhatsapp}
+                    onChange={e => { if (!form.esWhatsapp) upd({ whatsapp: formatPhone(e.target.value) }); }}
+                  />
+                  {form.esWhatsapp && (
+                    <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--orange)"}}>
+                      ✓ Copiado del teléfono
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Instagram, Facebook, TikTok */}
+              {([
                 {key:"instagram" as const, icon:"📸", label:"Instagram", placeholder:"@tu_usuario"},
-                {key:"facebook" as const,  icon:"📘", label:"Facebook",  placeholder:"facebook.com/tu_pagina"},
-              ].map(({key,icon,label,placeholder}) => (
+                {key:"facebook"  as const, icon:"📘", label:"Facebook",  placeholder:"facebook.com/tu_pagina"},
+                {key:"tiktok"   as const, icon:"🎵", label:"TikTok",    placeholder:"@tu_usuario"},
+              ] as const).map(({key,icon,label,placeholder}) => (
                 <div key={key} style={{display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontSize:20,width:28,textAlign:"center",flexShrink:0}}>{icon}</span>
                   <div style={{flex:1}}>

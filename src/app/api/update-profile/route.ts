@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         rut:           body.rut           ?? "",
         telefono:      body.telefono      ?? "",
         esWhatsapp:    body.esWhatsapp    ?? false,
-        redes:         body.redes         ?? {},
+        redes:         body.redes         ?? { whatsapp:"", instagram:"", facebook:"", tiktok:"" },
         especialidades:body.especialidades ?? [],
         region:        body.region        ?? "",
         comunas:       body.comunas       ?? [],
