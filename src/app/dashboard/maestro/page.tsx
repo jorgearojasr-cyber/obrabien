@@ -59,7 +59,7 @@ export default async function MaestroDashboard() {
               Sube especialidades, fotos de trabajos y zona de cobertura para aparecer en búsquedas.
             </div>
           </div>
-          <Link href="/buscar" style={{ background: "var(--orange)", color: "#fff", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>
+          <Link href="/dashboard/maestro/completar-perfil" style={{ background: "var(--orange)", color: "#fff", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>
             Completar perfil →
           </Link>
         </div>
@@ -85,7 +85,7 @@ export default async function MaestroDashboard() {
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 12, marginBottom: 36 }}>
           {[
-            { icon: "📋", title: "Completar perfil", desc: "Sube especialidades, zona y fotos de trabajos.", href: "/buscar", top: "var(--orange)" },
+            { icon: "📋", title: "Completar perfil", desc: "Sube especialidades, zona y fotos de trabajos.", href: "/dashboard/maestro/completar-perfil", top: "var(--orange)" },
             { icon: "🛒", title: "Publicar en marketplace", desc: "Vende herramientas o servicios al rubro.", href: "/marketplace/publicar", top: undefined },
             { icon: "💬", title: "Ir a la comunidad", desc: "Responde preguntas y gana reputación.", href: "/comunidad", top: undefined },
             { icon: "🏪", title: "Ver marketplace", desc: "Compra y arrienda equipos del rubro.", href: "/marketplace", top: undefined },
