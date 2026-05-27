@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         descripcion:   body.descripcion   ?? "",
         experiencia:   body.experiencia   ?? 0,
         formasPago:    body.formasPago    ?? [],
-        modalidades:   body.modalidades   ?? [],
+        modalidad:     body.modalidad     ?? "",
         galeriaCount:  body.galeriaCount  ?? 0,
         galeriaCaptions: body.galeriaCaptions ?? [],
         updatedAt:     new Date().toISOString(),

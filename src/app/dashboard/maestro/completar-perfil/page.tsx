@@ -71,7 +71,7 @@ const HORARIOS = [
 ];
 
 const FORMAS_PAGO = ["Efectivo","Transferencia bancaria","Tarjeta débito/crédito","Cheque","Mercado Pago"];
-const MODALIDADES  = ["50% al inicio / 50% al finalizar","Pago al finalizar","Por avance de obra","A convenir"];
+const MODALIDADES  = ["50% al inicio / 50% al finalizar","Por avance de obra","Pago al finalizar","A convenir con el cliente"];
 
 const STEPS = ["01. Identidad","02. Cobertura","03. Servicio","04. Publicar"];
 
@@ -169,7 +169,7 @@ interface FormState {
   region: string; comunas: string[];
   horario: string; horarioCustom: string;
   descripcion: string; experiencia: number;
-  formasPago: string[]; modalidades: string[];
+  formasPago: string[]; modalidad: string;
   galeria: GaleriaItem[];
   terminos: boolean;
 }
@@ -183,7 +183,7 @@ const INITIAL: FormState = {
   region:"", comunas:[],
   horario:"", horarioCustom:"",
   descripcion:"", experiencia:1,
-  formasPago:[], modalidades:[],
+  formasPago:[], modalidad:"",
   galeria: Array.from({length:6}, () => ({file:null,preview:"",caption:""})),
   terminos:false,
 };
@@ -199,7 +199,7 @@ export default function CompletarPerfilPage() {
 
   const upd = (patch: Partial<FormState>) => setForm(p => ({...p,...patch}));
 
-  function toggleArr(key: "especialidades"|"comunas"|"formasPago"|"modalidades", val: string) {
+  function toggleArr(key: "especialidades"|"comunas"|"formasPago", val: string) {
     const arr = form[key] as string[];
     upd({ [key]: arr.includes(val) ? arr.filter(x=>x!==val) : [...arr,val] });
   }
@@ -247,7 +247,7 @@ export default function CompletarPerfilPage() {
           region:form.region, comunas:form.comunas,
           horario: form.horario==="A convenir" ? form.horarioCustom : form.horario,
           descripcion:form.descripcion, experiencia:form.experiencia,
-          formasPago:form.formasPago, modalidades:form.modalidades,
+          formasPago:form.formasPago, modalidad:form.modalidad,
           galeriaCount: form.galeria.filter(g=>g.file).length,
           galeriaCaptions: form.galeria.map(g=>g.caption),
         }),
@@ -547,8 +547,9 @@ export default function CompletarPerfilPage() {
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {MODALIDADES.map(m=>(
                 <label key={m} style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",fontSize:14,color:"var(--ink)"}}>
-                  <input type="checkbox" checked={form.modalidades.includes(m)}
-                    onChange={()=>toggleArr("modalidades",m)}
+                  <input type="radio" name="modalidad" value={m}
+                    checked={form.modalidad===m}
+                    onChange={()=>upd({modalidad:m})}
                     style={{width:17,height:17,accentColor:"var(--navy)",cursor:"pointer"}}/>
                   {m}
                 </label>
