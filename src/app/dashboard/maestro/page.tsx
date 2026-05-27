@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import SignOutBtn from "@/components/SignOutBtn";
 
 export default async function MaestroDashboard() {
   const user = await currentUser();
@@ -41,6 +42,7 @@ export default async function MaestroDashboard() {
             <span style={{ background: "var(--ink)", color: "var(--orange)", padding: "4px 10px", fontFamily: "var(--font-jetbrains), monospace", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em" }}>
               MAESTRO
             </span>
+            <SignOutBtn />
           </div>
         </div>
 
