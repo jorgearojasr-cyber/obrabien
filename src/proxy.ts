@@ -10,5 +10,10 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)", "/__clerk/(.*)"],
+  matcher: [
+    // Skip Next.js internals and all static/asset files
+    "/((?!_next/static|_next/image|favicon\\.ico|assets/.*).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
 };
