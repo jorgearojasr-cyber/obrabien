@@ -151,7 +151,7 @@ function Section({ title, children }: { title:string; children:React.ReactNode }
 
 // ── Form state type ───────────────────────────────────────────────────────────
 
-type GaleriaItem = { file: File | null; preview: string; caption: string };
+type GaleriaItem = { file: File | null; preview: string; caption: string; cloudinaryUrl: string; uploading: boolean };
 
 interface FormState {
   fotoFile: File | null; fotoPreview: string;
@@ -178,7 +178,7 @@ const INITIAL: FormState = {
   horarioTipo:"", horarioDesde:"08:00", horarioHasta:"18:00", horarioDias:[],
   descripcion:"", experiencia:1,
   formasPago:[], modalidad:"",
-  galeria: Array.from({length:6}, () => ({file:null,preview:"",caption:""})),
+  galeria: Array.from({length:6}, () => ({file:null,preview:"",caption:"",cloudinaryUrl:"",uploading:false})),
   terminos:false,
   autorizaPerfil:false,
 };
@@ -204,6 +204,28 @@ export default function CompletarPerfilPage() {
     if (!f) return;
     const url = URL.createObjectURL(f);
     handler(f, url);
+  }
+
+  async function uploadFoto(file: File, index: number) {
+    const g = [...form.galeria];
+    g[index] = { ...g[index], uploading: true };
+    upd({ galeria: g });
+
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload-foto", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const g2 = [...form.galeria];
+      g2[index] = { ...g2[index], cloudinaryUrl: data.url, uploading: false };
+      upd({ galeria: g2 });
+    } catch {
+      const g2 = [...form.galeria];
+      g2[index] = { ...g2[index], uploading: false };
+      upd({ galeria: g2 });
+      setErrors(["Error al subir la foto. Intenta de nuevo."]);
+    }
   }
 
   function validate(): string[] {
@@ -244,8 +266,11 @@ export default function CompletarPerfilPage() {
           horario: { tipo:form.horarioTipo, desde:form.horarioDesde, hasta:form.horarioHasta, dias:form.horarioDias },
           descripcion:form.descripcion, experiencia:form.experiencia,
           formasPago:form.formasPago, modalidad:form.modalidad,
-          galeriaCount: form.galeria.filter(g=>g.file).length,
+          galeriaCount: form.galeria.filter(g=>g.cloudinaryUrl).length,
           galeriaCaptions: form.galeria.map(g=>g.caption),
+          fotoUrls: form.galeria
+            .filter(g => g.cloudinaryUrl)
+            .map(g => ({ url: g.cloudinaryUrl, descripcion: g.caption })),
         }),
       });
       if (!res.ok) throw new Error();
@@ -662,26 +687,44 @@ export default function CompletarPerfilPage() {
             <div className="galeria-grid">
               {form.galeria.map((item,i)=>(
                 <div key={i} style={{border:"1.5px solid var(--line)",overflow:"hidden",background:"#fafafa"}}>
-                  <label htmlFor={`foto-${i}`} style={{
-                    display:"block",height:140,cursor:"pointer",overflow:"hidden",
+                  <label htmlFor={item.uploading ? undefined : `foto-${i}`} style={{
+                    display:"block",height:140,cursor:item.uploading?"default":"pointer",overflow:"hidden",
                     background:"#f0f2f5",position:"relative",
                   }}>
                     {item.preview
-                      ? <img src={item.preview} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                      ? <img src={item.preview} alt="" style={{width:"100%",height:"100%",objectFit:"cover",opacity:item.uploading?0.5:1}}/>
                       : <div style={{height:"100%",display:"grid",placeItems:"center",flexDirection:"column",gap:6}}>
                           <span style={{fontSize:28}}>📷</span>
                           <span style={{fontSize:11,color:"var(--mute)",fontFamily:"var(--font-jetbrains),monospace"}}>Foto {i+1}</span>
                         </div>
                     }
+                    {item.uploading && (
+                      <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",background:"rgba(255,255,255,0.7)"}}>
+                        <span style={{fontSize:11,fontFamily:"var(--font-jetbrains),monospace",color:"var(--navy)"}}>Subiendo…</span>
+                      </div>
+                    )}
+                    {item.cloudinaryUrl && !item.uploading && (
+                      <span style={{position:"absolute",top:6,right:6,background:"#22c55e",color:"#fff",fontSize:9,fontWeight:700,padding:"2px 6px",fontFamily:"var(--font-jetbrains),monospace"}}>✓ SUBIDA</span>
+                    )}
                   </label>
+                  {item.preview && !item.uploading && (
+                    <button type="button" onClick={()=>{
+                      const g=[...form.galeria];
+                      g[i]={file:null,preview:"",caption:"",cloudinaryUrl:"",uploading:false};
+                      upd({galeria:g});
+                    }} style={{position:"absolute",top:6,left:6,background:"rgba(0,0,0,0.55)",color:"#fff",border:"none",width:22,height:22,cursor:"pointer",fontSize:13,display:"grid",placeItems:"center"}}>
+                      ×
+                    </button>
+                  )}
                   <input id={`foto-${i}`} type="file" accept="image/*" style={{display:"none"}}
                     onChange={e=>{
                       const f = e.target.files?.[0];
                       if (!f) return;
                       const url = URL.createObjectURL(f);
                       const g = [...form.galeria];
-                      g[i] = {...g[i],file:f,preview:url};
+                      g[i] = {...g[i], file:f, preview:url, cloudinaryUrl:"", uploading:false};
                       upd({galeria:g});
+                      uploadFoto(f, i);
                     }}/>
                   <div style={{padding:"8px 10px"}}>
                     <input

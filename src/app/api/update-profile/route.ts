@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
-  // 1. Save to Clerk publicMetadata (keeps auth-layer profile check working)
+  // 1. Save to Clerk publicMetadata (keeps auth-layer completeness check working)
   try {
     const clerk = await clerkClient();
     const user = await clerk.users.getUser(userId);
@@ -42,27 +42,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Error al guardar en Clerk" }, { status: 500 });
   }
 
-  // 2. Upsert into Supabase maestros table
-  const { error: sbError } = await supabase
+  // 2. Upsert maestro row and get its UUID
+  const { data: maestroRow, error: sbError } = await supabase
     .from("maestros")
     .upsert(
       {
-        clerk_user_id: userId,
-        nombre:        body.nombre        ?? null,
-        rut:           body.rut           ?? null,
-        telefono:      body.telefono      ?? null,
-        whatsapp:      body.esWhatsapp    ?? true,
-        descripcion:   body.descripcion   ?? null,
+        clerk_user_id:  userId,
+        nombre:         body.nombre        ?? null,
+        rut:            body.rut           ?? null,
+        telefono:       body.telefono      ?? null,
+        whatsapp:       body.esWhatsapp    ?? true,
+        descripcion:    body.descripcion   ?? null,
         especialidades: body.especialidades ?? [],
-        ciudades:      body.comunas       ?? [],
-        horarios:      body.horario       ?? null,
+        ciudades:       body.comunas       ?? [],
+        horarios:       body.horario       ?? null,
       },
       { onConflict: "clerk_user_id" }
-    );
+    )
+    .select("id")
+    .single();
 
   if (sbError) {
     console.error("[update-profile] Supabase upsert failed:", sbError.message);
-    // Don't fail the request — Clerk already saved, Supabase is secondary
+  }
+
+  // 3. Save uploaded photo URLs to fotos_trabajos
+  const fotos = (body.fotoUrls ?? []) as { url: string; descripcion: string }[];
+  if (maestroRow?.id && fotos.length > 0) {
+    const rows = fotos
+      .filter(f => f.url)
+      .map(f => ({ maestro_id: maestroRow.id, url: f.url, descripcion: f.descripcion || null }));
+
+    if (rows.length > 0) {
+      const { error: fotosError } = await supabase.from("fotos_trabajos").insert(rows);
+      if (fotosError) {
+        console.error("[update-profile] fotos_trabajos insert failed:", fotosError.message);
+      }
+    }
   }
 
   return NextResponse.json({ ok: true });
