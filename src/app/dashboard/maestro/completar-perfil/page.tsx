@@ -61,14 +61,7 @@ const COMUNAS: Record<string, string[]> = {
   "Magallanes": ["Punta Arenas","Puerto Natales","Porvenir","Puerto Williams"],
 };
 
-const HORARIOS = [
-  "Lunes a Viernes 08:00–18:00",
-  "Lunes a Sábado 08:00–18:00",
-  "Lunes a Sábado 08:00–20:00",
-  "Lunes a Domingo 08:00–20:00",
-  "Solo fines de semana",
-  "A convenir",
-];
+const DIAS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 
 const FORMAS_PAGO = ["Efectivo","Transferencia bancaria","Tarjeta débito/crédito","Cheque","Mercado Pago"];
 const MODALIDADES  = ["50% al inicio / 50% al finalizar","Por avance de obra","Pago al finalizar","A convenir con el cliente"];
@@ -167,7 +160,7 @@ interface FormState {
   whatsapp: string; instagram: string; facebook: string; tiktok: string;
   especialidades: string[];
   region: string; comunas: string[];
-  horario: string; horarioCustom: string;
+  horarioTipo: string; horarioDesde: string; horarioHasta: string; horarioDias: string[];
   descripcion: string; experiencia: number;
   formasPago: string[]; modalidad: string;
   galeria: GaleriaItem[];
@@ -181,7 +174,7 @@ const INITIAL: FormState = {
   whatsapp:PHONE_PREFIX, instagram:"", facebook:"", tiktok:"",
   especialidades:[],
   region:"", comunas:[],
-  horario:"", horarioCustom:"",
+  horarioTipo:"", horarioDesde:"08:00", horarioHasta:"18:00", horarioDias:[],
   descripcion:"", experiencia:1,
   formasPago:[], modalidad:"",
   galeria: Array.from({length:6}, () => ({file:null,preview:"",caption:""})),
@@ -199,7 +192,7 @@ export default function CompletarPerfilPage() {
 
   const upd = (patch: Partial<FormState>) => setForm(p => ({...p,...patch}));
 
-  function toggleArr(key: "especialidades"|"comunas"|"formasPago", val: string) {
+  function toggleArr(key: "especialidades"|"comunas"|"formasPago"|"horarioDias", val: string) {
     const arr = form[key] as string[];
     upd({ [key]: arr.includes(val) ? arr.filter(x=>x!==val) : [...arr,val] });
   }
@@ -245,7 +238,7 @@ export default function CompletarPerfilPage() {
           redes:{ whatsapp:form.whatsapp, instagram:form.instagram, facebook:form.facebook, tiktok:form.tiktok },
           especialidades:form.especialidades,
           region:form.region, comunas:form.comunas,
-          horario: form.horario==="A convenir" ? form.horarioCustom : form.horario,
+          horario: { tipo:form.horarioTipo, desde:form.horarioDesde, hasta:form.horarioHasta, dias:form.horarioDias },
           descripcion:form.descripcion, experiencia:form.experiencia,
           formasPago:form.formasPago, modalidad:form.modalidad,
           galeriaCount: form.galeria.filter(g=>g.file).length,
@@ -473,27 +466,90 @@ export default function CompletarPerfilPage() {
           </Section>
 
           <Section title="Horario de atención">
-            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
-              {HORARIOS.map(h=>(
-                <label key={h} style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",fontSize:14,color:"var(--ink)"}}>
-                  <input type="radio" name="horario" value={h} checked={form.horario===h}
-                    onChange={()=>upd({horario:h})}
-                    style={{width:16,height:16,accentColor:"var(--navy)",cursor:"pointer"}}/>
-                  {h}
-                </label>
-              ))}
-              <label style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",fontSize:14,color:"var(--ink)"}}>
-                <input type="radio" name="horario" value="custom" checked={form.horario==="custom"}
-                  onChange={()=>upd({horario:"custom"})}
-                  style={{width:16,height:16,accentColor:"var(--navy)",cursor:"pointer"}}/>
-                Personalizado
-              </label>
-            </div>
-            {form.horario==="custom" && (
-              <input style={SI} value={form.horarioCustom}
-                placeholder="Ej: Mar a Vie 09:00-17:00, Sáb 09:00-13:00"
-                onChange={e=>upd({horarioCustom:e.target.value})}/>
-            )}
+            {/* Time picker shared style */}
+            {(()=>{
+              const timeSI: React.CSSProperties = {...SI, width:110, paddingLeft:10, paddingRight:6};
+              const timePickers = (
+                <div style={{display:"flex",alignItems:"center",gap:12,marginTop:10,flexWrap:"wrap"}}>
+                  <div>
+                    <label style={{...SL,marginBottom:4}}>Desde</label>
+                    <input type="time" value={form.horarioDesde} style={timeSI}
+                      onChange={e=>upd({horarioDesde:e.target.value})}/>
+                  </div>
+                  <div>
+                    <label style={{...SL,marginBottom:4}}>Hasta</label>
+                    <input type="time" value={form.horarioHasta} style={timeSI}
+                      onChange={e=>upd({horarioHasta:e.target.value})}/>
+                  </div>
+                </div>
+              );
+              return (
+                <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                  {/* Option 1 */}
+                  <label style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",fontSize:14,color:"var(--ink)",padding:"10px 0",borderBottom:"1px solid var(--line)"}}>
+                    <input type="radio" name="horarioTipo" value="semana"
+                      checked={form.horarioTipo==="semana"}
+                      onChange={()=>upd({horarioTipo:"semana"})}
+                      style={{width:16,height:16,accentColor:"var(--navy)",cursor:"pointer",flexShrink:0}}/>
+                    Lunes a Viernes
+                  </label>
+                  {form.horarioTipo==="semana" && (
+                    <div style={{paddingLeft:26,paddingBottom:12,borderBottom:"1px solid var(--line)"}}>
+                      {timePickers}
+                    </div>
+                  )}
+
+                  {/* Option 2 */}
+                  <label style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",fontSize:14,color:"var(--ink)",padding:"10px 0",borderBottom:"1px solid var(--line)"}}>
+                    <input type="radio" name="horarioTipo" value="finde"
+                      checked={form.horarioTipo==="finde"}
+                      onChange={()=>upd({horarioTipo:"finde"})}
+                      style={{width:16,height:16,accentColor:"var(--navy)",cursor:"pointer",flexShrink:0}}/>
+                    Fines de semana (Sáb y Dom)
+                  </label>
+                  {form.horarioTipo==="finde" && (
+                    <div style={{paddingLeft:26,paddingBottom:12,borderBottom:"1px solid var(--line)"}}>
+                      {timePickers}
+                    </div>
+                  )}
+
+                  {/* Option 3 */}
+                  <label style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",fontSize:14,color:"var(--ink)",padding:"10px 0"}}>
+                    <input type="radio" name="horarioTipo" value="custom"
+                      checked={form.horarioTipo==="custom"}
+                      onChange={()=>upd({horarioTipo:"custom"})}
+                      style={{width:16,height:16,accentColor:"var(--navy)",cursor:"pointer",flexShrink:0}}/>
+                    Personalizado
+                  </label>
+                  {form.horarioTipo==="custom" && (
+                    <div style={{paddingLeft:26,paddingBottom:4}}>
+                      <label style={{...SL,marginBottom:8}}>Días de atención</label>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:4}}>
+                        {DIAS.map(d=>{
+                          const on = form.horarioDias.includes(d);
+                          return (
+                            <button key={d} type="button"
+                              onClick={()=>toggleArr("horarioDias",d)}
+                              style={{
+                                width:44, height:36, cursor:"pointer",
+                                fontFamily:"var(--font-archivo),sans-serif",
+                                fontWeight:700, fontSize:12,
+                                border:`1.5px solid ${on?"var(--navy)":"var(--line)"}`,
+                                background: on ? "var(--navy)" : "#fff",
+                                color: on ? "#fff" : "var(--mute)",
+                                transition:"all .12s",
+                              }}>
+                              {d}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {timePickers}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </Section>
         </>}
 
