@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { LogoMark } from "./LogoMark";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -35,24 +36,41 @@ export default function Navbar() {
             <Link href="/como-funciona" className={path === "/como-funciona" ? "active" : ""}>Cómo funciona</Link>
             <Link href="/comunidad" className={path.startsWith("/comunidad") ? "active" : ""}>Comunidad</Link>
             <Link href="/marketplace" className={path.startsWith("/marketplace") ? "active" : ""}>Marketplace</Link>
-            <Link
-              href="/login"
-              style={{
-                height: 36, padding: "0 16px", display: "inline-flex", alignItems: "center",
-                border: "1.5px solid var(--navy)", background: "#fff", color: "var(--navy)",
-                fontWeight: 600, fontSize: 13.5, textDecoration: "none", marginLeft: 8,
-              }}
-            >
-              Iniciar sesión
-            </Link>
-            <Link
-              href="/registro"
-              className="btn btn-yellow btn-sm cta-nav"
-              style={{ borderRadius: 8, marginLeft: 8 }}
-            >
-              <span className="hide-mobile">Soy maestro</span>
-              <span className="mobile-only" style={{ fontSize: 18 }}>⛑</span>
-            </Link>
+            <SignedOut>
+              <Link
+                href="/login"
+                style={{
+                  height: 36, padding: "0 16px", display: "inline-flex", alignItems: "center",
+                  border: "1.5px solid var(--navy)", background: "#fff", color: "var(--navy)",
+                  fontWeight: 600, fontSize: 13.5, textDecoration: "none", marginLeft: 8,
+                }}
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                href="/registro"
+                className="btn btn-yellow btn-sm cta-nav"
+                style={{ borderRadius: 8, marginLeft: 8 }}
+              >
+                <span className="hide-mobile">Soy maestro</span>
+                <span className="mobile-only" style={{ fontSize: 18 }}>⛑</span>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                style={{
+                  height: 36, padding: "0 16px", display: "inline-flex", alignItems: "center",
+                  border: "1.5px solid var(--navy)", background: "#fff", color: "var(--navy)",
+                  fontWeight: 600, fontSize: 13.5, textDecoration: "none", marginLeft: 8,
+                }}
+              >
+                Mi panel
+              </Link>
+              <div style={{ marginLeft: 12, display: "flex", alignItems: "center" }}>
+                <UserButton afterSignOutUrl="/" />
+              </div>
+            </SignedIn>
           </nav>
 
           {/* Hamburger (mobile) */}
@@ -84,20 +102,35 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <Link
-            href="/login"
-            onClick={() => setOpen(false)}
-            style={{ display: "block", marginTop: 12, border: "1.5px solid var(--navy)", color: "var(--navy)", fontWeight: 700, padding: "12px 16px", textAlign: "center", borderRadius: 8 }}
-          >
-            Iniciar sesión
-          </Link>
-          <Link
-            href="/registro"
-            onClick={() => setOpen(false)}
-            style={{ display: "block", marginTop: 8, background: "var(--orange)", color: "#fff", fontWeight: 700, padding: "12px 16px", textAlign: "center", borderRadius: 8 }}
-          >
-            Soy maestro
-          </Link>
+          <SignedOut>
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              style={{ display: "block", marginTop: 12, border: "1.5px solid var(--navy)", color: "var(--navy)", fontWeight: 700, padding: "12px 16px", textAlign: "center", borderRadius: 8 }}
+            >
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/registro"
+              onClick={() => setOpen(false)}
+              style={{ display: "block", marginTop: 8, background: "var(--orange)", color: "#fff", fontWeight: 700, padding: "12px 16px", textAlign: "center", borderRadius: 8 }}
+            >
+              Soy maestro
+            </Link>
+          </SignedOut>
+          <SignedIn>
+            <Link
+              href="/dashboard"
+              onClick={() => setOpen(false)}
+              style={{ display: "block", marginTop: 12, border: "1.5px solid var(--navy)", color: "var(--navy)", fontWeight: 700, padding: "12px 16px", textAlign: "center", borderRadius: 8 }}
+            >
+              Mi panel
+            </Link>
+            <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 13, color: "var(--mute)" }}>Cuenta</span>
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </SignedIn>
         </div>
       )}
     </header>
