@@ -42,8 +42,8 @@ export default function LoginPage() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      justifyContent: "center",
-      padding: "60px 16px 80px",
+      justifyContent: "flex-start",
+      padding: "48px 16px 120px",
     }}>
       <div style={{ width: "100%", maxWidth: 500 }}>
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
           background: "#fff",
           borderRadius: 12,
           boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
-          overflow: "hidden",
+          overflow: "visible",
         }}>
 
           {/* Tabs */}
@@ -93,7 +93,7 @@ export default function LoginPage() {
           </div>
 
           {/* Clerk component */}
-          <div style={{ padding: "40px 40px 36px" }}>
+          <div style={{ padding: "32px 24px 28px" }}>
             {tab === "cliente" && (
               <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=cliente" />
             )}
@@ -110,6 +110,7 @@ export default function LoginPage() {
             gap: 20,
             justifyContent: "center",
             flexWrap: "wrap",
+            borderRadius: "0 0 12px 12px",
           }}>
             {benefits.items.map(item => (
               <span key={item} style={{
