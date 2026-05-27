@@ -67,7 +67,7 @@ export default async function MaestroDashboard() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 40 }}>
+        <div className="dash-stats">
           {[
             { n: "—", label: "Visitas al perfil", sub: "Últimos 30 días", accent: "var(--navy)" },
             { n: "—", label: "Contactos recibidos", sub: "Este mes", accent: "var(--orange)" },

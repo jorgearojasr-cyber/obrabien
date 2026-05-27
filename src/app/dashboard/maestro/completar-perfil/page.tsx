@@ -237,19 +237,13 @@ export default function CompletarPerfilPage() {
         </div>
 
         {/* Step indicator */}
-        <div style={{display:"flex",gap:0,marginBottom:32,border:"1px solid var(--line)",overflow:"hidden"}}>
+        <div className="step-tabs">
           {STEPS.map((label,i) => (
-            <div key={label} onClick={()=>{ if(i<step) setStep(i); }} style={{
-              flex:1, padding:"12px 8px", textAlign:"center",
-              background: i===step ? "var(--navy)" : i<step ? "var(--bg-2)" : "#fff",
-              borderRight: i<STEPS.length-1 ? "1px solid var(--line)" : "none",
-              cursor: i<step ? "pointer" : "default",
-              fontFamily:"var(--font-jetbrains),monospace",
-              fontSize:10, fontWeight:700, letterSpacing:"0.06em",
-              color: i===step ? "#fff" : i<step ? "var(--orange)" : "var(--mute)",
-              transition:"all .15s",
-            }}>
-              {i<step && "✓ "}{label.split(". ")[1]}
+            <div key={label}
+              onClick={()=>{ if(i<step) setStep(i); }}
+              className={`step-tab ${i===step?"active":i<step?"done":"upcoming"}`}
+            >
+              {i<step ? "✓ " : ""}{label.split(". ")[1]}
             </div>
           ))}
         </div>
@@ -291,7 +285,7 @@ export default function CompletarPerfilPage() {
           </Section>
 
           <Section title="Datos personales">
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+            <div className="form-grid-2">
               <div style={{gridColumn:"1/-1"}}>
                 <label style={SL}>Nombre completo *</label>
                 <input style={SI} value={form.nombre} placeholder="Ej: Juan Pérez González"
@@ -477,7 +471,7 @@ export default function CompletarPerfilPage() {
             <p style={{fontSize:13,color:"var(--mute)",margin:"0 0 16px"}}>
               Sube fotos de tus mejores proyectos. Cada foto puede tener una descripción corta.
             </p>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14}}>
+            <div className="galeria-grid">
               {form.galeria.map((item,i)=>(
                 <div key={i} style={{border:"1.5px solid var(--line)",overflow:"hidden",background:"#fafafa"}}>
                   <label htmlFor={`foto-${i}`} style={{

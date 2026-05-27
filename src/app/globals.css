@@ -426,6 +426,64 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 section.block { padding: 64px 0; }
 @media (max-width: 720px) { section.block { padding: 40px 0; } }
 
+/* === Dashboard stats: 3-col → 2-col on small mobile === */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 40px;
+}
+@media (max-width: 480px) {
+  .dash-stats { grid-template-columns: 1fr 1fr; }
+  .dash-stats > *:last-child { grid-column: span 2; }
+}
+
+/* === Dashboard quick actions: enforce single col on tiny screens === */
+@media (max-width: 400px) {
+  .dash-actions { grid-template-columns: 1fr !important; }
+}
+
+/* === Form 2-col → 1-col on mobile === */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 540px) {
+  .form-grid-2 { grid-template-columns: 1fr; }
+  .form-grid-2 > * { grid-column: 1 !important; }
+}
+
+/* === Profile galería grid: 3 → 2 → 1 col === */
+.galeria-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 640px) { .galeria-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 380px) { .galeria-grid { grid-template-columns: 1fr; } }
+
+/* === Multi-step form: step tabs compact on mobile === */
+.step-tabs { display: flex; border: 1px solid var(--line); overflow: hidden; margin-bottom: 32px; }
+.step-tab {
+  flex: 1; padding: 12px 8px; text-align: center; cursor: default;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  transition: all .15s; border-right: 1px solid var(--line);
+}
+.step-tab:last-child { border-right: none; }
+.step-tab.done   { background: var(--bg-2); color: var(--orange); cursor: pointer; }
+.step-tab.active { background: var(--navy); color: #fff; }
+.step-tab.upcoming { background: #fff; color: var(--mute); }
+@media (max-width: 460px) {
+  .step-tab { padding: 10px 4px; font-size: 8.5px; letter-spacing: 0; }
+}
+
+/* === Tighten wrap on very small screens === */
+@media (max-width: 380px) {
+  .wrap { padding: 0 14px; }
+}
+
 /* === Focus === */
 *:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
 
