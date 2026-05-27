@@ -130,7 +130,7 @@ export default function LoginPage() {
         {/* Sign in link */}
         <p style={{ textAlign: "center", marginTop: 24, fontSize: 13.5, color: "var(--mute)" }}>
           ¿Ya tienes cuenta?{" "}
-          <Link href="/sign-in" style={{ color: "var(--navy)", fontWeight: 600, textDecoration: "none" }}>
+          <Link href="/login" style={{ color: "var(--navy)", fontWeight: 600, textDecoration: "none" }}>
             Iniciar sesión
           </Link>
         </p>
