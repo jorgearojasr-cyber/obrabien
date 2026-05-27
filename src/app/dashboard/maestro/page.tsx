@@ -12,6 +12,15 @@ export default async function MaestroDashboard() {
   const role = user.publicMetadata?.role as string | undefined;
   if (role && role !== "maestro") redirect("/dashboard/cliente");
 
+  const profile = user.publicMetadata?.profile as Record<string, unknown> | undefined;
+  const isComplete = !!(
+    profile?.nombre &&
+    profile?.rut &&
+    profile?.telefono &&
+    Array.isArray(profile?.especialidades) && (profile.especialidades as unknown[]).length > 0
+  );
+  if (!isComplete) redirect("/dashboard/maestro/completar-perfil");
+
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
       <div className="tape-thin" />

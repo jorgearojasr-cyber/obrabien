@@ -1,25 +1,35 @@
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+function isMaestroProfileComplete(metadata: Record<string, unknown>): boolean {
+  const profile = metadata.profile as Record<string, unknown> | undefined;
+  return !!(
+    profile?.nombre &&
+    profile?.rut &&
+    profile?.telefono &&
+    Array.isArray(profile?.especialidades) && (profile.especialidades as unknown[]).length > 0
+  );
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<{ role?: string | string[] }>;
 }) {
-  // auth() reads from the middleware JWT — no Clerk API call needed
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
   const params = await searchParams;
   const roleParam = Array.isArray(params.role) ? params.role[0] : params.role;
 
-  // Try to read existing role from publicMetadata
   let role: string | undefined;
+  let metadata: Record<string, unknown> = {};
+
   try {
     const user = await currentUser();
-    role = user?.publicMetadata?.role as string | undefined;
+    metadata = (user?.publicMetadata ?? {}) as Record<string, unknown>;
+    role = metadata.role as string | undefined;
   } catch {
-    // currentUser() failed — fall back to URL param
     role = roleParam;
   }
 
@@ -28,17 +38,20 @@ export default async function DashboardPage({
     try {
       const clerk = await clerkClient();
       await clerk.users.updateUser(userId, {
-        publicMetadata: { role: roleParam },
+        publicMetadata: { ...metadata, role: roleParam },
       });
     } catch {
-      // Write failed — still redirect using the URL param
+      // continue with URL param role
     }
     role = roleParam;
   }
 
-  if (role === "maestro") redirect("/dashboard/maestro");
+  if (role === "maestro") {
+    redirect(isMaestroProfileComplete(metadata)
+      ? "/dashboard/maestro"
+      : "/dashboard/maestro/completar-perfil");
+  }
   if (role === "cliente") redirect("/dashboard/cliente");
 
-  // No role determined — let user pick
   redirect("/onboarding");
 }
