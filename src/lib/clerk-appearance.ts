@@ -23,8 +23,10 @@ export const clerkAppearance = {
       fontWeight: "700",
       fontSize: "15px",
       height: "48px",
-      backgroundColor: "#F97316",
+      backgroundColor: "#F97316 !important",
+      background: "#F97316 !important",
       borderRadius: "0",
+      boxShadow: "none",
     },
     socialButtonsBlockButton: {
       height: "44px",
