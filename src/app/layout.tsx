@@ -15,16 +15,27 @@ export const metadata: Metadata = {
   keywords: "maestros chile, construcción, albañil, gasfiter, electricista, carpintero, pintor, obrabien",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+function Body({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html lang="es" className={`${archivo.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
-        <body style={{ fontFamily: "var(--font-inter-tight), system-ui, sans-serif", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-          <Navbar />
-          <main style={{ flex: 1 }}>{children}</main>
-          <Footer />
-        </body>
-      </html>
+    <html lang="es" className={`${archivo.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
+      <body style={{ fontFamily: "var(--font-inter-tight), system-ui, sans-serif", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Navbar />
+        <main style={{ flex: 1 }}>{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  if (!publishableKey) {
+    return <Body>{children}</Body>;
+  }
+  return (
+    <ClerkProvider publishableKey={publishableKey}>
+      <Body>{children}</Body>
     </ClerkProvider>
   );
 }
