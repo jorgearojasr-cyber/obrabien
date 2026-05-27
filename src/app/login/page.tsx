@@ -1,6 +1,6 @@
 "use client";
 
-import { SignIn, SignUp } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { LogoMark } from "@/components/LogoMark";
@@ -40,85 +40,95 @@ export default function LoginPage() {
       background: "var(--bg)",
       minHeight: "100vh",
       display: "flex",
+      flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      padding: "40px 16px",
+      padding: "60px 16px 80px",
     }}>
-      <div className="tape-thin" style={{ position: "fixed", top: 0, left: 0, right: 0 }} />
-      <div style={{ width: "100%", maxWidth: 460 }}>
+      <div style={{ width: "100%", maxWidth: 500 }}>
 
         {/* Logo */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 36 }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <LogoMark size={34} />
-            <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 22 }}>
+            <LogoMark size={36} />
+            <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 24 }}>
               <span style={{ color: "var(--navy)" }}>OBRA</span>
               <span style={{ color: "var(--orange)" }}>BIEN</span>
             </span>
           </Link>
         </div>
 
-        {/* Tabs */}
-        <div style={{ display: "flex", border: "1.5px solid var(--line)", marginBottom: 0 }}>
-          {TABS.map(({ id, label }, i) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              style={{
-                flex: 1,
-                padding: "13px 8px",
-                background: tab === id ? "var(--navy)" : "#fff",
-                border: "none",
-                borderRight: i < TABS.length - 1 ? "1.5px solid var(--line)" : "none",
-                cursor: "pointer",
-                fontFamily: "var(--font-archivo), sans-serif",
-                fontWeight: 700,
-                fontSize: 13,
-                color: tab === id ? "#fff" : "var(--mute)",
-                transition: "background .15s, color .15s",
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Clerk card */}
-        <div style={{ background: "#fff", border: "1.5px solid var(--line)", borderTop: "none", padding: "32px 28px 24px" }}>
-          {tab === "cliente" && (
-            <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=cliente" />
-          )}
-          {tab === "maestro" && (
-            <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=maestro" />
-          )}
-        </div>
-
-        {/* Benefits strip */}
+        {/* Card */}
         <div style={{
-          background: benefits.color,
-          padding: "12px 20px",
-          display: "flex",
-          gap: 20,
-          justifyContent: "center",
-          flexWrap: "wrap",
+          background: "#fff",
+          borderRadius: 12,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
+          overflow: "hidden",
         }}>
-          {benefits.items.map(item => (
-            <span key={item} style={{
-              color: "#fff",
-              fontSize: 11.5,
-              fontFamily: "var(--font-jetbrains), monospace",
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-            }}>
-              <span style={{ color: tab === "maestro" ? "#F97316" : "rgba(255,255,255,0.85)", fontWeight: 900 }}>✓</span>
-              {item}
-            </span>
-          ))}
+
+          {/* Tabs */}
+          <div style={{ display: "flex", borderBottom: "1.5px solid var(--line)" }}>
+            {TABS.map(({ id, label }, i) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                style={{
+                  flex: 1,
+                  padding: "16px 8px",
+                  background: tab === id ? "var(--navy)" : "#f8f9fa",
+                  border: "none",
+                  borderRight: i < TABS.length - 1 ? "1.5px solid var(--line)" : "none",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-archivo), sans-serif",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: tab === id ? "#fff" : "var(--mute)",
+                  transition: "background .15s, color .15s",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Clerk component */}
+          <div style={{ padding: "40px 40px 36px" }}>
+            {tab === "cliente" && (
+              <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=cliente" />
+            )}
+            {tab === "maestro" && (
+              <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=maestro" />
+            )}
+          </div>
+
+          {/* Benefits strip */}
+          <div style={{
+            background: benefits.color,
+            padding: "14px 24px",
+            display: "flex",
+            gap: 20,
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}>
+            {benefits.items.map(item => (
+              <span key={item} style={{
+                color: "#fff",
+                fontSize: 11.5,
+                fontFamily: "var(--font-jetbrains), monospace",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}>
+                <span style={{ color: tab === "maestro" ? "#F97316" : "rgba(255,255,255,0.85)", fontWeight: 900 }}>✓</span>
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Sign in link */}
-        <p style={{ textAlign: "center", marginTop: 20, fontSize: 13.5, color: "var(--mute)" }}>
+        <p style={{ textAlign: "center", marginTop: 24, fontSize: 13.5, color: "var(--mute)" }}>
           ¿Ya tienes cuenta?{" "}
           <Link href="/sign-in" style={{ color: "var(--navy)", fontWeight: 600, textDecoration: "none" }}>
             Iniciar sesión
