@@ -1,13 +1,15 @@
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-function isMaestroProfileComplete(metadata: Record<string, unknown>): boolean {
-  const profile = metadata.profile as Record<string, unknown> | undefined;
-  return !!(
-    profile?.nombre &&
-    profile?.rut &&
-    profile?.telefono &&
-    Array.isArray(profile?.especialidades) && (profile.especialidades as unknown[]).length > 0
+function maestroNeedsOnboarding(metadata: Record<string, unknown>): boolean {
+  const profile = metadata.profile as Record<string, unknown> | null | undefined;
+  if (!profile) return true;
+  const especialidades = profile.especialidades;
+  return !(
+    profile.nombre &&
+    profile.rut &&
+    profile.telefono &&
+    Array.isArray(especialidades) && especialidades.length > 0
   );
 }
 
@@ -29,9 +31,7 @@ export default async function DashboardPage({
     const user = await currentUser();
     metadata = (user?.publicMetadata ?? {}) as Record<string, unknown>;
     role = metadata.role as string | undefined;
-    console.log("[dashboard] userId:", userId, "metadata:", JSON.stringify(metadata));
-  } catch (e) {
-    console.log("[dashboard] currentUser() failed:", e);
+  } catch {
     role = roleParam;
   }
 
@@ -49,9 +49,9 @@ export default async function DashboardPage({
   }
 
   if (role === "maestro") {
-    redirect(isMaestroProfileComplete(metadata)
-      ? "/dashboard/maestro"
-      : "/dashboard/maestro/completar-perfil");
+    redirect(maestroNeedsOnboarding(metadata)
+      ? "/dashboard/maestro/completar-perfil"
+      : "/dashboard/maestro");
   }
   if (role === "cliente") redirect("/dashboard/cliente");
 
