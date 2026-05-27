@@ -8,15 +8,26 @@ import { LogoMark } from "@/components/LogoMark";
 export default function OnboardingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState<"maestro" | "cliente" | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function setRole(role: "maestro" | "cliente") {
     setLoading(role);
-    await fetch("/api/set-role", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
-    });
-    router.push(`/dashboard/${role}`);
+    setError(null);
+    try {
+      const res = await fetch("/api/set-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Error ${res.status}`);
+      }
+      router.push(`/dashboard/${role}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar tu perfil. Intenta de nuevo.");
+      setLoading(null);
+    }
   }
 
   return (
@@ -41,6 +52,12 @@ export default function OnboardingPage() {
           <p style={{ textAlign: "center", color: "var(--mute)", margin: "0 0 32px", fontSize: 15 }}>
             Selecciona tu perfil para personalizar tu experiencia
           </p>
+
+          {error && (
+            <div style={{ marginBottom: 16, padding: "12px 16px", background: "#fff0f0", border: "1px solid #fca5a5", color: "#b91c1c", fontSize: 13.5, lineHeight: 1.5 }}>
+              {error}
+            </div>
+          )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <button

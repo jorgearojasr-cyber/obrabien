@@ -14,10 +14,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
-  const clerk = await clerkClient();
-  await clerk.users.updateUser(userId, {
-    publicMetadata: { role },
-  });
+  try {
+    const clerk = await clerkClient();
+    const user = await clerk.users.getUser(userId);
+    await clerk.users.updateUser(userId, {
+      publicMetadata: { ...user.publicMetadata, role },
+    });
+  } catch (err) {
+    console.error("[set-role] clerkClient error:", err);
+    return NextResponse.json({ error: "Failed to save role" }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
