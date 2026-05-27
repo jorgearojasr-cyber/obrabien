@@ -1,5 +1,6 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -7,33 +8,62 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
-  const clerk = await clerkClient();
-  const user = await clerk.users.getUser(userId);
-  const existing = (user.publicMetadata || {}) as Record<string, unknown>;
+  // 1. Save to Clerk publicMetadata (keeps auth-layer profile check working)
+  try {
+    const clerk = await clerkClient();
+    const user = await clerk.users.getUser(userId);
+    const existing = (user.publicMetadata || {}) as Record<string, unknown>;
 
-  await clerk.users.updateUser(userId, {
-    publicMetadata: {
-      ...existing,
-      profile: {
-        nombre:        body.nombre        ?? "",
-        rut:           body.rut           ?? "",
-        telefono:      body.telefono      ?? "",
-        esWhatsapp:    body.esWhatsapp    ?? false,
-        redes:         body.redes         ?? { whatsapp:"", instagram:"", facebook:"", tiktok:"" },
-        especialidades:body.especialidades ?? [],
-        region:        body.region        ?? "",
-        comunas:       body.comunas       ?? [],
-        horario:       body.horario       ?? "",
-        descripcion:   body.descripcion   ?? "",
-        experiencia:   body.experiencia   ?? 0,
-        formasPago:    body.formasPago    ?? [],
-        modalidad:     body.modalidad     ?? "",
-        galeriaCount:  body.galeriaCount  ?? 0,
-        galeriaCaptions: body.galeriaCaptions ?? [],
-        updatedAt:     new Date().toISOString(),
+    await clerk.users.updateUser(userId, {
+      publicMetadata: {
+        ...existing,
+        profile: {
+          nombre:          body.nombre          ?? "",
+          rut:             body.rut             ?? "",
+          telefono:        body.telefono        ?? "",
+          esWhatsapp:      body.esWhatsapp      ?? false,
+          redes:           body.redes           ?? { whatsapp: "", instagram: "", facebook: "", tiktok: "" },
+          especialidades:  body.especialidades  ?? [],
+          region:          body.region          ?? "",
+          comunas:         body.comunas         ?? [],
+          horario:         body.horario         ?? "",
+          descripcion:     body.descripcion     ?? "",
+          experiencia:     body.experiencia     ?? 0,
+          formasPago:      body.formasPago      ?? [],
+          modalidad:       body.modalidad       ?? "",
+          galeriaCount:    body.galeriaCount    ?? 0,
+          galeriaCaptions: body.galeriaCaptions ?? [],
+          updatedAt:       new Date().toISOString(),
+        },
       },
-    },
-  });
+    });
+  } catch (err) {
+    console.error("[update-profile] Clerk write failed:", err);
+    return NextResponse.json({ error: "Error al guardar en Clerk" }, { status: 500 });
+  }
+
+  // 2. Upsert into Supabase maestros table
+  const { error: sbError } = await supabase
+    .from("maestros")
+    .upsert(
+      {
+        clerk_user_id: userId,
+        nombre:        body.nombre        ?? null,
+        rut:           body.rut           ?? null,
+        telefono:      body.telefono      ?? null,
+        whatsapp:      body.esWhatsapp    ?? true,
+        descripcion:   body.descripcion   ?? null,
+        especialidades: body.especialidades ?? [],
+        ciudades:      body.comunas       ?? [],
+        horarios:      body.horario       ?? null,
+      },
+      { onConflict: "clerk_user_id" }
+    );
+
+  if (sbError) {
+    console.error("[update-profile] Supabase upsert failed:", sbError.message);
+    // Don't fail the request — Clerk already saved, Supabase is secondary
+  }
 
   return NextResponse.json({ ok: true });
 }
