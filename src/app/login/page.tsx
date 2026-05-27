@@ -1,17 +1,16 @@
 "use client";
 
-import { SignIn, SignUp } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { LogoMark } from "@/components/LogoMark";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 
-type Tab = "cliente" | "maestro" | "entrar";
+type Tab = "cliente" | "maestro";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "cliente", label: "🏠 Soy cliente" },
   { id: "maestro", label: "⛑ Soy maestro" },
-  { id: "entrar",  label: "→ Iniciar sesión" },
 ];
 
 const BENEFITS: Record<Tab, { color: string; items: string[] }> = {
@@ -23,10 +22,6 @@ const BENEFITS: Record<Tab, { color: string; items: string[] }> = {
     color: "#14375F",
     items: ["100% gratis", "Sin comisiones", "Badge verificado"],
   },
-  entrar: {
-    color: "#14375F",
-    items: ["Acceso seguro", "Tus datos protegidos", "Soporte 24/7"],
-  },
 };
 
 export default function LoginPage() {
@@ -35,7 +30,7 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const t = params.get("tab");
-    if (t === "cliente" || t === "maestro" || t === "entrar") setTab(t);
+    if (t === "cliente" || t === "maestro") setTab(t);
   }, []);
 
   const benefits = BENEFITS[tab];
@@ -79,14 +74,14 @@ export default function LoginPage() {
                 onClick={() => setTab(id)}
                 style={{
                   flex: 1,
-                  padding: "14px 6px",
+                  padding: "16px 8px",
                   background: tab === id ? "var(--navy)" : "#f8f9fa",
                   border: "none",
                   borderRight: i < TABS.length - 1 ? "1.5px solid var(--line)" : "none",
                   cursor: "pointer",
                   fontFamily: "var(--font-archivo), sans-serif",
                   fontWeight: 700,
-                  fontSize: 12.5,
+                  fontSize: 14,
                   color: tab === id ? "#fff" : "var(--mute)",
                   transition: "background .15s, color .15s",
                   letterSpacing: "0.01em",
@@ -104,9 +99,6 @@ export default function LoginPage() {
             )}
             {tab === "maestro" && (
               <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=maestro" />
-            )}
-            {tab === "entrar" && (
-              <SignIn appearance={clerkAppearance} forceRedirectUrl="/dashboard" />
             )}
           </div>
 
@@ -134,23 +126,6 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
-
-        {/* Toggle hint */}
-        <p style={{ textAlign: "center", marginTop: 24, fontSize: 13.5, color: "var(--mute)" }}>
-          {tab === "entrar" ? (
-            <>¿No tienes cuenta?{" "}
-              <button onClick={() => setTab("cliente")} style={{ background: "none", border: "none", color: "var(--navy)", fontWeight: 600, fontSize: 13.5, cursor: "pointer", padding: 0 }}>
-                Regístrate gratis
-              </button>
-            </>
-          ) : (
-            <>¿Ya tienes cuenta?{" "}
-              <button onClick={() => setTab("entrar")} style={{ background: "none", border: "none", color: "var(--navy)", fontWeight: 600, fontSize: 13.5, cursor: "pointer", padding: 0 }}>
-                Iniciar sesión
-              </button>
-            </>
-          )}
-        </p>
 
       </div>
     </div>
