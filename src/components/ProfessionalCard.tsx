@@ -120,20 +120,22 @@ export default function ProfessionalCard({ m, bg, fg }: Props) {
     URL.revokeObjectURL(a.href);
   };
 
-  const socialLinks: SocialLink[] = [
-    m.social?.whatsapp
-      ? { href: `https://wa.me/${m.social.whatsapp.replace(/\D/g, "")}`, label: "WhatsApp", icon: <WhatsAppIcon />, color: "#25A55A", bg: "rgba(37,165,90,0.07)" }
-      : null,
-    m.social?.instagram
-      ? { href: `https://instagram.com/${m.social.instagram}`, label: "Instagram", icon: <InstagramIcon />, color: "#E1306C", bg: "rgba(225,48,108,0.07)" }
-      : null,
-    m.social?.facebook
-      ? { href: `https://facebook.com/${m.social.facebook}`, label: "Facebook", icon: <FacebookIcon />, color: "#1877F2", bg: "rgba(24,119,242,0.07)" }
-      : null,
-    m.social?.tiktok
-      ? { href: `https://tiktok.com/@${m.social.tiktok}`, label: "TikTok", icon: <TikTokIcon />, color: "#0F2640", bg: "rgba(15,38,64,0.05)" }
-      : null,
-  ].filter((x): x is SocialLink => x !== null);
+  const socialLinks: SocialLink[] = (
+    [
+      m.social?.whatsapp
+        ? { href: `https://wa.me/${m.social.whatsapp.replace(/\D/g, "")}`, label: "WhatsApp", icon: <WhatsAppIcon />, color: "#25A55A", bg: "rgba(37,165,90,0.07)" }
+        : null,
+      m.social?.instagram
+        ? { href: `https://instagram.com/${m.social.instagram}`, label: "Instagram", icon: <InstagramIcon />, color: "#E1306C", bg: "rgba(225,48,108,0.07)" }
+        : null,
+      m.social?.facebook
+        ? { href: `https://facebook.com/${m.social.facebook}`, label: "Facebook", icon: <FacebookIcon />, color: "#1877F2", bg: "rgba(24,119,242,0.07)" }
+        : null,
+      m.social?.tiktok
+        ? { href: `https://tiktok.com/@${m.social.tiktok}`, label: "TikTok", icon: <TikTokIcon />, color: "#0F2640", bg: "rgba(15,38,64,0.05)" }
+        : null,
+    ] as (SocialLink | null)[]
+  ).filter((x): x is SocialLink => x !== null);
 
   const cols = socialLinks.length === 1 ? 1 : 2;
 
