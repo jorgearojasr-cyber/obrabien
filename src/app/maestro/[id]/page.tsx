@@ -3,6 +3,7 @@ import Image from "next/image";
 import { SAMPLE_MASTERS } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import ProfessionalCard from "@/components/ProfessionalCard";
 import ReviewSection from "@/components/ReviewSection";
 
 function CheckIcon() {
@@ -24,7 +25,7 @@ function PinIcon() {
   return <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-6.2-7-12a7 7 0 1 1 14 0c0 5.8-7 12-7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>;
 }
 
-const SEED_REVIEWS = [
+const SEED_REVIEWS: { author: string; date: string; text: string; rating: number }[] = [
   { author: "María González", date: "Marzo 2025", text: "Excelente trabajo, rápido y muy limpio. Lo recomiendo sin dudarlo.", rating: 5 },
   { author: "Sebastián Torres", date: "Febrero 2025", text: "Solucionó el problema en menos de una hora. Muy profesional y puntual.", rating: 5 },
   { author: "Claudia Herrera", date: "Enero 2025", text: "Buen precio y trabajo cuidadoso. Volvería a contratarlo.", rating: 4 },
@@ -40,7 +41,7 @@ type HorarioRow = { tipo?: string; desde?: string; hasta?: string; dias?: string
 export default async function PerfilMaestro({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  // ── Real maestro from Supabase ────────────────────────────────────────────
+  // ── Real maestro from Supabase (UUID-based ID) ────────────────────────────
   if (UUID_RE.test(id)) {
     const { data: row } = await supabase
       .from("maestros")
@@ -53,15 +54,13 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
 
     const horario = row.horarios as HorarioRow;
     const scheduleText = horario
-      ? `${horario.dias?.join(", ") ?? ""} · ${horario.desde ?? ""}–${horario.hasta ?? ""}`
+      ? [horario.dias?.join(", "), horario.desde && horario.hasta ? `${horario.desde}–${horario.hasta}` : null]
+          .filter(Boolean).join(" · ")
       : "A coordinar";
 
     const initials = (row.nombre as string)
-      .split(" ")
-      .slice(0, 2)
-      .map((w: string) => w[0])
-      .join("")
-      .toUpperCase();
+      .split(" ").slice(0, 2)
+      .map((w: string) => w[0]).join("").toUpperCase();
 
     const fotos = (row.fotos_trabajos ?? []) as { url: string; descripcion: string | null }[];
 
@@ -79,7 +78,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
           <div className="maestro-grid">
             <div className="col gap-24">
               {/* Header */}
-              <div style={{ background: "#fff", border: "1px solid var(--line)", padding: 28 }}>
+              <div className="maestro-profile-header" style={{ background: "#fff", border: "1px solid var(--line)", padding: 28 }}>
                 <div className="row gap-20 wrap-flex" style={{ alignItems: "flex-start" }}>
                   <div style={{
                     width: 96, height: 96, background: "var(--navy)", color: "#fff", flexShrink: 0,
@@ -199,7 +198,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
     );
   }
 
-  // ── Sample / demo maestro ─────────────────────────────────────────────────
+  // ── Demo / sample maestro (m-001, m-002 …) ───────────────────────────────
   const idx = SAMPLE_MASTERS.findIndex(m => m.id === id);
   const m = idx !== -1 ? SAMPLE_MASTERS[idx] : SAMPLE_MASTERS[0];
   if (!m) notFound();
@@ -208,6 +207,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "70vh" }}>
+      {/* Back bar */}
       <div style={{ background: "#fff", borderBottom: "1px solid var(--line)", padding: "12px 0" }}>
         <div className="wrap">
           <Link href="/buscar" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--mute)", textDecoration: "none", fontWeight: 500 }}>
@@ -218,7 +218,9 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
 
       <div className="wrap" style={{ paddingTop: 32, paddingBottom: 64 }}>
         <div className="maestro-grid">
+          {/* LEFT — perfil */}
           <div className="col gap-24">
+            {/* Header del maestro — oculto en móvil (la tarjeta ya lo muestra) */}
             <div className="maestro-profile-header" style={{ background: "#fff", border: "1px solid var(--line)", padding: 28 }}>
               <div className="row gap-20 wrap-flex" style={{ alignItems: "flex-start" }}>
                 <div style={{
@@ -234,7 +236,9 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                     <h1 style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 800, margin: 0, color: "var(--ink)" }}>
                       {m.name}
                     </h1>
-                    {m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
+                    {m.verified && (
+                      <span className="verified"><CheckIcon /> Verificado</span>
+                    )}
                   </div>
                   <div className="row gap-6 wrap-flex">
                     {m.specialties.map(sp => <span key={sp} className="chip chip-dark">{sp}</span>)}
@@ -254,16 +258,25 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
+            {/* Descripción */}
             <div style={{ background: "#fff", border: "1px solid var(--line)", padding: 24 }}>
               <span className="label" style={{ marginBottom: 12, display: "block" }}>// Sobre {m.name.split(" ")[0]}</span>
               <p style={{ fontSize: 15.5, color: "var(--ink-soft)", lineHeight: 1.65, margin: 0 }}>{m.description}</p>
+
               <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginTop: 20, paddingTop: 20, borderTop: "1px solid var(--line)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}><PhoneIcon /> {m.phone}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}><ClockIcon /> {m.schedule}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}><PinIcon /> {m.sector}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}>
+                  <PhoneIcon /> {m.phone}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}>
+                  <ClockIcon /> {m.schedule}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}>
+                  <PinIcon /> {m.sector}
+                </div>
               </div>
             </div>
 
+            {/* Galería */}
             <div style={{ background: "#fff", border: "1px solid var(--line)", padding: 24 }}>
               <span className="label" style={{ marginBottom: 16, display: "block" }}>// Galería de trabajos</span>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
@@ -275,27 +288,36 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
+            {/* Formas de pago */}
             {m.paymentMethods && (
               <div style={{ background: "#fff", border: "1px solid var(--line)", padding: 24 }}>
                 <span className="label" style={{ marginBottom: 16, display: "block" }}>// Formas y modalidad de pago</span>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                   <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--navy)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>Acepta</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--navy)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      Acepta
+                    </div>
                     <div className="col gap-6">
                       {m.paymentMethods.map(pm => (
                         <div key={pm} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
-                          <span style={{ width: 20, height: 20, background: "rgba(232,108,28,0.12)", color: "var(--orange)", display: "grid", placeItems: "center", borderRadius: 4, flexShrink: 0 }}><CheckIcon /></span>
+                          <span style={{ width: 20, height: 20, background: "rgba(232,108,28,0.12)", color: "var(--orange)", display: "grid", placeItems: "center", borderRadius: 4, flexShrink: 0 }}>
+                            <CheckIcon />
+                          </span>
                           {pm}
                         </div>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--navy)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>Modalidad</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--navy)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      Modalidad
+                    </div>
                     <div className="col gap-6">
                       {(m.paymentSchedule || []).map(ps => (
                         <div key={ps} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
-                          <span style={{ width: 20, height: 20, background: "rgba(20,55,95,0.1)", color: "var(--navy)", display: "grid", placeItems: "center", borderRadius: 4, flexShrink: 0 }}><CheckIcon /></span>
+                          <span style={{ width: 20, height: 20, background: "rgba(20,55,95,0.1)", color: "var(--navy)", display: "grid", placeItems: "center", borderRadius: 4, flexShrink: 0 }}>
+                            <CheckIcon />
+                          </span>
                           {ps}
                         </div>
                       ))}
@@ -305,31 +327,13 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
               </div>
             )}
 
+            {/* Reseñas */}
             <ReviewSection masterId={m.id} masterName={m.name} initialReviews={SEED_REVIEWS} />
           </div>
 
+          {/* RIGHT — tarjeta profesional (sticky en desktop, arriba en móvil) */}
           <div className="maestro-card-wrap">
-            <div style={{ background: "#fff", border: "1.5px solid var(--ink)", padding: 24, position: "sticky", top: 24 }}>
-              <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 17, marginBottom: 4 }}>{m.name}</div>
-              <div style={{ fontSize: 13, color: "var(--mute)", marginBottom: 20 }}>{m.specialties.join(" · ")}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--orange)", marginBottom: 16 }}>
-                {[0,1,2,3,4].map(i => <StarIcon key={i} size={16} filled={i < Math.round(m.rating)} />)}
-                <span style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: 13, color: "var(--ink)", marginLeft: 6 }}>{m.rating.toFixed(1)}</span>
-              </div>
-              <a
-                href={`https://wa.me/${m.phone.replace(/\D/g, "")}`}
-                target="_blank" rel="noopener noreferrer"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#25D366", color: "#fff", padding: "13px 0", fontWeight: 700, fontSize: 14.5, textDecoration: "none", marginBottom: 10, width: "100%" }}
-              >
-                WhatsApp
-              </a>
-              <a
-                href={`tel:${m.phone}`}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "var(--navy)", color: "#fff", padding: "13px 0", fontWeight: 700, fontSize: 14.5, textDecoration: "none", width: "100%" }}
-              >
-                <PhoneIcon /> Llamar
-              </a>
-            </div>
+            <ProfessionalCard m={m} bg={bg} fg={fg} />
           </div>
         </div>
       </div>
