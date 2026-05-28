@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SignOutBtn from "@/components/SignOutBtn";
-import { supabase } from "@/lib/supabase";
 
 export default async function MaestroDashboard() {
   const user = await currentUser();
@@ -23,13 +22,8 @@ export default async function MaestroDashboard() {
     redirect("/dashboard/maestro/completar-perfil");
   }
 
-  // Fetch Supabase UUID for public profile link
-  const { data: maestroRow } = await supabase
-    .from("maestros")
-    .select("id")
-    .eq("clerk_user_id", user.id)
-    .single();
-  const publicProfileUrl = maestroRow?.id ? `/maestro/${maestroRow.id}` : null;
+  const maestroId = profile.maestroId as string | null | undefined;
+  const publicProfileUrl = maestroId ? `/maestro/${maestroId}` : null;
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
