@@ -1,6 +1,6 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -9,11 +9,13 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
 
   console.log("[update-profile] userId:", userId);
+  console.log("[update-profile] supabase url set:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("[update-profile] service key set:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
   console.log("[update-profile] nombre:", body.nombre, "rut:", body.rut, "telefono:", JSON.stringify(body.telefono));
   console.log("[update-profile] especialidades:", body.especialidades);
 
   // 1. Upsert maestro row first so we have the UUID for Clerk metadata
-  const { data: maestroRow, error: sbError } = await supabase
+  const { data: maestroRow, error: sbError } = await getSupabaseAdmin()
     .from("maestros")
     .upsert(
       {
@@ -33,10 +35,15 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (sbError) {
-    console.error("[update-profile] Supabase upsert failed:", sbError.message, sbError.code);
-  } else {
-    console.log("[update-profile] Supabase upsert succeeded, maestro id:", maestroRow?.id);
+    console.error("[update-profile] Supabase upsert failed — code:", sbError.code, "message:", sbError.message, "details:", sbError.details);
+    // Return the error so the client can surface it in dev tools
+    return NextResponse.json(
+      { error: "Error al guardar en Supabase", supabaseError: { code: sbError.code, message: sbError.message } },
+      { status: 500 }
+    );
   }
+
+  console.log("[update-profile] Supabase upsert succeeded, maestro id:", maestroRow?.id);
 
   // 2. Save to Clerk publicMetadata (including maestroId so dashboard can link without a second query)
   try {
@@ -65,12 +72,12 @@ export async function POST(req: NextRequest) {
           modalidad:       body.modalidad       ?? "",
           galeriaCount:    body.galeriaCount    ?? 0,
           galeriaCaptions: body.galeriaCaptions ?? [],
-          maestroId:       maestroRow?.id       ?? existingProfile.maestroId ?? null,
+          maestroId:       maestroRow.id,
           updatedAt:       new Date().toISOString(),
         },
       },
     });
-    console.log("[update-profile] Clerk write succeeded, maestroId in metadata:", maestroRow?.id ?? existingProfile.maestroId);
+    console.log("[update-profile] Clerk write succeeded, maestroId:", maestroRow.id);
   } catch (err) {
     console.error("[update-profile] Clerk write failed:", err);
     return NextResponse.json({ error: "Error al guardar en Clerk" }, { status: 500 });
@@ -78,18 +85,18 @@ export async function POST(req: NextRequest) {
 
   // 3. Save uploaded photo URLs to fotos_trabajos
   const fotos = (body.fotoUrls ?? []) as { url: string; descripcion: string }[];
-  if (maestroRow?.id && fotos.length > 0) {
+  if (fotos.length > 0) {
     const rows = fotos
       .filter(f => f.url)
       .map(f => ({ maestro_id: maestroRow.id, url: f.url, descripcion: f.descripcion || null }));
 
     if (rows.length > 0) {
-      const { error: fotosError } = await supabase.from("fotos_trabajos").insert(rows);
+      const { error: fotosError } = await getSupabaseAdmin().from("fotos_trabajos").insert(rows);
       if (fotosError) {
         console.error("[update-profile] fotos_trabajos insert failed:", fotosError.message);
       }
     }
   }
 
-  return NextResponse.json({ ok: true, maestroId: maestroRow?.id ?? null });
+  return NextResponse.json({ ok: true, maestroId: maestroRow.id });
 }

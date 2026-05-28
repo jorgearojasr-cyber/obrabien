@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { SAMPLE_MASTERS, type Master } from "@/lib/data";
 import BuscarContent from "./_content";
 
@@ -34,7 +34,7 @@ function rowToMaster(row: Record<string, unknown>): Master {
 }
 
 export default async function BuscarPage() {
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await getSupabaseAdmin()
     .from("maestros")
     .select("id, nombre, especialidades, ciudades, telefono, horarios, descripcion")
     .eq("activo", true)

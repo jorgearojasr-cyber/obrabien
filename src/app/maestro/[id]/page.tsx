@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { SAMPLE_MASTERS } from "@/lib/data";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { notFound } from "next/navigation";
 import ProfessionalCard from "@/components/ProfessionalCard";
 import ReviewSection from "@/components/ReviewSection";
@@ -43,7 +43,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
 
   // ── Real maestro from Supabase (UUID-based ID) ────────────────────────────
   if (UUID_RE.test(id)) {
-    const { data: row } = await supabase
+    const { data: row } = await getSupabaseAdmin()
       .from("maestros")
       .select("*, fotos_trabajos(url, descripcion)")
       .eq("id", id)
