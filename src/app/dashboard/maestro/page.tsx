@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SignOutBtn from "@/components/SignOutBtn";
+import { supabase } from "@/lib/supabase";
 
 export default async function MaestroDashboard() {
   const user = await currentUser();
@@ -21,6 +22,14 @@ export default async function MaestroDashboard() {
     console.log("[maestro-dashboard] → redirecting to completar-perfil");
     redirect("/dashboard/maestro/completar-perfil");
   }
+
+  // Fetch Supabase UUID for public profile link
+  const { data: maestroRow } = await supabase
+    .from("maestros")
+    .select("id")
+    .eq("clerk_user_id", user.id)
+    .single();
+  const publicProfileUrl = maestroRow?.id ? `/maestro/${maestroRow.id}` : null;
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
@@ -48,10 +57,15 @@ export default async function MaestroDashboard() {
               </h1>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <span style={{ background: "var(--ink)", color: "var(--orange)", padding: "4px 10px", fontFamily: "var(--font-jetbrains), monospace", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em" }}>
               MAESTRO
             </span>
+            {publicProfileUrl && (
+              <Link href={publicProfileUrl} target="_blank" style={{ background: "var(--navy)", color: "#fff", padding: "7px 14px", fontSize: 12.5, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+                Ver mi perfil →
+              </Link>
+            )}
             <SignOutBtn />
           </div>
         </div>
