@@ -8,6 +8,12 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
+  console.log("[update-profile] userId:", userId);
+  console.log("[update-profile] body.nombre:", body.nombre);
+  console.log("[update-profile] body.rut:", body.rut);
+  console.log("[update-profile] body.telefono:", JSON.stringify(body.telefono));
+  console.log("[update-profile] body.especialidades:", body.especialidades);
+
   // 1. Save to Clerk publicMetadata (keeps auth-layer completeness check working)
   try {
     const clerk = await clerkClient();
@@ -37,6 +43,7 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+    console.log("[update-profile] Clerk write succeeded");
   } catch (err) {
     console.error("[update-profile] Clerk write failed:", err);
     return NextResponse.json({ error: "Error al guardar en Clerk" }, { status: 500 });
@@ -64,6 +71,8 @@ export async function POST(req: NextRequest) {
 
   if (sbError) {
     console.error("[update-profile] Supabase upsert failed:", sbError.message);
+  } else {
+    console.log("[update-profile] Supabase upsert succeeded, maestro id:", maestroRow?.id);
   }
 
   // 3. Save uploaded photo URLs to fotos_trabajos

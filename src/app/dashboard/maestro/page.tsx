@@ -13,8 +13,12 @@ export default async function MaestroDashboard() {
   if (role && role !== "maestro") redirect("/dashboard/cliente");
 
   const profile = user.publicMetadata?.profile as Record<string, unknown> | null | undefined;
+  console.log("[maestro-dashboard] publicMetadata:", JSON.stringify(user.publicMetadata));
+  console.log("[maestro-dashboard] profile:", JSON.stringify(profile));
+  console.log("[maestro-dashboard] checks — nombre:", !!profile?.nombre, "rut:", !!profile?.rut, "telefono:", !!profile?.telefono, "especialidades:", profile?.especialidades);
   if (!profile || !profile.nombre || !profile.rut || !profile.telefono ||
       !Array.isArray(profile.especialidades) || (profile.especialidades as unknown[]).length === 0) {
+    console.log("[maestro-dashboard] → redirecting to completar-perfil");
     redirect("/dashboard/maestro/completar-perfil");
   }
 
@@ -52,23 +56,23 @@ export default async function MaestroDashboard() {
           </div>
         </div>
 
-        {/* Profile completion banner */}
+        {/* Profile complete banner */}
         <div style={{ background: "var(--navy)", padding: "20px 24px", marginBottom: 36, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-              <span style={{ background: "var(--orange)", color: "#fff", fontSize: 9, fontWeight: 700, fontFamily: "var(--font-jetbrains), monospace", letterSpacing: "0.08em", padding: "2px 7px" }}>
-                PENDIENTE
+              <span style={{ background: "#22c55e", color: "#fff", fontSize: 9, fontWeight: 700, fontFamily: "var(--font-jetbrains), monospace", letterSpacing: "0.08em", padding: "2px 7px" }}>
+                ACTIVO
               </span>
               <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 15.5, color: "#fff" }}>
-                Completa tu perfil profesional
+                Tu perfil está publicado
               </span>
             </div>
             <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.68)" }}>
-              Sube especialidades, fotos de trabajos y zona de cobertura para aparecer en búsquedas.
+              Agrega fotos de trabajos y más especialidades para recibir más contactos.
             </div>
           </div>
           <Link href="/dashboard/maestro/completar-perfil" style={{ background: "var(--orange)", color: "#fff", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>
-            Completar perfil →
+            Editar perfil →
           </Link>
         </div>
 
@@ -93,7 +97,7 @@ export default async function MaestroDashboard() {
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 12, marginBottom: 36 }}>
           {[
-            { icon: "📋", title: "Completar perfil", desc: "Sube especialidades, zona y fotos de trabajos.", href: "/dashboard/maestro/completar-perfil", top: "var(--orange)" },
+            { icon: "📋", title: "Editar perfil", desc: "Actualiza especialidades, zona y fotos de trabajos.", href: "/dashboard/maestro/completar-perfil", top: undefined },
             { icon: "🛒", title: "Publicar en marketplace", desc: "Vende herramientas o servicios al rubro.", href: "/marketplace/publicar", top: undefined },
             { icon: "💬", title: "Ir a la comunidad", desc: "Responde preguntas y gana reputación.", href: "/comunidad", top: undefined },
             { icon: "🏪", title: "Ver marketplace", desc: "Compra y arrienda equipos del rubro.", href: "/marketplace", top: undefined },
