@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -183,14 +183,92 @@ const INITIAL: FormState = {
   autorizaPerfil:false,
 };
 
+// ── Pre-populate form from Supabase row ───────────────────────────────────────
+
+type FotoRow = { id: string; url: string; descripcion: string | null };
+type SocialRow = { whatsapp?: string | null; instagram?: string | null; facebook?: string | null; tiktok?: string | null } | null;
+type HorarioRow2 = { tipo?: string; desde?: string; hasta?: string; dias?: string[] } | null;
+
+function findRegionForCities(cities: string[]): string {
+  for (const [region, comunas] of Object.entries(COMUNAS)) {
+    if (cities.some(c => comunas.includes(c))) return region;
+  }
+  return "";
+}
+
+function buildGaleria(fotos: FotoRow[]): GaleriaItem[] {
+  const filled = fotos.slice(0, 6).map(f => ({
+    file: null,
+    preview: f.url,
+    caption: f.descripcion ?? "",
+    cloudinaryUrl: f.url,
+    uploading: false,
+  }));
+  while (filled.length < 6) {
+    filled.push({ file: null, preview: "", caption: "", cloudinaryUrl: "", uploading: false });
+  }
+  return filled;
+}
+
+function populateForm(row: Record<string, unknown>, fotos: FotoRow[]): Partial<FormState> {
+  const horario = row.horarios as HorarioRow2;
+  const social  = row.social  as SocialRow;
+  const ciudades = (row.ciudades as string[]) ?? [];
+
+  const telefono = (() => {
+    const t = (row.telefono as string) ?? "";
+    if (!t) return PHONE_PREFIX;
+    if (t.startsWith("+56")) return t;
+    return PHONE_PREFIX + t;
+  })();
+
+  return {
+    nombre:       (row.nombre      as string)  ?? "",
+    rut:          (row.rut         as string)  ?? "",
+    rutError:     "",
+    telefono,
+    esWhatsapp:   (row.whatsapp    as boolean) ?? true,
+    whatsapp:     social?.whatsapp ?? telefono,
+    instagram:    social?.instagram ?? "",
+    facebook:     social?.facebook  ?? "",
+    tiktok:       social?.tiktok    ?? "",
+    especialidades: (row.especialidades as string[]) ?? [],
+    region:       findRegionForCities(ciudades),
+    comunas:      ciudades,
+    horarioTipo:  horario?.tipo   ?? "",
+    horarioDesde: horario?.desde  ?? "08:00",
+    horarioHasta: horario?.hasta  ?? "18:00",
+    horarioDias:  horario?.dias   ?? [],
+    descripcion:  (row.descripcion as string)  ?? "",
+    galeria:      buildGaleria(fotos),
+    // Pre-check terms since profile already exists
+    terminos:      true,
+    autorizaPerfil: true,
+  };
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function CompletarPerfilPage() {
   const router = useRouter();
-  const [step, setStep]     = useState(0);
-  const [form, setForm]     = useState<FormState>(INITIAL);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
+  const [step, setStep]       = useState(0);
+  const [form, setForm]       = useState<FormState>(INITIAL);
+  const [errors, setErrors]   = useState<string[]>([]);
+  const [saving, setSaving]   = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/get-profile")
+      .then(r => r.json())
+      .then(({ data }) => {
+        if (data) {
+          const fotos = (data.fotos_trabajos ?? []) as FotoRow[];
+          setForm(prev => ({ ...prev, ...populateForm(data as Record<string, unknown>, fotos) }));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const upd = (patch: Partial<FormState>) => setForm(p => ({...p,...patch}));
 
@@ -279,6 +357,16 @@ export default function CompletarPerfilPage() {
       setErrors(["Error al guardar. Intenta de nuevo."]);
       setSaving(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ background: "var(--bg)", minHeight: "100vh", display: "grid", placeItems: "center" }}>
+        <div style={{ fontFamily: "var(--font-jetbrains),monospace", fontSize: 13, color: "var(--mute)" }}>
+          Cargando perfil…
+        </div>
+      </div>
+    );
   }
 
   return (

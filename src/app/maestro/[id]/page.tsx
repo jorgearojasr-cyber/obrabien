@@ -62,7 +62,8 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
       .split(" ").slice(0, 2)
       .map((w: string) => w[0]).join("").toUpperCase();
 
-    const fotos = (row.fotos_trabajos ?? []) as { url: string; descripcion: string | null }[];
+    const fotos  = (row.fotos_trabajos ?? []) as { url: string; descripcion: string | null }[];
+    const social = (row.social ?? {}) as { whatsapp?: string | null; instagram?: string | null; facebook?: string | null; tiktok?: string | null };
 
     return (
       <div style={{ background: "var(--bg)", minHeight: "70vh" }}>
@@ -164,6 +165,8 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                 <div style={{ fontSize: 13, color: "var(--mute)", marginBottom: 20 }}>
                   {(row.especialidades as string[]).join(" · ")}
                 </div>
+
+                {/* Primary contact buttons */}
                 {row.whatsapp && row.telefono && (
                   <a
                     href={`https://wa.me/${(row.telefono as string).replace(/\D/g, "")}`}
@@ -175,12 +178,38 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                 )}
                 <a
                   href={`tel:${row.telefono}`}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "var(--navy)", color: "#fff", padding: "13px 0", fontWeight: 700, fontSize: 14.5, textDecoration: "none", width: "100%" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "var(--navy)", color: "#fff", padding: "13px 0", fontWeight: 700, fontSize: 14.5, textDecoration: "none", width: "100%", marginBottom: 16 }}
                 >
                   <PhoneIcon /> Llamar
                 </a>
+
+                {/* Social links */}
+                {(social.instagram || social.facebook || social.tiktok) && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                    {social.instagram && (
+                      <a href={`https://instagram.com/${social.instagram.replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer"
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", background: "rgba(225,48,108,0.07)", color: "#E1306C", fontWeight: 600, fontSize: 13, textDecoration: "none" }}>
+                        📸 Instagram
+                      </a>
+                    )}
+                    {social.facebook && (
+                      <a href={social.facebook.startsWith("http") ? social.facebook : `https://facebook.com/${social.facebook}`} target="_blank" rel="noopener noreferrer"
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", background: "rgba(24,119,242,0.07)", color: "#1877F2", fontWeight: 600, fontSize: 13, textDecoration: "none" }}>
+                        📘 Facebook
+                      </a>
+                    )}
+                    {social.tiktok && (
+                      <a href={`https://tiktok.com/@${social.tiktok.replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer"
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", background: "rgba(15,38,64,0.05)", color: "#0F2640", fontWeight: 600, fontSize: 13, textDecoration: "none" }}>
+                        🎵 TikTok
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Coverage */}
                 {row.ciudades?.length > 0 && (
-                  <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--line)", fontSize: 13, color: "var(--mute)" }}>
+                  <div style={{ paddingTop: 16, borderTop: "1px solid var(--line)", fontSize: 13, color: "var(--mute)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
                       <PinIcon /> <strong style={{ color: "var(--ink)" }}>Cobertura</strong>
                     </div>

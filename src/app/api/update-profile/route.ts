@@ -11,10 +11,9 @@ export async function POST(req: NextRequest) {
   console.log("[update-profile] userId:", userId);
   console.log("[update-profile] supabase url set:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
   console.log("[update-profile] service key set:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-  console.log("[update-profile] nombre:", body.nombre, "rut:", body.rut, "telefono:", JSON.stringify(body.telefono));
-  console.log("[update-profile] especialidades:", body.especialidades);
+  console.log("[update-profile] nombre:", body.nombre, "especialidades:", body.especialidades);
 
-  // 1. Upsert maestro row first so we have the UUID for Clerk metadata
+  // 1. Upsert maestro row
   const { data: maestroRow, error: sbError } = await getSupabaseAdmin()
     .from("maestros")
     .upsert(
@@ -28,6 +27,12 @@ export async function POST(req: NextRequest) {
         especialidades: body.especialidades ?? [],
         ciudades:       body.comunas        ?? [],
         horarios:       body.horario        ?? null,
+        social: {
+          whatsapp:  body.redes?.whatsapp  ?? null,
+          instagram: body.redes?.instagram ?? null,
+          facebook:  body.redes?.facebook  ?? null,
+          tiktok:    body.redes?.tiktok    ?? null,
+        },
       },
       { onConflict: "clerk_user_id" }
     )
@@ -35,17 +40,32 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (sbError) {
-    console.error("[update-profile] Supabase upsert failed — code:", sbError.code, "message:", sbError.message, "details:", sbError.details);
-    // Return the error so the client can surface it in dev tools
+    console.error("[update-profile] Supabase upsert failed — code:", sbError.code, "message:", sbError.message);
     return NextResponse.json(
       { error: "Error al guardar en Supabase", supabaseError: { code: sbError.code, message: sbError.message } },
       { status: 500 }
     );
   }
 
-  console.log("[update-profile] Supabase upsert succeeded, maestro id:", maestroRow?.id);
+  console.log("[update-profile] Supabase upsert succeeded, maestro id:", maestroRow.id);
 
-  // 2. Save to Clerk publicMetadata (including maestroId so dashboard can link without a second query)
+  // 2. Replace fotos_trabajos: delete existing, then insert current set
+  const fotos = (body.fotoUrls ?? []) as { url: string; descripcion: string }[];
+
+  await getSupabaseAdmin().from("fotos_trabajos").delete().eq("maestro_id", maestroRow.id);
+
+  if (fotos.length > 0) {
+    const rows = fotos
+      .filter(f => f.url)
+      .map(f => ({ maestro_id: maestroRow.id, url: f.url, descripcion: f.descripcion || null }));
+    if (rows.length > 0) {
+      const { error: fotosError } = await getSupabaseAdmin().from("fotos_trabajos").insert(rows);
+      if (fotosError) console.error("[update-profile] fotos_trabajos insert failed:", fotosError.message);
+      else console.log("[update-profile] fotos_trabajos inserted:", rows.length, "rows");
+    }
+  }
+
+  // 3. Save to Clerk publicMetadata (includes maestroId so dashboard link works)
   try {
     const clerk = await clerkClient();
     const user = await clerk.users.getUser(userId);
@@ -81,21 +101,6 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[update-profile] Clerk write failed:", err);
     return NextResponse.json({ error: "Error al guardar en Clerk" }, { status: 500 });
-  }
-
-  // 3. Save uploaded photo URLs to fotos_trabajos
-  const fotos = (body.fotoUrls ?? []) as { url: string; descripcion: string }[];
-  if (fotos.length > 0) {
-    const rows = fotos
-      .filter(f => f.url)
-      .map(f => ({ maestro_id: maestroRow.id, url: f.url, descripcion: f.descripcion || null }));
-
-    if (rows.length > 0) {
-      const { error: fotosError } = await getSupabaseAdmin().from("fotos_trabajos").insert(rows);
-      if (fotosError) {
-        console.error("[update-profile] fotos_trabajos insert failed:", fotosError.message);
-      }
-    }
   }
 
   return NextResponse.json({ ok: true, maestroId: maestroRow.id });
