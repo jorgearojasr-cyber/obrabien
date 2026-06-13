@@ -265,12 +265,15 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
 
   const downloadPDF = async () => {
     setShareOpen(false);
+    const node = cardRef.current!;
+    const imgWidth = node.offsetWidth;
+    const imgHeight = node.scrollHeight;
     const blob = await captureBlob();
     const reader = new FileReader();
     const dataUrl = await new Promise<string>(res => { reader.onload = () => res(reader.result as string); reader.readAsDataURL(blob); });
     const { jsPDF } = await import("jspdf");
-    const pdf = new jsPDF({ unit: "px", format: [390, 780], hotfixes: ["px_scaling"] });
-    pdf.addImage(dataUrl, "PNG", 0, 0, 390, 780);
+    const pdf = new jsPDF({ unit: "px", format: [imgWidth, imgHeight], hotfixes: ["px_scaling"] });
+    pdf.addImage(dataUrl, "PNG", 0, 0, imgWidth, imgHeight);
     pdf.save(`tarjeta-${slug}-obrabien.pdf`);
   };
 
