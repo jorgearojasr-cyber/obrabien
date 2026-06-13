@@ -234,9 +234,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
 
   const slug = m.name.toLowerCase().replace(/\s+/g, "-");
 
-  const downloadPNG = async () => {
-    setShareOpen(false);
-
+  const buildCard = async (): Promise<HTMLCanvasElement> => {
     const W = 390;
     const H = 780;
     const canvas = document.createElement("canvas");
@@ -421,132 +419,25 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     ctx.fillText("Compartir perfil", 285, 540);
     ctx.textAlign = "left";
 
-    // ── download ──────────────────────────────────────────────────────────────
+    return canvas;
+  };
+
+  const downloadPNG = async () => {
+    setShareOpen(false);
+    const canvas = await buildCard();
     const a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
     a.download = `tarjeta-${slug}-obrabien.png`;
     a.click();
   };
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     setShareOpen(false);
-    import("jspdf").then(({ jsPDF }) => {
-      const W = 390;
-      const H = 844;
-      const pdf = new jsPDF({ unit: "pt", format: [W, H] });
-
-      const navy = [20, 55, 95] as const;
-      const orange = [230, 108, 28] as const;
-      const green = [37, 211, 102] as const;
-
-      // Header background
-      pdf.setFillColor(...navy);
-      pdf.rect(0, 0, W, 60, "F");
-
-      // OBRABIEN logo text
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(16);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("OBRABIEN", 50, 38);
-
-      // VERIFICADO badge
-      if (m.verified) {
-        pdf.setFillColor(...orange);
-        pdf.roundedRect(272, 18, 100, 24, 4, 4, "F");
-        pdf.setFontSize(9);
-        pdf.setTextColor(255, 255, 255);
-        pdf.text("VERIFICADO", 281, 34);
-      }
-
-      // Name
-      pdf.setTextColor(...navy);
-      pdf.setFontSize(20);
-      pdf.setFont("helvetica", "bold");
-      pdf.text(m.name, 20, 100);
-
-      // Specialties
-      pdf.setFontSize(12);
-      pdf.setTextColor(...orange);
-      pdf.text(m.specialties.join(" · "), 20, 120);
-
-      // Phone (clickable)
-      pdf.setFontSize(13);
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`Tel: ${m.phone}`, 20, 148);
-      pdf.link(20, 136, 200, 18, { url: `tel:${m.phone.replace(/\s/g, "")}` });
-
-      // City
-      pdf.text(`Lugar: ${m.city}`, 20, 170);
-
-      // Schedule
-      if (m.schedule) {
-        pdf.setFontSize(11);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text(`Horario: ${m.schedule}`, 20, 190);
-      }
-
-      // Stats row
-      const stats = [
-        m.yearsExp ? `${m.yearsExp} anos exp.` : null,
-        m.jobs ? `${m.jobs} trabajos` : null,
-        m.rating ? `${m.rating.toFixed(1)} estrellas` : "Sin resenas",
-        m.verified ? "Verificado" : null,
-      ].filter(Boolean) as string[];
-      pdf.setFontSize(10);
-      pdf.setTextColor(60, 60, 60);
-      stats.forEach((s, i) => pdf.text(s, 20 + i * 92, 220));
-
-      // Description
-      if (m.description) {
-        pdf.setFontSize(10);
-        pdf.setTextColor(80, 80, 80);
-        pdf.setFont("helvetica", "normal");
-        const lines = pdf.splitTextToSize(m.description, W - 40) as string[];
-        pdf.text(lines.slice(0, 5), 20, 248);
-      }
-
-      // WhatsApp button
-      const waPhone = (m.social?.whatsapp ?? m.phone).replace(/\D/g, "");
-      pdf.setFillColor(...green);
-      pdf.roundedRect(20, 320, W - 40, 44, 8, 8, "F");
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(13);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("CONTACTAR POR WHATSAPP", W / 2, 347, { align: "center" });
-      pdf.link(20, 320, W - 40, 44, { url: `https://wa.me/${waPhone}` });
-
-      // Social links
-      let yS = 390;
-      pdf.setFont("helvetica", "normal");
-      if (m.social?.instagram) {
-        pdf.setFontSize(12);
-        pdf.setTextColor(193, 53, 132);
-        pdf.text(`Instagram: @${m.social.instagram}`, 20, yS);
-        pdf.link(20, yS - 12, 220, 16, { url: `https://instagram.com/${m.social.instagram}` });
-        yS += 26;
-      }
-      if (m.social?.facebook) {
-        pdf.setTextColor(24, 119, 242);
-        pdf.text(`Facebook: ${m.social.facebook}`, 20, yS);
-        pdf.link(20, yS - 12, 220, 16, { url: `https://facebook.com/${m.social.facebook}` });
-        yS += 26;
-      }
-      if (m.social?.tiktok) {
-        pdf.setTextColor(0, 0, 0);
-        pdf.text(`TikTok: @${m.social.tiktok}`, 20, yS);
-        pdf.link(20, yS - 12, 180, 16, { url: `https://tiktok.com/@${m.social.tiktok}` });
-      }
-
-      // Profile URL
-      const urlPerfil = `obrabien.cl/maestro/${m.id}`;
-      pdf.setFontSize(10);
-      pdf.setTextColor(120, 120, 120);
-      pdf.text(`Ver perfil completo: ${urlPerfil}`, 20, H - 40);
-      pdf.link(20, H - 52, 300, 16, { url: `https://${urlPerfil}` });
-
-      pdf.save(`tarjeta-${slug}-obrabien.pdf`);
-    });
+    const canvas = await buildCard();
+    const { jsPDF } = await import("jspdf");
+    const pdf = new jsPDF({ unit: "px", format: [390, 780], hotfixes: ["px_scaling"] });
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 390, 780);
+    pdf.save(`tarjeta-${slug}-obrabien.pdf`);
   };
 
   const showQrLarge = () => {
