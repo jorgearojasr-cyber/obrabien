@@ -1,9 +1,10 @@
 "use client";
 
-import { use, useState, useRef } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getListing, LISTINGS, TYPE_CONFIG, PLAN_CONFIG, formatPrice } from "@/lib/marketplace";
+import { getListing, rowToListing, LISTINGS, TYPE_CONFIG, PLAN_CONFIG, formatPrice, type MarketplaceListing } from "@/lib/marketplace";
+import { ConsultasSection } from "./ConsultasSection";
 
 function BackIcon()      { return <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>; }
 function LocationIcon()  { return <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-6.2-7-12a7 7 0 1 1 14 0c0 5.8-7 12-7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>; }
@@ -17,37 +18,122 @@ function formatPhone(wa: string): string {
   return `+${d}`;
 }
 
-const TOTAL_SLIDES = 4;
+function PhotoCarousel({ urls, alt, style }: { urls: string[]; alt: string; style?: React.CSSProperties }) {
+  const [idx, setIdx] = useState(0);
+  const n = urls.length;
+
+  if (n === 0) {
+    return (
+      <div className="photo-ph" style={style}>
+        <div className="ph-label" style={{ fontSize: 12 }}>📷 Sin foto</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "relative", ...style }}>
+      {/* Main image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={urls[idx]} alt={`${alt} ${idx + 1}`}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+
+      {/* Arrows */}
+      {n > 1 && (
+        <>
+          <button type="button" onClick={() => setIdx(i => (i - 1 + n) % n)}
+            style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.45)", color: "#fff", border: "none", cursor: "pointer", fontSize: 16, display: "grid", placeItems: "center", lineHeight: 1 }}>
+            ‹
+          </button>
+          <button type="button" onClick={() => setIdx(i => (i + 1) % n)}
+            style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.45)", color: "#fff", border: "none", cursor: "pointer", fontSize: 16, display: "grid", placeItems: "center", lineHeight: 1 }}>
+            ›
+          </button>
+        </>
+      )}
+
+      {/* Dots */}
+      {n > 1 && (
+        <div style={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6 }}>
+          {urls.map((_, i) => (
+            <button key={i} type="button" onClick={() => setIdx(i)}
+              style={{ width: i === idx ? 18 : 8, height: 8, borderRadius: 4, background: i === idx ? "#fff" : "rgba(255,255,255,0.5)", border: "none", cursor: "pointer", padding: 0, transition: "width .2s" }} />
+          ))}
+        </div>
+      )}
+
+      {/* Counter badge */}
+      {n > 1 && (
+        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, fontFamily: "JetBrains Mono, monospace", padding: "2px 7px", borderRadius: 3 }}>
+          {idx + 1}/{n}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MarketplaceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const listing = getListing(id);
-  if (!listing) notFound();
 
-  const [showPhone,   setShowPhone]   = useState(false);
-  const [activeSlide, setActiveSlide] = useState(0);
-  const galleryRef = useRef<HTMLDivElement>(null);
+  const [listing,       setListing]       = useState<MarketplaceListing | null>(() => getListing(id) ?? null);
+  const [status,        setStatus]        = useState<"ok" | "loading" | "notfound">(() => getListing(id) ? "ok" : "loading");
+  const [sellerClerkId, setSellerClerkId] = useState<string | null>(null);
+  const [showPhone,     setShowPhone]     = useState(false);
+  const [fotosUrls,     setFotosUrls]     = useState<string[]>([]);
+
+  useEffect(() => {
+    if (status !== "loading") return;
+    fetch(`/api/marketplace/item?id=${encodeURIComponent(id)}`)
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then((d: { item?: Record<string, unknown> }) => {
+        if (!d.item) { setStatus("notfound"); return; }
+        const mapped = rowToListing(d.item);
+        setListing(mapped);
+        setSellerClerkId((d.item.clerk_user_id as string) || null);
+        const allUrls = mapped.fotosUrls?.length
+          ? mapped.fotosUrls
+          : mapped.photoUrl ? [mapped.photoUrl] : [];
+        setFotosUrls(allUrls);
+        setStatus("ok");
+      })
+      .catch(() => setStatus("notfound"));
+  }, [id, status]);
+
+  if (status === "loading") {
+    return (
+      <div style={{ background: "var(--bg)", minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ color: "var(--mute)", fontSize: 14 }}>Cargando…</span>
+      </div>
+    );
+  }
+
+  if (status === "notfound" || !listing) notFound();
+
+  // For static listings (no DB fetch), derive fotosUrls from photoUrl
+  const displayFotos = fotosUrls.length > 0
+    ? fotosUrls
+    : listing.photoUrl ? [listing.photoUrl] : [];
 
   const typeCfg = TYPE_CONFIG[listing.type];
   const planCfg = PLAN_CONFIG[listing.plan];
-  const whatsappUrl = `https://wa.me/${listing.seller.whatsapp}?text=${encodeURIComponent(`Hola, vi tu publicación "${listing.title}" en ObrabiEN y me interesa. ¿Podemos hablar?`)}`;
+  const whatsappUrl = `https://wa.me/${listing.seller.whatsapp}?text=${encodeURIComponent(`Hola, vi tu publicación "${listing.title}" en ObraBien y me interesa. ¿Podemos hablar?`)}`;
   const related = LISTINGS.filter(l => l.id !== listing.id && (l.type === listing.type || l.category === listing.category)).slice(0, 4);
   const roleLabel: Record<string, string> = { maestro: "Maestro", cliente: "Cliente", empresa: "Empresa" };
   const avatarBg = listing.seller.role === "maestro" ? "#E86C1C" : "#14375F";
 
-  function handleGalleryScroll() {
-    if (!galleryRef.current) return;
-    const { scrollLeft, clientWidth } = galleryRef.current;
-    setActiveSlide(Math.round(scrollLeft / clientWidth));
-  }
-
-  /* Reusable seller block (rendered in both mobile and desktop columns) */
   const sellerBlock = (
     <>
       <span className="label" style={{ display: "block", marginBottom: 14 }}>// Vendedor / Prestador</span>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-        <div style={{ width: 44, height: 44, background: avatarBg, color: "#fff", display: "grid", placeItems: "center", flexShrink: 0, fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 14 }}>
-          {listing.seller.initials}
+        <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, overflow: "hidden", background: avatarBg, display: "grid", placeItems: "center" }}>
+          {listing.seller.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={listing.seller.photoUrl} alt={listing.seller.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span style={{ color: "#fff", fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 14 }}>
+              {listing.seller.initials}
+            </span>
+          )}
         </div>
         <div>
           <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ink)" }}>{listing.seller.name}</div>
@@ -58,7 +144,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
               color: listing.seller.role === "maestro" ? "#E86C1C" : "#14375F",
               fontSize: 9.5, fontWeight: 700, fontFamily: "JetBrains Mono, monospace", textTransform: "uppercase" as const, letterSpacing: "0.07em",
             }}>
-              {roleLabel[listing.seller.role]}
+              {roleLabel[listing.seller.role] ?? "Usuario"}
             </span>
             {listing.seller.verified && (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "1px 7px", background: "rgba(37,165,90,0.12)", color: "#1a8c4a", fontSize: 9.5, fontWeight: 700, fontFamily: "JetBrains Mono, monospace", textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>
@@ -69,7 +155,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
         </div>
       </div>
       <div className="col gap-8">
-        {(["Responde por WhatsApp", "Publicación verificada por ObrabiEN", listing.type === "arriendo" ? "Incluye condiciones de arriendo" : null] as (string | null)[])
+        {(["Responde por WhatsApp", "Publicación verificada por ObraBien", listing.type === "arriendo" ? "Incluye condiciones de arriendo" : null] as (string | null)[])
           .filter(Boolean).map((item, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-soft)" }}>
               <span style={{ color: "#25a55a", flexShrink: 0 }}><CheckIcon /></span>
@@ -92,34 +178,16 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {/* ───────────────── MOBILE LAYOUT ───────────────── */}
+      {/* ─────────────────── MOBILE LAYOUT ─────────────────── */}
       <div className="mobile-only" style={{ paddingBottom: 48 }}>
 
-        {/* 1. Gallery carousel — full bleed */}
-        <div style={{ position: "relative", overflow: "hidden" }}>
-          <div ref={galleryRef} className="carousel-scroll" onScroll={handleGalleryScroll}>
-            {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
-              <div key={i} className="photo-ph" style={{ minWidth: "100%", aspectRatio: "4/3", flexShrink: 0, scrollSnapAlign: "start" }}>
-                <div className="ph-label" style={{ fontSize: 11 }}>📷 Foto {i + 1} de {TOTAL_SLIDES}</div>
-              </div>
-            ))}
-          </div>
-          {/* Dot indicators */}
-          <div style={{ position: "absolute", bottom: 12, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6, pointerEvents: "none" }}>
-            {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
-              <div key={i} style={{
-                height: 6, borderRadius: 3, transition: "width .2s, background .2s",
-                width: i === activeSlide ? 20 : 6,
-                background: i === activeSlide ? "#fff" : "rgba(255,255,255,0.5)",
-              }} />
-            ))}
-          </div>
-        </div>
+        {/* Photo */}
+        <PhotoCarousel urls={displayFotos} alt={listing.title} style={{ aspectRatio: "4/3", height: "auto" }} />
 
         <div className="wrap" style={{ paddingTop: 20 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-            {/* 2. Title / price / meta */}
+            {/* Title / price / meta */}
             <div style={{ background: "#fff", border: "1px solid var(--line)", padding: "18px 18px 16px" }}>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
                 <span style={{ padding: "3px 8px", background: typeCfg.bg, color: typeCfg.color, fontSize: 10, fontWeight: 800, fontFamily: "JetBrains Mono, monospace", letterSpacing: "0.08em" }}>
@@ -145,31 +213,41 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
                 <p style={{ fontSize: 12, color: "var(--mute)", margin: "0 0 8px" }}>Por {listing.priceUnit} · Consulta disponibilidad</p>
               )}
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "var(--mute)" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 5 }}><LocationIcon /> {listing.ciudad}, {listing.region}</span>
+                {(listing.ciudad || listing.region) && (
+                  <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <LocationIcon /> {[listing.ciudad, listing.region].filter(Boolean).join(", ")}
+                  </span>
+                )}
                 <span style={{ display: "flex", alignItems: "center", gap: 5 }}><CalendarIcon /> {listing.publishedAt}</span>
               </div>
             </div>
 
-            {/* 3. CTA buttons */}
+            {/* CTA buttons */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "17px 16px", background: "#25D366", color: "#fff", fontWeight: 700, fontSize: 17, textDecoration: "none" }}>
                 <WhatsAppIconLg /> Contactar por WhatsApp
               </a>
-              <button type="button" onClick={() => setShowPhone(s => !s)}
-                style={{ padding: "14px 16px", background: "#fff", border: "2px solid var(--navy)", color: "var(--navy)", fontWeight: 700, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%" }}>
-                📞 {showPhone ? formatPhone(listing.seller.whatsapp) : "Ver teléfono"}
-              </button>
+              {listing.seller.whatsapp && (
+                <button type="button" onClick={() => setShowPhone(s => !s)}
+                  style={{ padding: "14px 16px", background: "#fff", border: "2px solid var(--navy)", color: "var(--navy)", fontWeight: 700, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%" }}>
+                  📞 {showPhone ? formatPhone(listing.seller.whatsapp) : "Ver teléfono"}
+                </button>
+              )}
             </div>
 
-            {/* 4. Description */}
+            {/* Description */}
             <div style={{ background: "#fff", border: "1px solid var(--line)", padding: "18px 18px 16px" }}>
               <span className="label" style={{ display: "block", marginBottom: 12 }}>// Descripción</span>
-              <div style={{ color: "var(--ink-soft)", fontSize: 15, lineHeight: 1.75 }}>
-                {listing.description.split("\n\n").map((para, i) => (
-                  <p key={i} style={{ margin: "0 0 12px" }}>{para}</p>
-                ))}
-              </div>
+              {listing.description ? (
+                <div style={{ color: "var(--ink-soft)", fontSize: 15, lineHeight: 1.75 }}>
+                  {listing.description.split("\n\n").map((para, i) => (
+                    <p key={i} style={{ margin: "0 0 12px" }}>{para}</p>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: "var(--mute)", fontSize: 14, margin: 0 }}>Sin descripción adicional.</p>
+              )}
               {listing.tags.length > 0 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
                   {listing.tags.map(tag => (
@@ -179,42 +257,38 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
               )}
             </div>
 
-            {/* 5. Seller card */}
+            {/* Seller card */}
             <div style={{ background: "#fff", border: "1px solid var(--line)", padding: "18px 18px 16px" }}>
               {sellerBlock}
             </div>
 
-            {/* 6. Disclaimer */}
+            {/* Consultas */}
+            <ConsultasSection itemId={listing.id} sellerName={listing.seller.name} sellerClerkId={sellerClerkId} />
+
+            {/* Disclaimer */}
             <div style={{ background: "var(--bg-2)", border: "1px solid var(--line)", padding: "12px 14px" }}>
               <p style={{ fontSize: 12, color: "var(--mute)", margin: 0, lineHeight: 1.55 }}>
-                ObrabiEN conecta compradores y vendedores, pero no interviene en transacciones ni garantiza los productos. Verifica siempre antes de pagar.
+                ObraBien conecta compradores y vendedores, pero no interviene en transacciones ni garantiza los productos. Verifica siempre antes de pagar.
               </p>
             </div>
-
           </div>
         </div>
       </div>
 
-      {/* ───────────────── DESKTOP LAYOUT ───────────────── */}
+      {/* ─────────────────── DESKTOP LAYOUT ─────────────────── */}
       <div className="desktop-only" style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px 64px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr min(340px, 100%)", gap: 28, alignItems: "start" }}>
 
           {/* LEFT */}
           <div className="col gap-20">
 
-            {/* Gallery */}
-            <div style={{ background: "#fff", border: "1px solid var(--line)" }}>
-              <div className="photo-ph" style={{ aspectRatio: "16/9", borderBottom: "1px solid var(--line)" }}>
-                <div className="ph-label" style={{ fontSize: 12 }}>📷 Foto principal</div>
-              </div>
-              <div style={{ display: "flex", gap: 8, padding: 12, overflowX: "auto" }}>
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="photo-ph" style={{ width: 80, height: 60, flexShrink: 0, opacity: i === 1 ? 1 : 0.5 }} />
-                ))}
-                <div style={{ width: 80, height: 60, flexShrink: 0, background: "var(--bg-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--mute)", border: "1px dashed var(--line)" }}>
-                  + fotos
-                </div>
-              </div>
+            {/* Photo */}
+            <div style={{ background: "#fff", border: "1px solid var(--line)", overflow: "hidden" }}>
+              <PhotoCarousel
+                urls={displayFotos}
+                alt={listing.title}
+                style={{ aspectRatio: "16/9", height: "auto" }}
+              />
             </div>
 
             {/* Description */}
@@ -239,16 +313,24 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
               </div>
 
               <div style={{ display: "flex", gap: 18, flexWrap: "wrap", fontSize: 13.5, color: "var(--mute)", marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid var(--line)" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 5 }}><LocationIcon /> {listing.ciudad}, {listing.region}</span>
+                {(listing.ciudad || listing.region) && (
+                  <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <LocationIcon /> {[listing.ciudad, listing.region].filter(Boolean).join(", ")}
+                  </span>
+                )}
                 <span style={{ display: "flex", alignItems: "center", gap: 5 }}><CalendarIcon /> {listing.publishedAt}</span>
               </div>
 
               <span className="label" style={{ display: "block", marginBottom: 12 }}>// Descripción</span>
-              <div style={{ color: "var(--ink-soft)", fontSize: 15, lineHeight: 1.75 }}>
-                {listing.description.split("\n\n").map((para, i) => (
-                  <p key={i} style={{ margin: "0 0 14px" }}>{para}</p>
-                ))}
-              </div>
+              {listing.description ? (
+                <div style={{ color: "var(--ink-soft)", fontSize: 15, lineHeight: 1.75 }}>
+                  {listing.description.split("\n\n").map((para, i) => (
+                    <p key={i} style={{ margin: "0 0 14px" }}>{para}</p>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: "var(--mute)", fontSize: 14, margin: 0 }}>Sin descripción adicional.</p>
+              )}
 
               {listing.tags.length > 0 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
@@ -258,6 +340,9 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
                 </div>
               )}
             </div>
+
+            {/* Consultas */}
+            <ConsultasSection itemId={listing.id} sellerName={listing.seller.name} sellerClerkId={sellerClerkId} />
           </div>
 
           {/* RIGHT */}
@@ -275,10 +360,12 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", padding: "14px", background: "#25D366", color: "#fff", fontWeight: 700, fontSize: 16, textDecoration: "none", marginBottom: 10 }}>
                 <WhatsAppIconLg /> Contactar por WhatsApp
               </a>
-              <button type="button" onClick={() => setShowPhone(s => !s)}
-                style={{ width: "100%", padding: "11px", background: "#fff", border: "2px solid var(--navy)", color: "var(--navy)", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 10 }}>
-                📞 {showPhone ? formatPhone(listing.seller.whatsapp) : "Ver teléfono"}
-              </button>
+              {listing.seller.whatsapp && (
+                <button type="button" onClick={() => setShowPhone(s => !s)}
+                  style={{ width: "100%", padding: "11px", background: "#fff", border: "2px solid var(--navy)", color: "var(--navy)", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 10 }}>
+                  📞 {showPhone ? formatPhone(listing.seller.whatsapp) : "Ver teléfono"}
+                </button>
+              )}
               <p style={{ fontSize: 12, color: "var(--mute)", textAlign: "center", margin: 0, lineHeight: 1.5 }}>
                 Se abrirá WhatsApp con un mensaje preparado para el vendedor.
               </p>
@@ -292,7 +379,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
             {/* Disclaimer */}
             <div style={{ background: "var(--bg-2)", border: "1px solid var(--line)", padding: "12px 14px" }}>
               <p style={{ fontSize: 12, color: "var(--mute)", margin: 0, lineHeight: 1.55 }}>
-                ObrabiEN conecta compradores y vendedores, pero no interviene en transacciones ni garantiza los productos. Verifica siempre antes de pagar.
+                ObraBien conecta compradores y vendedores, pero no interviene en transacciones ni garantiza los productos. Verifica siempre antes de pagar.
               </p>
             </div>
           </div>
@@ -310,9 +397,14 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
                     <div style={{ background: "#fff", border: "1px solid var(--line)", overflow: "hidden", transition: "border-color .15s" }}
                       onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = "var(--orange)"}
                       onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = "var(--line)"}>
-                      <div className="photo-ph" style={{ height: 90 }}>
-                        <div className="ph-label" style={{ fontSize: 10 }}>📷</div>
-                      </div>
+                      {l.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={l.photoUrl} alt={l.title} style={{ height: 90, width: "100%", objectFit: "cover", display: "block" }} />
+                      ) : (
+                        <div className="photo-ph" style={{ height: 90 }}>
+                          <div className="ph-label" style={{ fontSize: 10 }}>📷</div>
+                        </div>
+                      )}
                       <div style={{ padding: "12px 14px" }}>
                         <span style={{ padding: "2px 7px", background: tc.bg, color: tc.color, fontSize: 9.5, fontWeight: 800, fontFamily: "JetBrains Mono, monospace", letterSpacing: "0.07em" }}>{tc.label}</span>
                         <h4 style={{ fontFamily: "Archivo, sans-serif", fontWeight: 700, fontSize: 14, color: "var(--ink)", margin: "8px 0 6px", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
@@ -331,7 +423,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      {/* Related listings — mobile (below the mobile layout section) */}
+      {/* Related listings — mobile */}
       {related.length > 0 && (
         <div className="mobile-only wrap" style={{ paddingBottom: 48 }}>
           <span className="label" style={{ display: "block", marginBottom: 14 }}>// Publicaciones relacionadas</span>
@@ -341,9 +433,14 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
               return (
                 <Link key={l.id} href={`/marketplace/${l.id}`} style={{ textDecoration: "none", flexShrink: 0, width: 200 }}>
                   <div style={{ background: "#fff", border: "1px solid var(--line)", overflow: "hidden" }}>
-                    <div className="photo-ph" style={{ height: 80 }}>
-                      <div className="ph-label" style={{ fontSize: 10 }}>📷</div>
-                    </div>
+                    {l.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={l.photoUrl} alt={l.title} style={{ height: 80, width: "100%", objectFit: "cover", display: "block" }} />
+                    ) : (
+                      <div className="photo-ph" style={{ height: 80 }}>
+                        <div className="ph-label" style={{ fontSize: 10 }}>📷</div>
+                      </div>
+                    )}
                     <div style={{ padding: "10px 12px" }}>
                       <span style={{ padding: "2px 6px", background: tc.bg, color: tc.color, fontSize: 9, fontWeight: 800, fontFamily: "JetBrains Mono, monospace" }}>{tc.label}</span>
                       <h4 style={{ fontFamily: "Archivo, sans-serif", fontWeight: 700, fontSize: 13, color: "var(--ink)", margin: "7px 0 5px", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
@@ -364,3 +461,4 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
     </div>
   );
 }
+

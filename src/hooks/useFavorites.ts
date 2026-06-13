@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-const KEY = "obrabien_favs";
+const KEY = "ObraBien_favs";
 
 export function useFavorites() {
   const [favs, setFavs] = useState<Set<string>>(new Set());

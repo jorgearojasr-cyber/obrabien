@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { FORUM_CATEGORIES } from "@/lib/forum";
+import AuthBanner from "@/components/AuthBanner";
 
 const CATS = FORUM_CATEGORIES.filter(c => c.id !== "todos");
 
@@ -11,22 +13,111 @@ function BackIcon() {
   return <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>;
 }
 
+function ImageIcon() {
+  return <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>;
+}
+
 export default function NuevaPublicacionPage() {
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useUser();
 
   const [title,        setTitle]        = useState("");
   const [category,     setCategory]     = useState("");
   const [content,      setContent]      = useState("");
   const [tags,         setTags]         = useState("");
   const [whoCanReply,  setWhoCanReply]  = useState<"todos" | "maestros">("todos");
+  const [fotoUrl,      setFotoUrl]      = useState<string | null>(null);
+  const [fotoPreview,  setFotoPreview]  = useState<string | null>(null);
+  const [uploading,    setUploading]    = useState(false);
+  const [uploadError,  setUploadError]  = useState("");
+  const [submitting,   setSubmitting]   = useState(false);
+  const [submitError,  setSubmitError]  = useState("");
   const [submitted,    setSubmitted]    = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const canSubmit = title.trim().length >= 10 && category && content.trim().length >= 30;
+  const canSubmit = title.trim().length >= 10 && category && content.trim().length >= 30 && !uploading && !submitting;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 4 * 1024 * 1024) {
+      setUploadError("La foto no puede superar 4 MB");
+      return;
+    }
+    setUploadError("");
+    setUploading(true);
+
+    // Local preview
+    const reader = new FileReader();
+    reader.onload = ev => setFotoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload-foto?type=foro", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      setFotoUrl(data.url);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Error al subir la foto");
+      setFotoPreview(null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeFoto() {
+    setFotoUrl(null);
+    setFotoPreview(null);
+    setUploadError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
-    setSubmitted(true);
+
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/foro-posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titulo: title.trim(), contenido: content.trim(), categoria: category, tags, quien_responde: whoCanReply, foto_url: fotoUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Error al publicar. Intenta de nuevo.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (isLoaded && !isSignedIn) {
+    return (
+      <div style={{ background: "var(--bg)", minHeight: "70vh" }}>
+        <div style={{ background: "#fff", borderBottom: "1px solid var(--line)", padding: "12px 0" }}>
+          <div className="wrap">
+            <Link href="/comunidad" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--mute)", textDecoration: "none", fontWeight: 500 }}>
+              <BackIcon /> Volver al foro
+            </Link>
+          </div>
+        </div>
+        <div className="wrap" style={{ paddingTop: 60, paddingBottom: 64 }}>
+          <div style={{ maxWidth: 500, margin: "0 auto" }}>
+            <span className="label" style={{ display: "block", marginBottom: 10 }}>// Nueva publicación</span>
+            <h1 style={{ fontFamily: "Archivo, sans-serif", fontSize: "clamp(22px,3vw,28px)", fontWeight: 800, color: "var(--navy)", margin: "0 0 24px" }}>
+              Hacer una pregunta al foro
+            </h1>
+            <AuthBanner message="¿Quieres publicar en el foro? Únete gratis a ObraBien" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (submitted) {
@@ -48,11 +139,16 @@ export default function NuevaPublicacionPage() {
             }}>
               Ver el foro
             </Link>
-            <button onClick={() => { setSubmitted(false); setTitle(""); setCategory(""); setContent(""); setTags(""); }}
+            <button
+              onClick={() => {
+                setSubmitted(false); setTitle(""); setCategory(""); setContent(""); setTags("");
+                setFotoUrl(null); setFotoPreview(null); setSubmitError("");
+              }}
               style={{
                 padding: "12px 22px", border: "1.5px solid var(--ink)",
                 background: "#fff", color: "var(--ink)", fontWeight: 600, fontSize: 14, cursor: "pointer",
-              }}>
+              }}
+            >
               Nueva publicación
             </button>
           </div>
@@ -147,6 +243,89 @@ export default function NuevaPublicacionPage() {
               </div>
             </div>
 
+            {/* Foto opcional */}
+            <div className="field">
+              <label>
+                Agregar foto a tu consulta{" "}
+                <span style={{ color: "var(--mute)", fontWeight: 400 }}>(opcional)</span>
+              </label>
+              <p style={{ fontSize: 12, color: "var(--mute)", margin: "2px 0 8px", lineHeight: 1.5 }}>
+                Sube una imagen del problema o trabajo. Máximo 4 MB.
+              </p>
+
+              {!fotoPreview ? (
+                <label
+                  htmlFor="foto-foro"
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    height: 96, border: "1.5px dashed var(--line)", background: "var(--bg-2)",
+                    cursor: "pointer", fontSize: 13.5, color: "var(--mute)", transition: "border-color .15s",
+                  }}
+                >
+                  {uploading ? (
+                    <span>Subiendo foto…</span>
+                  ) : (
+                    <>
+                      <ImageIcon />
+                      <span>Haz clic para subir una foto</span>
+                    </>
+                  )}
+                </label>
+              ) : (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={fotoPreview}
+                    alt="Vista previa"
+                    style={{ maxWidth: "100%", maxHeight: 280, objectFit: "cover", border: "1px solid var(--line)", display: "block" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={removeFoto}
+                    style={{
+                      position: "absolute", top: 6, right: 6,
+                      width: 28, height: 28, border: "none", background: "rgba(0,0,0,0.55)",
+                      color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                    title="Eliminar foto"
+                  >
+                    ✕
+                  </button>
+                  {uploading && (
+                    <div style={{
+                      position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)",
+                      display: "grid", placeItems: "center", fontSize: 13, color: "var(--mute)",
+                    }}>
+                      Subiendo…
+                    </div>
+                  )}
+                  {fotoUrl && !uploading && (
+                    <div style={{
+                      position: "absolute", bottom: 6, left: 6,
+                      background: "rgba(34,197,94,0.9)", color: "#fff",
+                      fontSize: 11, fontWeight: 700, padding: "2px 8px",
+                    }}>
+                      ✓ Subida
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                id="foto-foro"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+              />
+
+              {uploadError && (
+                <div style={{ marginTop: 6, fontSize: 12.5, color: "#DC2626" }}>{uploadError}</div>
+              )}
+            </div>
+
             {/* Tags */}
             <div className="field">
               <label>Tags <span style={{ color: "var(--mute)", fontWeight: 400 }}>(opcionales)</span></label>
@@ -165,8 +344,8 @@ export default function NuevaPublicacionPage() {
               <label>¿Quién puede responder?</label>
               <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
                 {([
-                  { val: "todos",    label: "Todos",           desc: "Maestros y clientes" },
-                  { val: "maestros", label: "Solo maestros",   desc: "Respuestas expertas" },
+                  { val: "todos",    label: "Todos",         desc: "Maestros y clientes" },
+                  { val: "maestros", label: "Solo maestros", desc: "Respuestas expertas" },
                 ] as const).map(opt => (
                   <button
                     key={opt.val}
@@ -177,7 +356,8 @@ export default function NuevaPublicacionPage() {
                       border: `1.5px solid ${whoCanReply === opt.val ? "var(--navy)" : "var(--line)"}`,
                       background: whoCanReply === opt.val ? "rgba(20,55,95,0.05)" : "#fff",
                       cursor: "pointer", transition: "all .15s",
-                    }}>
+                    }}
+                  >
                     <div style={{ fontWeight: 700, fontSize: 13.5, color: whoCanReply === opt.val ? "var(--navy)" : "var(--ink)", marginBottom: 2 }}>
                       {whoCanReply === opt.val ? "● " : "○ "}{opt.label}
                     </div>
@@ -198,6 +378,16 @@ export default function NuevaPublicacionPage() {
               </p>
             </div>
 
+            {/* Submit error */}
+            {submitError && (
+              <div style={{
+                background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.3)",
+                padding: "12px 16px", fontSize: 13.5, color: "#DC2626",
+              }}>
+                {submitError}
+              </div>
+            )}
+
             {/* Submit */}
             <div style={{ display: "flex", gap: 12 }}>
               <Link href="/comunidad"
@@ -217,8 +407,9 @@ export default function NuevaPublicacionPage() {
                   background: canSubmit ? "var(--orange)" : "var(--mute-2)",
                   cursor: canSubmit ? "pointer" : "not-allowed",
                   transition: "background .2s",
-                }}>
-                Publicar en el foro →
+                }}
+              >
+                {submitting ? "Publicando…" : "Publicar en el foro →"}
               </button>
             </div>
           </form>

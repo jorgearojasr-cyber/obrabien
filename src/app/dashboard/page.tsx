@@ -21,6 +21,17 @@ export default async function DashboardPage({
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
+  // ── Admin bypass ─────────────────────────────────────────────────────────────
+  // This MUST come before any role/metadata check and outside any try/catch.
+  // Next.js redirect() throws NEXT_REDIRECT internally — a catch block swallows
+  // it and execution falls through. Check email first so admin always wins even
+  // if Clerk publicMetadata still contains a stale role value.
+  const user = await currentUser();
+  const userEmail = (user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses[0]?.emailAddress ?? "").toLowerCase().trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "jorge.arojasr@gmail.com").toLowerCase().trim();
+  if (userEmail && userEmail === adminEmail) redirect("/admin");
+  // ─────────────────────────────────────────────────────────────────────────────
+
   const params = await searchParams;
   const roleParam = Array.isArray(params.role) ? params.role[0] : params.role;
 
@@ -28,7 +39,6 @@ export default async function DashboardPage({
   let metadata: Record<string, unknown> = {};
 
   try {
-    const user = await currentUser();
     metadata = (user?.publicMetadata ?? {}) as Record<string, unknown>;
     role = metadata.role as string | undefined;
   } catch {

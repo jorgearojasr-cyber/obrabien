@@ -17,6 +17,12 @@ export async function POST(req: NextRequest) {
   try {
     const clerk = await clerkClient();
     const user = await clerk.users.getUser(userId);
+
+    const adminEmail = (process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "jorge.arojasr@gmail.com").toLowerCase().trim();
+    const userEmail = (user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? "").toLowerCase().trim();
+    if (userEmail && userEmail === adminEmail) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     await clerk.users.updateUser(userId, {
       publicMetadata: { ...user.publicMetadata, role },
     });

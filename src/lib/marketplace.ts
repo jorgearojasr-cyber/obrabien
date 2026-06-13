@@ -1,5 +1,5 @@
 export type ListingType     = "venta" | "arriendo" | "servicio";
-export type PriceUnit       = "unidad" | "lote" | "m2" | "kg" | "día" | "semana" | "mes" | "servicio";
+export type PriceUnit       = "unidad" | "lote" | "m2" | "kg" | "hora" | "día" | "semana" | "mes" | "servicio";
 export type SellerRole      = "maestro" | "cliente" | "empresa";
 export type ListingPlan     = "gratis" | "basico" | "destacado" | "pro";
 
@@ -9,6 +9,7 @@ export interface MarketplaceSeller {
   role: SellerRole;
   verified: boolean;
   whatsapp: string;   // just digits, e.g. "56912345678"
+  photoUrl?: string;
 }
 
 export interface MarketplaceListing {
@@ -26,6 +27,9 @@ export interface MarketplaceListing {
   featured: boolean;
   plan: ListingPlan;
   tags: string[];
+  photoUrl?: string;
+  fotosUrls?: string[];
+  consultaCount?: number;
 }
 
 /* ── Category maps ──────────────────────────────────────────────────────── */
@@ -207,6 +211,40 @@ Servicio a domicilio disponible. Presupuesto gratis. Trabajamos lunes a sábado 
   },
 ];
 
+export function rowToListing(row: Record<string, unknown>): MarketplaceListing {
+  const name      = (row.contact_name as string) || "Usuario ObraBien";
+  const initials  = name.trim().split(/\s+/).slice(0, 2).map((w: string) => w[0] ?? "").join("").toUpperCase() || "?";
+  const plan      = ((row.plan as string) || "gratis") as ListingPlan;
+  const date      = new Date(row.created_at as string);
+  const publishedAt = date.toLocaleDateString("es-CL", { day: "numeric", month: "long", year: "numeric" });
+  return {
+    id:          row.id          as string,
+    type:        (row.tipo       as ListingType),
+    category:    (row.categoria  as string) || "General",
+    title:       row.titulo      as string,
+    description: (row.descripcion as string) || "",
+    price:       (row.precio     as number | null) ?? null,
+    priceUnit:   ((row.precio_unit as string) || "unidad") as PriceUnit,
+    region:      (row.region     as string) || "",
+    ciudad:      (row.ciudad     as string) || "",
+    seller: {
+      name,
+      initials,
+      role:     (((row.seller_role as string) || "cliente") as SellerRole),
+      verified: false,
+      whatsapp: (row.whatsapp as string) || "",
+      photoUrl: (row.seller_foto_url as string) || undefined,
+    },
+    publishedAt,
+    featured:   plan === "destacado" || plan === "pro",
+    plan,
+    tags:       [],
+    photoUrl:      (row.foto_url as string) || undefined,
+    fotosUrls:     (row.fotos_urls as string[] | null)?.filter(Boolean) || undefined,
+    consultaCount: (row.consulta_count as number) ?? 0,
+  };
+}
+
 export function getListing(id: string): MarketplaceListing | undefined {
   return LISTINGS.find(l => l.id === id);
 }
@@ -215,7 +253,7 @@ export function formatPrice(listing: MarketplaceListing): string {
   if (listing.price === null) return "A convenir";
   const p = listing.price.toLocaleString("es-CL");
   const units: Partial<Record<PriceUnit, string>> = {
-    día: "/día", semana: "/sem", mes: "/mes", m2: "/m²", kg: "/kg",
+    hora: "/hr", día: "/día", semana: "/sem", mes: "/mes", m2: "/m²", kg: "/kg",
   };
   return `$${p}${units[listing.priceUnit] ?? ""}`;
 }

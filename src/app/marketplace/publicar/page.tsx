@@ -1,79 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { CAT_MAP, type ListingType } from "@/lib/marketplace";
 import { REGIONS } from "@/lib/data";
+import AuthBanner from "@/components/AuthBanner";
 
 function BackIcon() { return <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>; }
 function CheckIcon() { return <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7"/></svg>; }
 
-const STEPS = ["Tipo", "Categoría", "Detalles", "Plan"];
+const STEPS = ["Tipo", "Categoría", "Detalles"];
 
-/* ── Plan data ──────────────────────────────────────────────────────────── */
-type PlanId = "gratis" | "basico" | "destacado" | "pro";
-
-interface Plan {
-  id: PlanId;
-  name: string;
-  priceProducto: string;
-  priceServicio: string;
-  recommended?: boolean;
-  features: { label: string; included: boolean }[];
-  badge?: { label: string; bg: string; color: string };
-}
-
-const PLANS_PRODUCTO: Plan[] = [
-  {
-    id: "gratis", name: "Gratis",
-    priceProducto: "$0", priceServicio: "3 días",
-    features: [
-      { label: "1 publicación de prueba",        included: true  },
-      { label: "30 días de visibilidad",          included: true  },
-      { label: "Botón WhatsApp directo",          included: false },
-      { label: "Badge destacado",                 included: false },
-      { label: "Posición preferente",             included: false },
-    ],
-  },
-  {
-    id: "basico", name: "Básico",
-    priceProducto: "$990", priceServicio: "$4.990/sem",
-    features: [
-      { label: "1 publicación",                  included: true  },
-      { label: "30 días de visibilidad",          included: true  },
-      { label: "Botón WhatsApp directo",          included: true  },
-      { label: "Badge destacado",                 included: false },
-      { label: "Posición preferente",             included: false },
-    ],
-  },
-  {
-    id: "destacado", name: "Destacado",
-    priceProducto: "$2.990", priceServicio: "$14.990/mes",
-    recommended: true,
-    features: [
-      { label: "1 publicación",                  included: true  },
-      { label: "60 días de visibilidad",          included: true  },
-      { label: "Botón WhatsApp directo",          included: true  },
-      { label: "Badge ★ DESTACADO",              included: true  },
-      { label: "Posición preferente",             included: true  },
-    ],
-    badge: { label: "MÁS POPULAR", bg: "var(--orange)", color: "#fff" },
-  },
-  {
-    id: "pro", name: "PRO",
-    priceProducto: "—",  priceServicio: "$34.990 / 3 meses",
-    features: [
-      { label: "Publicaciones ilimitadas",       included: true  },
-      { label: "90 días de visibilidad",         included: true  },
-      { label: "Botón WhatsApp directo",         included: true  },
-      { label: "Badge ★ PRO especial",           included: true  },
-      { label: "Top de resultados garantizado",  included: true  },
-    ],
-    badge: { label: "SOLO SERVICIOS", bg: "var(--navy)", color: "#fff" },
-  },
-];
-
-/* ── Step indicator ─────────────────────────────────────────────────────── */
 function StepBar({ current }: { current: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 32 }}>
@@ -101,7 +39,6 @@ function StepBar({ current }: { current: number }) {
   );
 }
 
-/* ── Type button ────────────────────────────────────────────────────────── */
 function TypeBtn({ label, subtitle, emoji, active, onClick }: { label: string; subtitle: string; emoji: string; active: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick}
@@ -118,12 +55,12 @@ function TypeBtn({ label, subtitle, emoji, active, onClick }: { label: string; s
   );
 }
 
-/* ── Main ───────────────────────────────────────────────────────────────── */
 export default function PublicarPage() {
+  const { user, isLoaded } = useUser();
+
   const [step,        setStep]        = useState(0);
   const [listingType, setListingType] = useState<ListingType | "">("");
   const [category,    setCategory]    = useState("");
-  const [plan,        setPlan]        = useState<PlanId>("gratis");
   const [done,        setDone]        = useState(false);
 
   const [form, setForm] = useState({
@@ -132,42 +69,145 @@ export default function PublicarPage() {
   });
   const set = (k: keyof typeof form, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const cats = listingType ? CAT_MAP[listingType] : [];
+  const [fotos,       setFotos]       = useState<{ url: string; preview: string }[]>([]);
+  const [uploading,   setUploading]   = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const MAX_FOTOS = 4;
+
+  const [submitting,  setSubmitting]  = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    fetch("/api/my-profile")
+      .then(r => r.json())
+      .then((data: { nombre?: string; whatsapp?: string }) => {
+        setForm(f => ({
+          ...f,
+          contactName: data.nombre  || "",
+          whatsapp:    data.whatsapp || "",
+        }));
+        setProfileLoaded(true);
+      })
+      .catch(() => setProfileLoaded(true));
+  }, [isLoaded, user]);
+
+  const regionObj = REGIONS.find(r => r.name === form.region);
+  const cities    = regionObj?.cities ?? [];
+  const cats      = listingType ? CAT_MAP[listingType] : [];
   const isService = listingType === "servicio";
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fotos.length >= MAX_FOTOS) return;
+    setUploadError("");
+    const preview = URL.createObjectURL(file);
+    setFotos(prev => [...prev, { url: "", preview }]);
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res  = await fetch("/api/upload-foto?type=marketplace", { method: "POST", body: fd });
+      const json = await res.json() as { url?: string; error?: string };
+      if (!res.ok || !json.url) throw new Error(json.error ?? "Error al subir");
+      setFotos(prev => prev.map(f => f.preview === preview ? { url: json.url!, preview } : f));
+    } catch (err) {
+      setFotos(prev => prev.filter(f => f.preview !== preview));
+      setUploadError(err instanceof Error ? err.message : "Error al subir la imagen");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removePhoto(preview: string) {
+    setFotos(prev => prev.filter(f => f.preview !== preview));
+  }
+
+  const hasPendingUpload = fotos.some(f => !f.url);
 
   function canNext() {
     if (step === 0) return !!listingType;
     if (step === 1) return !!category;
-    if (step === 2) return !!(form.titulo.trim().length >= 10 && form.region && form.whatsapp);
+    if (step === 2) return !!(form.titulo.trim().length >= 10 && form.region && form.whatsapp) && !hasPendingUpload;
     return true;
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (step < STEPS.length - 1) { setStep(s => s + 1); return; }
-    setDone(true);
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/marketplace/publicar", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo:         listingType,
+          categoria:    category,
+          titulo:       form.titulo,
+          descripcion:  form.descripcion || null,
+          precio:       form.precio ? Number(form.precio) : null,
+          precio_unit:  form.priceUnit,
+          region:       form.region  || null,
+          ciudad:       form.ciudad  || null,
+          whatsapp:     form.whatsapp,
+          contact_name: form.contactName || null,
+          fotos_urls:   fotos.filter(f => f.url).map(f => f.url),
+        }),
+      });
+      const json = await res.json() as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(json.error ?? `Error ${res.status}`);
+      setDone(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Error al publicar. Intenta nuevamente.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  /* ── Success ── */
+  /* ── Auth gate — non-logged-in users ── */
+  if (isLoaded && !user) {
+    return (
+      <div style={{ background: "var(--bg)", minHeight: "70vh" }}>
+        <div style={{ background: "#fff", borderBottom: "1px solid var(--line)", padding: "12px 0" }}>
+          <div className="wrap">
+            <Link href="/marketplace" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--mute)", textDecoration: "none", fontWeight: 500 }}>
+              <BackIcon /> Volver al marketplace
+            </Link>
+          </div>
+        </div>
+        <div className="wrap" style={{ paddingTop: 36, paddingBottom: 64 }}>
+          <div style={{ maxWidth: 680, margin: "0 auto" }}>
+            <div style={{ marginBottom: 24 }}>
+              <span className="label" style={{ display: "block", marginBottom: 8 }}>// Nueva publicación</span>
+              <h1 style={{ fontFamily: "Archivo, sans-serif", fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: "var(--navy)", margin: "0 0 20px" }}>
+                Publicar en el marketplace
+              </h1>
+              <AuthBanner message="Para publicar en el marketplace necesitas una cuenta gratuita" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Success screen ── */
   if (done) {
-    const planCfg = PLANS_PRODUTO_MAP[plan];
     return (
       <div style={{ background: "var(--bg)", minHeight: "70vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ maxWidth: 500, width: "100%", padding: "0 24px", textAlign: "center" }}>
           <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
-          <h2 style={{ fontFamily: "Archivo, sans-serif", fontSize: 28, fontWeight: 800, color: "var(--navy)", margin: "0 0 12px" }}>
+          <h2 style={{ fontFamily: "Archivo, sans-serif", fontSize: 26, fontWeight: 800, color: "var(--navy)", margin: "0 0 14px" }}>
             ¡Publicación enviada!
           </h2>
-          <p style={{ fontSize: 15, color: "var(--ink-soft)", lineHeight: 1.65, margin: "0 0 8px" }}>
-            Tu publicación está en revisión y estará visible en el marketplace en los próximos minutos.
+          <p style={{ fontSize: 15, color: "var(--ink-soft)", lineHeight: 1.7, margin: "0 0 28px" }}>
+            La revisaremos en menos de 24 horas y te notificaremos cuando esté activa.
           </p>
-          {plan !== "gratis" && (
-            <div style={{ background: "rgba(232,108,28,0.08)", border: "1px solid rgba(232,108,28,0.3)", padding: "12px 16px", margin: "20px 0", textAlign: "left" }}>
-              <p style={{ fontSize: 13.5, color: "var(--orange)", margin: 0, fontWeight: 600 }}>
-                Plan {planCfg.name} seleccionado. Para activarlo, un agente ObrabiEN se contactará contigo por WhatsApp en las próximas horas.
-              </p>
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 28 }}>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/marketplace" style={{
               display: "inline-flex", alignItems: "center",
               padding: "12px 22px", background: "var(--orange)", color: "#fff",
@@ -175,7 +215,12 @@ export default function PublicarPage() {
             }}>
               Ver el marketplace
             </Link>
-            <button onClick={() => { setDone(false); setStep(0); setListingType(""); setCategory(""); setPlan("gratis"); setForm({ titulo: "", descripcion: "", precio: "", priceUnit: "unidad", region: "", ciudad: "", whatsapp: "", contactName: "" }); }}
+            <button
+              onClick={() => {
+                setDone(false); setStep(0); setListingType(""); setCategory("");
+                setFotos([]); setUploadError("");
+                setForm({ titulo: "", descripcion: "", precio: "", priceUnit: "unidad", region: "", ciudad: "", whatsapp: form.whatsapp, contactName: form.contactName });
+              }}
               style={{ padding: "12px 22px", border: "1.5px solid var(--ink)", background: "#fff", fontWeight: 600, fontSize: 14, cursor: "pointer", color: "var(--ink)" }}>
               Nueva publicación
             </button>
@@ -187,7 +232,6 @@ export default function PublicarPage() {
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "70vh" }}>
-      {/* Back bar */}
       <div style={{ background: "#fff", borderBottom: "1px solid var(--line)", padding: "12px 0" }}>
         <div className="wrap">
           <Link href="/marketplace" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--mute)", textDecoration: "none", fontWeight: 500 }}>
@@ -215,9 +259,9 @@ export default function PublicarPage() {
                 <h2 style={{ fontFamily: "Archivo, sans-serif", fontSize: 18, fontWeight: 800, color: "var(--navy)", margin: "0 0 6px" }}>¿Qué quieres publicar?</h2>
                 <p style={{ fontSize: 13.5, color: "var(--mute)", margin: "0 0 22px" }}>Elige el tipo de publicación para ver las categorías disponibles.</p>
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                  <TypeBtn label="Venta" subtitle="Herramientas, materiales, equipos y más" emoji="🏷️" active={listingType === "venta"} onClick={() => setListingType("venta")} />
-                  <TypeBtn label="Arriendo" subtitle="Maquinaria, andamios, herramientas por días" emoji="🔄" active={listingType === "arriendo"} onClick={() => setListingType("arriendo")} />
-                  <TypeBtn label="Servicio" subtitle="Ofrece tu especialidad o empresa" emoji="🛠️" active={listingType === "servicio"} onClick={() => setListingType("servicio")} />
+                  <TypeBtn label="Venta"    subtitle="Herramientas, materiales, equipos y más"      emoji="🏷️" active={listingType === "venta"}    onClick={() => setListingType("venta")} />
+                  <TypeBtn label="Arriendo" subtitle="Maquinaria, andamios, herramientas por días"  emoji="🔄" active={listingType === "arriendo"} onClick={() => setListingType("arriendo")} />
+                  <TypeBtn label="Servicio" subtitle="Ofrece tu especialidad o empresa"             emoji="🛠️" active={listingType === "servicio"} onClick={() => setListingType("servicio")} />
                 </div>
               </div>
             )}
@@ -256,7 +300,7 @@ export default function PublicarPage() {
                 <div className="field">
                   <label>Título <span style={{ color: "var(--orange)" }}>*</span></label>
                   <input className="ob-input" value={form.titulo} onChange={e => set("titulo", e.target.value)}
-                    placeholder={listingType === "servicio" ? "Ej: Vidriería y espejería a domicilio" : "Ej: Rotomartillo Bosch GSB 13 RE — poco uso"}
+                    placeholder={isService ? "Ej: Vidriería y espejería a domicilio" : "Ej: Rotomartillo Bosch GSB 13 RE — poco uso"}
                     maxLength={100} style={{ marginTop: 6 }} />
                   <p style={{ fontSize: 11.5, color: "var(--mute)", margin: "4px 0 0" }}>{form.titulo.length}/100 {form.titulo.length < 10 && form.titulo.length > 0 && "— mínimo 10 caracteres"}</p>
                 </div>
@@ -281,6 +325,7 @@ export default function PublicarPage() {
                       <option value="lote">Por lote</option>
                       <option value="m2">Por m²</option>
                       <option value="kg">Por kg</option>
+                      <option value="hora">Por hora</option>
                       <option value="día">Por día</option>
                       <option value="semana">Por semana</option>
                       <option value="mes">Por mes</option>
@@ -292,123 +337,105 @@ export default function PublicarPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <div className="field">
                     <label>Región <span style={{ color: "var(--orange)" }}>*</span></label>
-                    <select className="ob-select" value={form.region} onChange={e => set("region", e.target.value)} style={{ marginTop: 6 }}>
+                    <select className="ob-select" value={form.region}
+                      onChange={e => { set("region", e.target.value); set("ciudad", ""); }}
+                      style={{ marginTop: 6 }}>
                       <option value="">Selecciona</option>
                       {REGIONS.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
                     </select>
                   </div>
                   <div className="field">
                     <label>Ciudad / Comuna</label>
-                    <input className="ob-input" value={form.ciudad} onChange={e => set("ciudad", e.target.value)} placeholder="Ej: Santiago" style={{ marginTop: 6 }} />
+                    <select className="ob-select" value={form.ciudad} onChange={e => set("ciudad", e.target.value)}
+                      disabled={!form.region} style={{ marginTop: 6 }}>
+                      <option value="">{form.region ? "Selecciona" : "Elige región primero"}</option>
+                      {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <div className="field">
                     <label>Tu nombre o empresa</label>
-                    <input className="ob-input" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Ej: Juan Pérez" style={{ marginTop: 6 }} />
+                    <input className="ob-input" value={form.contactName}
+                      onChange={e => set("contactName", e.target.value)}
+                      placeholder={profileLoaded ? "Tu nombre o empresa" : "Cargando…"}
+                      style={{ marginTop: 6 }} />
+                    {profileLoaded && form.contactName && (
+                      <p style={{ fontSize: 11, color: "var(--mute)", margin: "3px 0 0", fontFamily: "JetBrains Mono, monospace" }}>desde tu perfil · editable</p>
+                    )}
                   </div>
                   <div className="field">
                     <label>WhatsApp de contacto <span style={{ color: "var(--orange)" }}>*</span></label>
-                    <input className="ob-input" value={form.whatsapp} onChange={e => set("whatsapp", e.target.value)} placeholder="+56 9 1234 5678" type="tel" style={{ marginTop: 6 }} />
+                    <input className="ob-input" value={form.whatsapp}
+                      onChange={e => set("whatsapp", e.target.value)}
+                      placeholder={profileLoaded ? "Ej: +56912345678" : "Cargando…"}
+                      type="tel"
+                      style={{ marginTop: 6 }} />
+                    {profileLoaded && form.whatsapp && (
+                      <p style={{ fontSize: 11, color: "var(--mute)", margin: "3px 0 0", fontFamily: "JetBrains Mono, monospace" }}>desde tu perfil · editable</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Photo upload placeholder */}
+                {/* Multi-photo upload */}
                 <div className="field">
-                  <label>Fotos <span style={{ color: "var(--mute)", fontWeight: 400 }}>(opcionales)</span></label>
-                  <div style={{
-                    border: "2px dashed var(--line)", padding: "24px", textAlign: "center",
-                    color: "var(--mute)", fontSize: 14, background: "var(--bg)", marginTop: 6, cursor: "pointer",
-                  }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
-                    <p style={{ margin: 0 }}>Arrastra tus fotos aquí o <span style={{ color: "var(--orange)", fontWeight: 600 }}>haz click para seleccionar</span></p>
-                    <p style={{ fontSize: 12, margin: "6px 0 0" }}>Máx. 5 fotos · JPG/PNG · Hasta 5MB cada una</p>
-                  </div>
+                  <label>Fotos <span style={{ color: "var(--mute)", fontWeight: 400 }}>(opcional · hasta {MAX_FOTOS})</span></label>
+                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={handleFileChange} />
+                  {fotos.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 8 }}>
+                      {fotos.map((f, i) => (
+                        <div key={f.preview} style={{ position: "relative", width: 90, height: 90, flexShrink: 0 }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={f.preview} alt={`Foto ${i + 1}`} style={{ width: 90, height: 90, objectFit: "cover", border: "1px solid var(--line)", display: "block" }} />
+                          {!f.url && <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "var(--navy)", fontWeight: 700 }}>Subiendo…</div>}
+                          {f.url && <button type="button" onClick={() => removePhoto(f.preview)} style={{ position: "absolute", top: 3, right: 3, width: 20, height: 20, borderRadius: "50%", background: "rgba(0,0,0,0.55)", color: "#fff", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, display: "grid", placeItems: "center" }}>✕</button>}
+                          {i === 0 && <span style={{ position: "absolute", bottom: 3, left: 3, fontSize: 9, fontWeight: 700, background: "var(--navy)", color: "#fff", padding: "1px 5px", fontFamily: "JetBrains Mono, monospace" }}>PORTADA</span>}
+                        </div>
+                      ))}
+                      {fotos.length < MAX_FOTOS && (
+                        <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                          style={{ width: 90, height: 90, border: "2px dashed var(--line)", background: "var(--bg)", color: "var(--mute)", cursor: uploading ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, fontSize: 11, flexShrink: 0 }}>
+                          <span style={{ fontSize: 20 }}>+</span>Agregar
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {fotos.length === 0 && (
+                    <div role="button" tabIndex={0}
+                      onClick={() => fileInputRef.current?.click()}
+                      onKeyDown={e => e.key === "Enter" && fileInputRef.current?.click()}
+                      onDragOver={e => e.preventDefault()}
+                      onDrop={e => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (!file) return;
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        if (fileInputRef.current) { fileInputRef.current.files = dt.files; fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true })); }
+                      }}
+                      style={{ border: "2px dashed var(--line)", padding: "24px", textAlign: "center", color: "var(--mute)", fontSize: 14, background: "var(--bg)", marginTop: 6, cursor: "pointer", outline: "none" }}>
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
+                      <p style={{ margin: 0 }}>Arrastra fotos aquí o <span style={{ color: "var(--orange)", fontWeight: 600 }}>haz click para seleccionar</span></p>
+                      <p style={{ fontSize: 12, margin: "6px 0 0" }}>JPG / PNG / WebP · Máx. 4 MB por foto · Hasta {MAX_FOTOS} fotos</p>
+                    </div>
+                  )}
+                  {uploadError && <p style={{ fontSize: 12.5, color: "#dc2626", margin: "6px 0 0" }}>{uploadError}</p>}
                 </div>
               </div>
             )}
-
-            {/* PASO 3: Plan */}
-            {step === 3 && (
-              <div>
-                <div style={{ marginBottom: 22 }}>
-                  <h2 style={{ fontFamily: "Archivo, sans-serif", fontSize: 18, fontWeight: 800, color: "var(--navy)", margin: "0 0 4px" }}>Elige tu plan</h2>
-                  <p style={{ fontSize: 13.5, color: "var(--mute)", margin: 0 }}>
-                    {isService ? "Planes para servicios." : "Planes para productos."} La primera publicación es siempre gratis.
-                  </p>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
-                  {PLANS_PRODUCTO.filter((p: Plan) => !isService || p.id !== "gratis" || true).map((p: Plan) => {
-                    if (p.id === "pro" && !isService) return null;
-                    const active = plan === p.id;
-                    return (
-                      <button key={p.id} type="button" onClick={() => setPlan(p.id)}
-                        style={{
-                          padding: "16px 14px", textAlign: "center", position: "relative",
-                          border: `2px solid ${active ? "var(--orange)" : "var(--line)"}`,
-                          background: active ? "rgba(232,108,28,0.05)" : "#fff",
-                          cursor: "pointer", transition: "all .15s",
-                        }}>
-                        {p.badge && (
-                          <span style={{
-                            position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)",
-                            padding: "2px 8px", background: p.badge.bg, color: p.badge.color,
-                            fontSize: 9, fontWeight: 800, fontFamily: "JetBrains Mono, monospace", letterSpacing: "0.07em", whiteSpace: "nowrap",
-                          }}>
-                            {p.badge.label}
-                          </span>
-                        )}
-                        <div style={{ fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 14, color: active ? "var(--orange)" : "var(--navy)", marginBottom: 6, marginTop: p.badge ? 6 : 0 }}>{p.name}</div>
-                        <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 10 }}>
-                          {isService ? p.priceServicio : p.priceProducto}
-                        </div>
-                        <div className="col gap-5">
-                          {p.features.map((f: { label: string; included: boolean }) => (
-                            <div key={f.label} style={{ display: "flex", alignItems: "flex-start", gap: 5, fontSize: 11.5, color: f.included ? "var(--ink-soft)" : "var(--mute-2)", textAlign: "left", lineHeight: 1.4 }}>
-                              <span style={{ color: f.included ? "#25a55a" : "var(--mute-2)", fontWeight: 700, flexShrink: 0 }}>{f.included ? "✓" : "✗"}</span>
-                              {f.label}
-                            </div>
-                          ))}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Aviso gratis */}
-                {plan === "gratis" && (
-                  <div style={{
-                    padding: "12px 14px", background: "rgba(37,165,90,0.08)",
-                    border: "1px solid rgba(37,165,90,0.2)", display: "flex", gap: 10, alignItems: "flex-start",
-                  }}>
-                    <span style={{ fontSize: 18, flexShrink: 0 }}>🎁</span>
-                    <p style={{ fontSize: 13, color: "#1a8c4a", margin: 0, lineHeight: 1.5 }}>
-                      {isService
-                        ? "Con el plan gratuito tendrás 3 días de visibilidad para probar el marketplace. ¡Sin costo, sin tarjeta!"
-                        : "Tu primera publicación es completamente gratis. ¡Sin costo, sin tarjeta de crédito!"}
-                    </p>
-                  </div>
-                )}
-                {plan !== "gratis" && (
-                  <div style={{ padding: "12px 14px", background: "rgba(20,55,95,0.05)", border: "1px solid rgba(20,55,95,0.15)", display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 18, flexShrink: 0 }}>ℹ️</span>
-                    <p style={{ fontSize: 13, color: "var(--navy)", margin: 0, lineHeight: 1.5 }}>
-                      Después de publicar, un agente ObrabiEN se contactará por WhatsApp para coordinar el pago. Sin cobro automático.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
           </div>
 
-          {/* Navigation */}
+          {submitError && (
+            <div style={{ marginTop: 14, padding: "12px 16px", background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.3)", color: "#b91c1c", fontSize: 13.5, lineHeight: 1.5 }}>
+              ⚠ {submitError}
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
             {step > 0 ? (
-              <button onClick={() => setStep(s => s - 1)}
-                style={{ flex: 1, height: 50, border: "1.5px solid var(--line)", background: "#fff", color: "var(--ink)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+              <button onClick={() => setStep(s => s - 1)} disabled={submitting}
+                style={{ flex: 1, height: 50, border: "1.5px solid var(--line)", background: "#fff", color: "var(--ink)", fontWeight: 600, fontSize: 14, cursor: submitting ? "not-allowed" : "pointer" }}>
                 ← Atrás
               </button>
             ) : (
@@ -416,14 +443,14 @@ export default function PublicarPage() {
                 Cancelar
               </Link>
             )}
-            <button onClick={handleContinue} disabled={!canNext()}
+            <button onClick={handleContinue} disabled={!canNext() || submitting || uploading}
               style={{
                 flex: 2, height: 50, border: "none", color: "#fff", fontWeight: 700, fontSize: 15,
-                background: canNext() ? "var(--orange)" : "var(--mute-2)",
-                cursor: canNext() ? "pointer" : "not-allowed",
+                background: canNext() && !submitting && !uploading ? "var(--orange)" : "var(--mute-2)",
+                cursor: canNext() && !submitting && !uploading ? "pointer" : "not-allowed",
                 transition: "background .2s",
               }}>
-              {step === STEPS.length - 1 ? "Publicar ahora →" : "Continuar →"}
+              {submitting ? "Enviando…" : step === STEPS.length - 1 ? "Publicar ahora →" : "Continuar →"}
             </button>
           </div>
         </div>
@@ -431,10 +458,3 @@ export default function PublicarPage() {
     </div>
   );
 }
-
-const PLANS_PRODUTO_MAP: Record<PlanId, { name: string }> = {
-  gratis:    { name: "Gratuito" },
-  basico:    { name: "Básico" },
-  destacado: { name: "Destacado" },
-  pro:       { name: "PRO" },
-};

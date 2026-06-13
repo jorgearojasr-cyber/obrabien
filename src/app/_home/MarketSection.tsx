@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LISTINGS, TYPE_CONFIG, formatPrice, type MarketplaceListing } from "@/lib/marketplace";
+import { TYPE_CONFIG, formatPrice, type MarketplaceListing } from "@/lib/marketplace";
 
 function ArrowIcon() {
   return (
@@ -47,9 +47,9 @@ function MkpMiniCard({ listing }: { listing: MarketplaceListing }) {
   );
 }
 
-export default function MarketSection() {
+export default function MarketSection({ listings }: { listings: MarketplaceListing[] }) {
   const [mkpTab, setMkpTab] = useState<"venta" | "arriendo" | "servicio">("venta");
-  const mkpListings = LISTINGS.filter(l => l.type === mkpTab).slice(0, 4);
+  const mkpListings = listings.filter(l => l.type === mkpTab).slice(0, 4);
 
   return (
     <section className="block" style={{ background: "var(--bg)", borderTop: "1px solid var(--line)" }}>
@@ -77,7 +77,16 @@ export default function MarketSection() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))", gap: 14, marginBottom: 28 }}>
-          {mkpListings.map(l => <MkpMiniCard key={l.id} listing={l} />)}
+          {mkpListings.length > 0 ? (
+            mkpListings.map(l => <MkpMiniCard key={l.id} listing={l} />)
+          ) : (
+            <div style={{ gridColumn: "1 / -1", padding: "32px 0", textAlign: "center", color: "var(--mute)", fontSize: 15 }}>
+              Aún no hay publicaciones en esta categoría.{" "}
+              <Link href="/marketplace/publicar" style={{ color: "var(--orange)", fontWeight: 700, textDecoration: "none" }}>
+                ¡Sé el primero en publicar!
+              </Link>
+            </div>
+          )}
         </div>
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>

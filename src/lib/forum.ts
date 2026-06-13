@@ -14,6 +14,7 @@ export interface ForumReply {
   content: string;
   time: string;
   useful: number;
+  foto_url?: string;
 }
 
 export interface ForumPost {
@@ -31,6 +32,8 @@ export interface ForumPost {
   tags: string[];
   whoCanReply: "todos" | "maestros";
   seedReplies: ForumReply[];
+  foto_url?: string;
+  replyCount?: number;
 }
 
 export const FORUM_CATEGORIES = [

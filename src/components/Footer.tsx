@@ -22,7 +22,7 @@ export default function Footer() {
               </span>
             </div>
             <p style={{ color: "#9AA7B5", margin: 0, fontSize: 14 }}>
-              OBRABIEN es la plataforma chilena que conecta a clientes con maestros confiables de la construcción. Busca por especialidad y ciudad, sin intermediarios.
+              ObraBien es la plataforma chilena que conecta a clientes con maestros confiables de la construcción. Busca por especialidad y ciudad, sin intermediarios.
             </p>
           </div>
 
@@ -30,7 +30,7 @@ export default function Footer() {
             <span className="label" style={{ color: "#9AA7B5" }}>Plataforma</span>
             {[
               { href: "/buscar", label: "Buscar maestros" },
-              { href: "/registro", label: "Registrarse como maestro" },
+              { href: "/registro?tab=maestro", label: "Registrarse como maestro" },
               { href: "/como-funciona", label: "Cómo funciona" },
             ].map(({ href, label }) => (
               <Link key={href} href={href} style={{ fontSize: 14, color: "#F6F4EF" }}>{label}</Link>
@@ -45,14 +45,24 @@ export default function Footer() {
           </div>
 
           <div className="col gap-8">
+            <span className="label" style={{ color: "#9AA7B5" }}>Legal</span>
+            {[
+              { href: "/terminos",   label: "Términos y Condiciones" },
+              { href: "/privacidad", label: "Política de Privacidad" },
+            ].map(({ href, label }) => (
+              <Link key={href} href={href} style={{ fontSize: 14, color: "#F6F4EF" }}>{label}</Link>
+            ))}
+          </div>
+
+          <div className="col gap-8">
             <span className="label" style={{ color: "#9AA7B5" }}>Contacto</span>
-            <span style={{ fontSize: 14, color: "#9AA7B5" }}>contacto@obrabien.cl</span>
+            <span style={{ fontSize: 14, color: "#9AA7B5" }}>contacto@ObraBien.cl</span>
             <span style={{ fontSize: 14, color: "#9AA7B5" }}>Talca, Chile</span>
           </div>
         </div>
 
         <div className="mono" style={{ marginTop: 40, fontSize: 11, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-          © 2026 · OBRABIEN · Hecho en Chile 🇨🇱
+          © 2026 · ObraBien · Hecho en Chile 🇨🇱
         </div>
       </div>
     </footer>

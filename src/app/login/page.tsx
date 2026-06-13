@@ -1,40 +1,10 @@
 "use client";
 
-import { SignUp } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { LogoMark } from "@/components/LogoMark";
-import { clerkAppearance } from "@/lib/clerk-appearance";
-
-type Tab = "cliente" | "maestro";
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: "cliente", label: "🏠 Soy cliente" },
-  { id: "maestro", label: "⛑ Soy maestro" },
-];
-
-const BENEFITS: Record<Tab, { color: string; items: string[] }> = {
-  cliente: {
-    color: "#F97316",
-    items: ["Gratis para clientes", "Maestros verificados", "Contacto directo"],
-  },
-  maestro: {
-    color: "#14375F",
-    items: ["100% gratis", "Sin comisiones", "Badge verificado"],
-  },
-};
 
 export default function LoginPage() {
-  const [tab, setTab] = useState<Tab>("cliente");
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const t = params.get("tab");
-    if (t === "cliente" || t === "maestro") setTab(t);
-  }, []);
-
-  const benefits = BENEFITS[tab];
-
   return (
     <div style={{
       background: "var(--bg)",
@@ -43,89 +13,58 @@ export default function LoginPage() {
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "flex-start",
-      padding: "48px 16px 120px",
+      padding: "32px 16px 48px",
     }}>
-      <div style={{ width: "100%", maxWidth: 500 }}>
 
-        {/* Logo */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 36 }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <LogoMark size={36} />
-            <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 24 }}>
-              <span style={{ color: "var(--navy)" }}>OBRA</span>
-              <span style={{ color: "var(--orange)" }}>BIEN</span>
-            </span>
-          </Link>
-        </div>
+      {/* Logo */}
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <LogoMark size={36} />
+          <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 24 }}>
+            <span style={{ color: "var(--navy)" }}>OBRA</span>
+            <span style={{ color: "var(--orange)" }}>BIEN</span>
+          </span>
+        </Link>
+      </div>
 
-        {/* Card */}
-        <div style={{
-          background: "#fff",
-          borderRadius: 12,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
-          overflow: "visible",
-        }}>
+      {/* Card + button share the same width container */}
+      <div style={{ width: "100%", maxWidth: 400 }}>
 
-          {/* Tabs */}
-          <div style={{ display: "flex", borderBottom: "1.5px solid var(--line)" }}>
-            {TABS.map(({ id, label }, i) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                style={{
-                  flex: 1,
-                  padding: "16px 8px",
-                  background: tab === id ? "var(--navy)" : "#f8f9fa",
-                  border: "none",
-                  borderRight: i < TABS.length - 1 ? "1.5px solid var(--line)" : "none",
-                  cursor: "pointer",
-                  fontFamily: "var(--font-archivo), sans-serif",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: tab === id ? "#fff" : "var(--mute)",
-                  transition: "background .15s, color .15s",
-                  letterSpacing: "0.01em",
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <SignIn
+          routing="hash"
+          redirectUrl="/dashboard"
+          appearance={{
+            elements: {
+              rootBox: { width: "100%" },
+              card: {
+                width: "100%",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
+                borderRadius: 12,
+                margin: 0,
+              },
+              footer: { display: "none" },
+            },
+          }}
+        />
 
-          {/* Clerk component */}
-          <div style={{ padding: "32px 24px 28px" }}>
-            {tab === "cliente" && (
-              <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=cliente" />
-            )}
-            {tab === "maestro" && (
-              <SignUp appearance={clerkAppearance} forceRedirectUrl="/dashboard?role=maestro" />
-            )}
-          </div>
-
-          {/* Benefits strip */}
-          <div style={{
-            background: benefits.color,
-            padding: "14px 24px",
-            display: "flex",
-            gap: 20,
-            justifyContent: "center",
-            flexWrap: "wrap",
-            borderRadius: "0 0 12px 12px",
+        <div style={{ marginTop: 16 }}>
+          <p style={{
+            textAlign: "center", fontSize: 13.5,
+            color: "var(--mute)", marginBottom: 10,
+            fontFamily: "var(--font-inter-tight), sans-serif",
           }}>
-            {benefits.items.map(item => (
-              <span key={item} style={{
-                color: "#fff",
-                fontSize: 11.5,
-                fontFamily: "var(--font-jetbrains), monospace",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}>
-                <span style={{ color: tab === "maestro" ? "#F97316" : "rgba(255,255,255,0.85)", fontWeight: 900 }}>✓</span>
-                {item}
-              </span>
-            ))}
-          </div>
+            ¿No tienes cuenta aún?
+          </p>
+          <Link href="/registro" style={{
+            display: "block", width: "100%", boxSizing: "border-box",
+            padding: "13px 0", textAlign: "center",
+            background: "var(--orange)", color: "#fff",
+            fontFamily: "var(--font-archivo), sans-serif",
+            fontWeight: 700, fontSize: 14,
+            textDecoration: "none", borderRadius: 8,
+          }}>
+            Crear cuenta gratis →
+          </Link>
         </div>
 
       </div>

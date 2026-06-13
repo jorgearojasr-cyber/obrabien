@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { SAMPLE_MASTERS } from "@/lib/data";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
 
 function ArrowIcon() {
   return (
@@ -106,6 +107,7 @@ export default function FeaturedCarousel() {
                         <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: 15.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
                         {m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
                       </div>
+                      <AvailabilityBadge status={m.disponibilidad} size="sm" />
                       <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--font-jetbrains), monospace", fontSize: 12, fontWeight: 600 }}>
                         <StarIcon /> {m.rating.toFixed(1)} <span style={{ color: "var(--mute)", fontWeight: 500 }}>· {m.jobs} trabajos</span>
                       </span>
@@ -176,6 +178,7 @@ export default function FeaturedCarousel() {
                           <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: 17, fontWeight: 700 }}>{m.name}</span>
                           {m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
                         </div>
+                        <AvailabilityBadge status={m.disponibilidad} size="sm" />
                         <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--font-jetbrains), monospace", fontSize: 12, fontWeight: 600 }}>
                           <StarIcon /> {m.rating.toFixed(1)} <span style={{ color: "var(--mute)", fontWeight: 500 }}>· {m.jobs} trabajos</span>
                         </span>

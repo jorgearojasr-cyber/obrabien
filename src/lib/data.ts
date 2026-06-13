@@ -26,7 +26,7 @@ export const REGIONS: Region[] = [
 export const SPECIALTIES = [
   "Albañil", "Gasfiter", "Electricista", "Carpintero", "Pintor", "Ceramista",
   "Soldador", "Techumbre", "Yesero", "Drywall",
-  "Instalador de pisos flotantes", "Instalador de ventanas termopanel",
+  "Instalación de pisos", "Instalación de ventanas",
   "Instalador de cámaras", "Aire acondicionado", "Mantención de jardines",
   "Excavaciones", "Paneles solares", "Maestro multifunción",
 ];
@@ -50,6 +50,8 @@ export interface Master {
   id: string;
   name: string;
   initials: string;
+  photoUrl?: string;
+  disponibilidad?: string;
   specialties: string[];
   city: string;
   sector: string;
@@ -65,6 +67,9 @@ export interface Master {
   paymentSchedule?: string[];
   quote?: string;
   social?: MasterSocial;
+  atiendeUrgencias?: boolean;
+  especialidadesUrgencia?: string[];
+  createdAt?: string;
 }
 
 export const SAMPLE_MASTERS: Master[] = [
@@ -81,7 +86,7 @@ export const SAMPLE_MASTERS: Master[] = [
   },
   {
     id: "m-002", name: "Roberto Muñoz Salinas", initials: "RM",
-    specialties: ["Gasfiter", "Instalador de ventanas termopanel"], city: "Santiago", sector: "Maipú, Santiago",
+    specialties: ["Gasfiter", "Instalación de ventanas"], city: "Santiago", sector: "Maipú, Santiago",
     phone: "+56 9 5512 9988", schedule: "Lun a Vie · 09:00 – 20:00 · Emergencias 24h",
     rating: 4.9, jobs: 287, yearsExp: 22, verified: true,
     description: "Gasfitería domiciliaria e industrial. Cambio de cañerías, reparación de filtraciones, instalación de calefón y termo. Atención de emergencias 24 horas.",

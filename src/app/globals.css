@@ -18,7 +18,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); overflow-x: hidden; }
 body {
   font-family: "Inter Tight", system-ui, sans-serif;
   font-size: 16px;
@@ -148,6 +148,9 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
 }
 
+/* === Phone link === */
+.phone-link:hover { color: var(--orange) !important; }
+
 /* === Utility flex === */
 .row { display: flex; }
 .col { display: flex; flex-direction: column; }
@@ -261,21 +264,16 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
     max-width: 100%;
   }
   .comunidad-cats {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    flex-wrap: wrap;
     padding-bottom: 16px;
     margin-bottom: 16px;
   }
-  .comunidad-cats::-webkit-scrollbar { display: none; }
-  .comunidad-cats button { flex-shrink: 0; }
 }
 
 /* === Maestro profile responsive layout === */
 .maestro-grid {
   display: grid;
-  grid-template-columns: 1fr min(320px, 100%);
+  grid-template-columns: 1fr min(420px, 100%);
   gap: 28px;
   align-items: start;
 }
@@ -292,7 +290,7 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
     position: static;
     order: -1;
     width: 100%;
-    max-width: 380px;
+    max-width: 420px;
     margin: 0 auto;
   }
   .maestro-profile-header {
@@ -426,16 +424,54 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 section.block { padding: 64px 0; }
 @media (max-width: 720px) { section.block { padding: 40px 0; } }
 
-/* === Dashboard stats: 3-col → 2-col on small mobile === */
+/* === Dashboard stats: 3-col → 2-col on mobile === */
 .dash-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin-bottom: 40px;
 }
-@media (max-width: 480px) {
+@media (max-width: 620px) {
   .dash-stats { grid-template-columns: 1fr 1fr; }
   .dash-stats > *:last-child { grid-column: span 2; }
+}
+
+/* === Availability controls — always column, right-aligned on desktop === */
+.avail-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .avail-controls {
+    width: 100%;
+    align-items: stretch;
+  }
+  .avail-wrap { width: 100%; }
+  .avail-selector {
+    display: flex !important;
+    width: 100%;
+    height: 44px !important;
+  }
+  .avail-selector button {
+    flex: 1;
+    height: 44px !important;
+    font-size: 13px !important;
+    padding: 0 !important;
+    justify-content: center;
+  }
+  .avail-profile-link {
+    width: 100%;
+    height: 44px !important;
+    justify-content: center;
+  }
+}
+
+/* === Navbar: hide Salir on mobile === */
+@media (max-width: 720px) {
+  .nav-salir { display: none !important; }
 }
 
 /* === Dashboard quick actions: enforce single col on tiny screens === */
@@ -493,7 +529,7 @@ section.block { padding: 64px 0; }
 @keyframes spin  { to { transform: rotate(360deg); } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
-/* === How-it-works steps grid (4-col desktop / 2-col mobile) === */
+/* === How-it-works steps grid (4-col desktop / 2-col tablet / 1-col mobile) === */
 .how-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -501,6 +537,9 @@ section.block { padding: 64px 0; }
 }
 @media (max-width: 768px) {
   .how-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+}
+@media (max-width: 520px) {
+  .how-grid { grid-template-columns: 1fr; gap: 12px; }
 }
 
 /* === Responsive hide === */
@@ -514,6 +553,73 @@ nav.site a { padding: 8px 14px; font-size: 14px; font-weight: 500; color: var(--
 nav.site a.active, nav.site a:hover { color: var(--ink); }
 @media (max-width: 720px) {
   nav.site a:not(.cta-nav) { display: none; }
+}
+
+/* === Quick actions grid: 4-col → 2-col → 1-col === */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .quick-actions-grid { grid-template-columns: 1fr; }
+}
+
+/* === Comunidad hero stats: flex → 2-col grid on small screens === */
+.comunidad-stats {
+  display: flex;
+  gap: 32px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+@media (max-width: 560px) {
+  .comunidad-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 16px; }
+}
+
+/* === Sort toolbar: wraps + stacks on mobile === */
+.sort-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .sort-toolbar { justify-content: flex-start; flex-direction: column; align-items: flex-start; }
+}
+
+/* === Recursos featured card: horizontal → vertical on mobile === */
+.featured-card { display: flex; overflow: hidden; min-height: 180px; }
+.featured-card-thumb { width: 200px; flex-shrink: 0; }
+@media (max-width: 600px) {
+  .featured-card { flex-direction: column; }
+  .featured-card-thumb { width: 100%; }
+}
+
+/* === Empleos header buttons: stacked on mobile === */
+.empleos-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+@media (max-width: 640px) {
+  .empleos-actions { flex-direction: column; width: 100%; }
+  .empleos-actions a { width: 100%; justify-content: center; box-sizing: border-box; }
+}
+
+/* === Empleos tab buttons: full width on mobile === */
+.empleos-tabs { display: inline-flex; }
+@media (max-width: 640px) {
+  .empleos-tabs { display: flex; width: 100%; }
+  .empleos-tabs button {
+    flex: 1;
+    min-width: 0;
+    white-space: normal !important;
+    text-align: center;
+    padding: 10px 6px;
+    font-size: 12.5px !important;
+  }
 }
 
 /* === Brand === */

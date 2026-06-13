@@ -117,14 +117,14 @@ export default function HowSection() {
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 52 }}>
-          <div style={{ display: "flex", border: "1.5px solid var(--navy)", overflow: "hidden" }}>
+          <div style={{ display: "flex", border: "1.5px solid var(--line)", overflow: "hidden", width: "min(100%, 480px)" }}>
             {(["cliente", "maestro"] as const).map((key, i) => (
               <button key={key} onClick={() => handleRoleChange(key)}
                 style={{
-                  padding: "14px 36px", border: "none",
-                  borderLeft: i > 0 ? "1.5px solid var(--navy)" : "none",
-                  background: roleTab === key ? "var(--navy)" : "#fff",
-                  color: roleTab === key ? "#fff" : "var(--navy)",
+                  flex: 1, padding: "14px 24px", border: "none",
+                  borderLeft: i > 0 ? "1.5px solid var(--line)" : "none",
+                  background: roleTab === key ? (key === "maestro" ? "var(--orange)" : "var(--navy)") : "#fff",
+                  color: roleTab === key ? "#fff" : (key === "maestro" ? "var(--orange)" : "var(--navy)"),
                   fontFamily: "var(--font-jetbrains), monospace",
                   fontSize: 12, fontWeight: 700, letterSpacing: "0.12em",
                   textTransform: "uppercase" as const, cursor: "pointer",
@@ -139,7 +139,7 @@ export default function HowSection() {
 
         <div className="how-grid" style={{ opacity: stepsVisible ? 1 : 0, transform: stepsVisible ? "translateY(0)" : "translateY(6px)", transition: "opacity 0.2s ease, transform 0.2s ease" }}>
           {(roleTab === "cliente" ? STEPS_CLIENTE : STEPS_MAESTRO).map(step => (
-            <div key={step.n} style={{ background: "#fff", border: "1px solid var(--line)", padding: "28px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div key={step.n} style={{ background: "#fff", border: "1px solid var(--line)", padding: "28px 22px", display: "flex", flexDirection: "column", gap: 14, overflow: "hidden", minWidth: 0 }}>
               <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: 52, fontWeight: 900, color: "var(--orange)", lineHeight: 1, letterSpacing: "-0.03em" }}>
                 {step.n}
               </div>

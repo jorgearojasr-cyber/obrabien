@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { LISTINGS, TYPE_CONFIG, PLAN_CONFIG, CAT_MAP, formatPrice, type MarketplaceListing, type ListingType } from "@/lib/marketplace";
+import { LISTINGS, TYPE_CONFIG, PLAN_CONFIG, CAT_MAP, formatPrice, rowToListing, type MarketplaceListing, type ListingType } from "@/lib/marketplace";
 import { REGIONS } from "@/lib/data";
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
@@ -35,12 +35,16 @@ function ListingCard({ listing }: { listing: MarketplaceListing }) {
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
     >
-      {/* Photo placeholder */}
-      <div className="photo-ph" style={{ height: 130, flexShrink: 0 }}>
-        <div className="ph-label">
-          {isService ? "🛠 Servicio" : "📷 Foto del producto"}
+      {/* Photo */}
+      {listing.photoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={listing.photoUrl} alt={listing.title}
+          style={{ height: 130, width: "100%", objectFit: "cover", flexShrink: 0, display: "block" }} />
+      ) : (
+        <div className="photo-ph" style={{ height: 130, flexShrink: 0 }}>
+          <div className="ph-label">{isService ? "🛠 Servicio" : "📷 Foto del producto"}</div>
         </div>
-      </div>
+      )}
 
       {/* Badges overlay */}
       <div style={{
@@ -96,6 +100,11 @@ function ListingCard({ listing }: { listing: MarketplaceListing }) {
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <CalendarIcon /> {listing.publishedAt}
           </span>
+          {(listing.consultaCount ?? 0) > 0 && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--navy)", fontWeight: 600 }}>
+              💬 {listing.consultaCount}
+            </span>
+          )}
         </div>
       </div>
 
@@ -133,10 +142,25 @@ export default function MarketplacePage() {
   const [priceMax, setPriceMax] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
+  const [dbListings, setDbListings] = useState<MarketplaceListing[]>([]);
+  useEffect(() => {
+    fetch("/api/marketplace/listings")
+      .then(r => r.json())
+      .then((d: { items?: Record<string, unknown>[] }) =>
+        setDbListings((d.items ?? []).map(rowToListing))
+      )
+      .catch(() => {});
+  }, []);
+
+  // Combine: real DB listings first, then static demos
+  const allListings = useMemo(() =>
+    dbListings.length > 0 ? dbListings : LISTINGS,
+  [dbListings]);
+
   const cats = tab === "todos" ? [] : CAT_MAP[tab] ?? [];
 
   const filtered = useMemo(() => {
-    return LISTINGS.filter(l => {
+    return allListings.filter(l => {
       if (tab !== "todos" && l.type !== tab) return false;
       if (category !== "todas" && l.category !== category) return false;
       if (region !== "todas" && l.region !== region) return false;
@@ -144,17 +168,16 @@ export default function MarketplacePage() {
       if (priceMax && l.price !== null && l.price > Number(priceMax)) return false;
       return true;
     }).sort((a, b) => {
-      // Featured first
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
       return 0;
     });
-  }, [tab, category, region, priceMin, priceMax]);
+  }, [allListings, tab, category, region, priceMin, priceMax]);
 
   const stats = {
-    venta:    LISTINGS.filter(l => l.type === "venta").length,
-    arriendo: LISTINGS.filter(l => l.type === "arriendo").length,
-    servicio: LISTINGS.filter(l => l.type === "servicio").length,
+    venta:    allListings.filter(l => l.type === "venta").length,
+    arriendo: allListings.filter(l => l.type === "arriendo").length,
+    servicio: allListings.filter(l => l.type === "servicio").length,
   };
 
   return (
@@ -167,7 +190,7 @@ export default function MarketplacePage() {
             <div>
               <span className="label" style={{ color: "rgba(255,255,255,0.5)", marginBottom: 10, display: "block" }}>// Marketplace</span>
               <h1 style={{ color: "#fff", fontSize: "clamp(26px,4vw,40px)", margin: "0 0 10px" }}>
-                Marketplace ObrabiEN
+                Marketplace ObraBien
               </h1>
               <p style={{ color: "rgba(255,255,255,0.65)", margin: 0, fontSize: 15.5, maxWidth: 500 }}>
                 Compra, vende y arrienda en el rubro de la construcción. Herramientas, materiales, equipos y servicios.

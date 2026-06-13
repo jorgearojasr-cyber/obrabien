@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -18,5 +18,26 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data: data ?? null });
+  if (!data) return NextResponse.json({ data: null });
+
+  // Merge Clerk publicMetadata as fallback for columns that may not exist in the
+  // Supabase schema yet (frase_destacada, modalidad_cobro, formas_pago).
+  // Supabase wins when the column is present and non-null; Clerk fills the gap otherwise.
+  let merged: Record<string, unknown> = data as Record<string, unknown>;
+  try {
+    const clerk = await clerkClient();
+    const user = await clerk.users.getUser(userId);
+    const profile = ((user.publicMetadata as Record<string, unknown>)?.profile ?? {}) as Record<string, unknown>;
+
+    merged = {
+      ...merged,
+      frase_destacada: merged.frase_destacada ?? profile.fraseDestacada ?? null,
+      modalidad_cobro: merged.modalidad_cobro ?? profile.modalidades   ?? [],
+      formas_pago:     merged.formas_pago     ?? profile.formasPago    ?? [],
+    };
+  } catch (err) {
+    console.error("[get-profile] Clerk metadata fetch failed (non-fatal):", err);
+  }
+
+  return NextResponse.json({ data: merged });
 }

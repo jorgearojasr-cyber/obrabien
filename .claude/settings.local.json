@@ -4,7 +4,8 @@
       "PowerShell(npm run *)",
       "WebFetch(domain:api.anthropic.com)",
       "PowerShell(Start-Sleep -Seconds 5; if \\(Test-Path \"C:\\\\Users\\\\jorge\\\\maestroscl\\\\design_raw.html\"\\) { $size = \\(Get-Item \"C:\\\\Users\\\\jorge\\\\maestroscl\\\\design_raw.html\"\\).Length; Write-Output \"File exists, size: $size bytes\" } else { Write-Output \"File not found yet\" })",
-      "PowerShell(Start-Sleep -Seconds 3; $size = \\(Get-Item \"C:\\\\Users\\\\jorge\\\\maestroscl\\\\design_raw.html\"\\).Length; Write-Output \"Current size: $size\")"
+      "PowerShell(Start-Sleep -Seconds 3; $size = \\(Get-Item \"C:\\\\Users\\\\jorge\\\\maestroscl\\\\design_raw.html\"\\).Length; Write-Output \"Current size: $size\")",
+      "PowerShell(git add *)"
     ]
   }
 }

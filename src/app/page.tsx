@@ -8,6 +8,9 @@ import FadeIn from "./_home/FadeIn";
 import FeaturedCarousel from "./_home/FeaturedCarousel";
 import HowSection from "./_home/HowSection";
 import MarketSection from "./_home/MarketSection";
+import AprendeSection, { type RecursoDestacado } from "./_home/AprendeSection";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { rowToListing, type MarketplaceListing } from "@/lib/marketplace";
 
 function ArrowIcon() {
   return (
@@ -30,8 +33,8 @@ function SpecialtyIcon({ name, size = 22 }: { name: string; size?: number }) {
     case "Techumbre": return <svg {...p}><path d="M2 12 L12 4 L22 12" strokeWidth="2.2" /><path d="M5 11 V20 H19 V11M10 20 V14 H14 V20" /></svg>;
     case "Yesero": return <svg {...p}><path d="M3 21 L9 15" strokeWidth="2.2" /><path d="M9 15 L19 5 A2 2 0 0 0 17 3 L7 13 Z" fill="currentColor" /></svg>;
     case "Drywall": return <svg {...p}><rect x="3" y="5" width="18" height="3" rx="0.4" /><rect x="3" y="10" width="18" height="3" rx="0.4" /><rect x="3" y="15" width="18" height="3" rx="0.4" fill="currentColor" /></svg>;
-    case "Instalador de pisos flotantes": return <svg {...p}><rect x="3" y="4" width="18" height="4" /><path d="M8 4 V8 M14 4 V8" /><rect x="3" y="10" width="18" height="4" fill="currentColor" /><rect x="3" y="16" width="18" height="4" /></svg>;
-    case "Instalador de ventanas termopanel": return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="1" /><path d="M12 3 V21 M3 12 H21" /><rect x="4.5" y="4.5" width="6" height="6" fill="currentColor" opacity="0.85" /></svg>;
+    case "Instalación de pisos": return <svg {...p}><rect x="3" y="4" width="18" height="4" /><path d="M8 4 V8 M14 4 V8" /><rect x="3" y="10" width="18" height="4" fill="currentColor" /><rect x="3" y="16" width="18" height="4" /></svg>;
+    case "Instalación de ventanas": return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="1" /><path d="M12 3 V21 M3 12 H21" /><rect x="4.5" y="4.5" width="6" height="6" fill="currentColor" opacity="0.85" /></svg>;
     case "Instalador de cámaras": return <svg {...p}><rect x="3" y="6" width="13" height="7" rx="1.5" /><path d="M16 8 L21 5 V14 L16 11 Z" fill="currentColor" /><circle cx="7" cy="9.5" r="1.4" fill="currentColor" /></svg>;
     case "Aire acondicionado": return <svg {...p}><rect x="3" y="5" width="18" height="8" rx="1.5" /><path d="M5 9 H19M7 16 q1 1.5 0 3 M12 16 q1 1.5 0 3 M17 16 q1 1.5 0 3" /></svg>;
     case "Mantención de jardines": return <svg {...p}><path d="M4 20 C 4 6 18 4 20 4 C 20 6 18 20 4 20 Z" fill="currentColor" /><path d="M4 20 L20 4" stroke="white" strokeOpacity="0.8" /></svg>;
@@ -49,7 +52,34 @@ const COMUNIDAD_POSTS = [
   { title: "¿Vale la pena certificarse como instalador eléctrico en 2025?", category: "Formación y certificaciones", author: "Carlos M.", time: "Hace 1 día", replies: 23 },
 ];
 
-export default function Home() {
+export default async function Home() {
+  let listings: MarketplaceListing[] = [];
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("marketplace_items")
+      .select("*")
+      .eq("activo", true)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (data) listings = data.map(rowToListing);
+  } catch {
+    // silently fall back to empty
+  }
+
+  let featuredRecursos: RecursoDestacado[] = [];
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("recursos")
+      .select("id, titulo, descripcion, tipo, categoria, imagen_url, video_url, imagenes_extra")
+      .eq("destacado", true)
+      .eq("estado", "publicado")
+      .order("created_at", { ascending: false })
+      .limit(12);
+    if (data) featuredRecursos = data as RecursoDestacado[];
+  } catch {
+    // silently fall back to empty
+  }
+
   return (
     <main>
       <HomeSearch />
@@ -68,7 +98,7 @@ export default function Home() {
                   letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600,
                 }}>
                   <span style={{ width: 6, height: 6, background: "var(--orange)", borderRadius: "50%" }} />
-                  OBRABIEN · Plataforma chilena
+                  ObraBien · Plataforma chilena
                 </span>
                 <span style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: 11, color: "var(--mute)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                   {stats.total} maestros · {stats.cities} ciudades
@@ -237,9 +267,16 @@ export default function Home() {
         </section>
       </FadeIn>
 
+      {/* APRENDE */}
+      {featuredRecursos.length > 0 && (
+        <FadeIn>
+          <AprendeSection recursos={featuredRecursos} />
+        </FadeIn>
+      )}
+
       {/* MARKETPLACE */}
       <FadeIn>
-        <MarketSection />
+        <MarketSection listings={listings} />
       </FadeIn>
 
       {/* ESPECIALIDADES */}
