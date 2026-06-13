@@ -480,9 +480,11 @@ export default function CompletarPerfilPage() {
   }
 
   async function uploadFoto(file: File, index: number) {
-    const g = [...form.galeria];
-    g[index] = { ...g[index], uploading: true };
-    upd({ galeria: g });
+    setForm(prev => {
+      const g = [...prev.galeria];
+      g[index] = { ...g[index], uploading: true };
+      return { ...prev, galeria: g };
+    });
 
     try {
       const fd = new FormData();
@@ -490,13 +492,17 @@ export default function CompletarPerfilPage() {
       const res = await fetch("/api/upload-foto", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      const g2 = [...form.galeria];
-      g2[index] = { ...g2[index], cloudinaryUrl: data.url, uploading: false };
-      upd({ galeria: g2 });
+      setForm(prev => {
+        const g = [...prev.galeria];
+        g[index] = { ...g[index], cloudinaryUrl: data.url, preview: data.url, uploading: false };
+        return { ...prev, galeria: g };
+      });
     } catch {
-      const g2 = [...form.galeria];
-      g2[index] = { ...g2[index], uploading: false };
-      upd({ galeria: g2 });
+      setForm(prev => {
+        const g = [...prev.galeria];
+        g[index] = { ...g[index], uploading: false };
+        return { ...prev, galeria: g };
+      });
       setErrors(["Error al subir la foto. Intenta de nuevo."]);
     }
   }
