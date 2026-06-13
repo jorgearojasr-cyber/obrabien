@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { REGIONS, SPECIALTIES, type Master } from "@/lib/data";
@@ -461,7 +461,19 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
   const [urgenciaCategoria, setUrgenciaCategoria] = useState("");
   const [sortBy, setSortBy]                       = useState<SortKey>("relevantes");
   const [moreOpen, setMoreOpen]                   = useState(false);
+  const moreRef                                   = useRef<HTMLDivElement>(null);
   const { favs, toggle } = useFavorites();
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    function handleDown(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleDown);
+    return () => document.removeEventListener("mousedown", handleDown);
+  }, [moreOpen]);
 
   function toggleEspecialidad(sp: string) {
     setEspecialidades(prev => prev.includes(sp) ? prev.filter(x => x !== sp) : [...prev, sp]);
@@ -593,21 +605,36 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
             <FilterPill label="🟢 Disponible" active={soloDisponibles} onClick={() => setSoloDisponibles(v => !v)} />
             <FilterPill label="⭐ 4+ estrellas" active={minRating >= 4} onClick={() => setMinRating(r => r >= 4 ? 0 : 4)} />
 
-            {/* Más filtros */}
-            <button
-              onClick={() => setMoreOpen(true)}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "0 14px", height: 36, borderRadius: 8,
-                border: `1.5px solid ${activeFilterCount > 3 ? "#1B2B4B" : "#E2E8F0"}`,
-                background: activeFilterCount > 3 ? "#1B2B4B" : "#fff",
-                color: activeFilterCount > 3 ? "#fff" : "#475569",
-                fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
-                fontFamily: "var(--font-archivo), sans-serif",
-              }}
-            >
-              <FilterIcon /> Más filtros{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-            </button>
+            {/* Más filtros — dropdown */}
+            <div ref={moreRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setMoreOpen(o => !o)}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "0 14px", height: 36, borderRadius: 8,
+                  border: `1.5px solid ${moreOpen || activeFilterCount > 3 ? "#1B2B4B" : "#E2E8F0"}`,
+                  background: moreOpen || activeFilterCount > 3 ? "#1B2B4B" : "#fff",
+                  color: moreOpen || activeFilterCount > 3 ? "#fff" : "#475569",
+                  fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
+                  fontFamily: "var(--font-archivo), sans-serif",
+                }}
+              >
+                <FilterIcon /> Más filtros{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+              </button>
+
+              {moreOpen && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200,
+                  background: "#fff", borderRadius: 12,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                  border: "1px solid #E2E8F0",
+                  width: 360, maxHeight: 500, overflowY: "auto",
+                  padding: "0 20px 16px",
+                }}>
+                  <SidebarFilters {...sharedProps} radioPrefix="more" />
+                </div>
+              )}
+            </div>
 
             {/* Active filters clear */}
             {activeFilterCount > 0 && (
@@ -666,33 +693,6 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
         )}
       </div>
 
-      {/* ── "Más filtros" drawer ── */}
-      {moreOpen && (
-        <>
-          <div onClick={() => setMoreOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 99 }} />
-          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "#fff", maxHeight: "84vh", overflowY: "auto", borderTop: "2.5px solid #1B2B4B", borderRadius: "16px 16px 0 0" }}>
-            <div style={{ position: "sticky", top: 0, background: "#fff", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", borderBottom: "1px solid #E2E8F0" }}>
-              <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 17, color: "#1B2B4B" }}>
-                Filtros {activeFilterCount > 0 ? `(${activeFilterCount})` : ""}
-              </span>
-              <button onClick={() => setMoreOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", display: "flex" }}>
-                <CloseIcon size={20} />
-              </button>
-            </div>
-            <div style={{ padding: "0 20px" }}>
-              <SidebarFilters {...sharedProps} radioPrefix="more" />
-            </div>
-            <div style={{ padding: "14px 20px 28px", borderTop: "1px solid #E2E8F0", display: "flex", gap: 10 }}>
-              <button onClick={() => { clearAll(); setMoreOpen(false); }} style={{ flex: 1, height: 46, border: "1.5px solid #E2E8F0", background: "#fff", color: "#94A3B8", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}>
-                Limpiar
-              </button>
-              <button onClick={() => setMoreOpen(false)} style={{ flex: 2, height: 46, background: "#1B2B4B", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}>
-                Ver {sorted.length} resultado{sorted.length !== 1 ? "s" : ""}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
     </>
   );
 }
