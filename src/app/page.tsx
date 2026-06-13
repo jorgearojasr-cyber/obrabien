@@ -11,6 +11,7 @@ import MarketSection from "./_home/MarketSection";
 import AprendeSection, { type RecursoDestacado } from "./_home/AprendeSection";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { rowToListing, type MarketplaceListing } from "@/lib/marketplace";
+import { Users, Star, TrendingUp, MapPin, ShieldCheck, BadgeCheck, Gift } from "lucide-react";
 
 function ArrowIcon() {
   return (
@@ -44,8 +45,6 @@ function SpecialtyIcon({ name, size = 22 }: { name: string; size?: number }) {
   }
 }
 
-const stats = { total: SAMPLE_MASTERS.length, cities: new Set(SAMPLE_MASTERS.map(m => m.city)).size };
-
 const COMUNIDAD_POSTS = [
   { title: "¿Cuánto cobrar por metro cuadrado de pintura interior?", category: "Precios y tarifas", author: "Pedro R.", time: "Hace 2h", replies: 12 },
   { title: "Problema con humedad en muro de hormigón, ¿qué producto usar?", category: "Técnicas y materiales", author: "María C.", time: "Hace 5h", replies: 8 },
@@ -53,6 +52,7 @@ const COMUNIDAD_POSTS = [
 ];
 
 export default async function Home() {
+  // ── Marketplace listings ──────────────────────────────────────────────────────
   let listings: MarketplaceListing[] = [];
   try {
     const { data } = await getSupabaseAdmin()
@@ -62,10 +62,9 @@ export default async function Home() {
       .order("created_at", { ascending: false })
       .limit(20);
     if (data) listings = data.map(rowToListing);
-  } catch {
-    // silently fall back to empty
-  }
+  } catch { /* silently fall back */ }
 
+  // ── Recursos destacados ───────────────────────────────────────────────────────
   let featuredRecursos: RecursoDestacado[] = [];
   try {
     const { data } = await getSupabaseAdmin()
@@ -76,136 +75,203 @@ export default async function Home() {
       .order("created_at", { ascending: false })
       .limit(12);
     if (data) featuredRecursos = data as RecursoDestacado[];
-  } catch {
-    // silently fall back to empty
-  }
+  } catch { /* silently fall back */ }
+
+  // ── Hero & stats data from Supabase ──────────────────────────────────────────
+  let heroStats = { maestros: 0, resenas: 0, calificacion: 0, ciudades: 0 };
+  try {
+    const [
+      { count: maestrosCount },
+      { count: resenasCount },
+      { data: resenasCalData },
+      { data: ciudadesData },
+    ] = await Promise.all([
+      getSupabaseAdmin().from("maestros").select("*", { count: "exact", head: true }).eq("activo", true),
+      getSupabaseAdmin().from("resenas").select("*", { count: "exact", head: true }),
+      getSupabaseAdmin().from("resenas").select("calificacion"),
+      getSupabaseAdmin().from("maestros").select("ciudades").eq("activo", true),
+    ]);
+
+    heroStats.maestros = maestrosCount ?? 0;
+    heroStats.resenas  = resenasCount  ?? 0;
+
+    if (resenasCalData && resenasCalData.length > 0) {
+      heroStats.calificacion = Math.round(
+        (resenasCalData as { calificacion: number }[])
+          .reduce((sum, r) => sum + r.calificacion, 0) / resenasCalData.length * 10
+      ) / 10;
+    }
+
+    if (ciudadesData) {
+      const allCities = new Set(
+        (ciudadesData as { ciudades: string[] | null }[])
+          .flatMap(m => m.ciudades ?? [])
+      );
+      heroStats.ciudades = allCities.size;
+    }
+  } catch { /* silently fall back */ }
+
+  const displayMaestros = heroStats.maestros > 0 ? heroStats.maestros : SAMPLE_MASTERS.length;
+  const displayCiudades = heroStats.ciudades  > 0 ? heroStats.ciudades  : new Set(SAMPLE_MASTERS.map(m => m.city)).size;
+  const displayResenas  = heroStats.resenas   > 0 ? heroStats.resenas   : 0;
+  const displayCal      = heroStats.calificacion > 0 ? heroStats.calificacion.toFixed(1) : "5.0";
+
+  const specialtiesStats = { total: SAMPLE_MASTERS.length, cities: new Set(SAMPLE_MASTERS.map(m => m.city)).size };
 
   return (
     <main>
       <HomeSearch />
 
-      {/* HERO */}
-      <section style={{ background: "var(--bg)", position: "relative", overflow: "hidden" }}>
-        <div className="wrap" style={{ paddingTop: 40, paddingBottom: 64 }}>
-          <div className="row gap-32 wrap-flex" style={{ alignItems: "center" }}>
-            <div style={{ flex: "1.1 1 460px", minWidth: 280 }}>
-              <div className="row center gap-8 wrap-flex" style={{ marginBottom: 22 }}>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  background: "var(--navy)", color: "#fff",
-                  padding: "5px 12px", borderRadius: 999,
-                  fontFamily: "var(--font-jetbrains), monospace", fontSize: 10.5,
-                  letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600,
-                }}>
-                  <span style={{ width: 6, height: 6, background: "var(--orange)", borderRadius: "50%" }} />
-                  ObraBien · Plataforma chilena
-                </span>
-                <span style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: 11, color: "var(--mute)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                  {stats.total} maestros · {stats.cities} ciudades
-                </span>
-              </div>
+      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      <section style={{ position: "relative", minHeight: 600, display: "flex", alignItems: "center", overflow: "hidden" }}>
+        {/* Background image */}
+        <Image
+          src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781316313/descarga_1_wgxkna.png"
+          alt="Maestro de construcción"
+          fill
+          style={{ objectFit: "cover", objectPosition: "center right" }}
+          priority
+        />
 
-              <h1 style={{
-                fontFamily: "var(--font-archivo), sans-serif",
-                fontSize: "clamp(36px, 5.2vw, 64px)", fontWeight: 900, lineHeight: 1.02,
-                color: "var(--navy)", letterSpacing: "-0.025em", margin: 0,
+        {/* Left-to-right navy overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to right, rgba(27,43,75,0.92) 0%, rgba(27,43,75,0.88) 40%, rgba(27,43,75,0.40) 68%, transparent 100%)",
+          pointerEvents: "none",
+        }} />
+
+        {/* Content */}
+        <div className="wrap" style={{ position: "relative", zIndex: 1, paddingTop: 64, paddingBottom: 72, width: "100%" }}>
+          <div style={{ maxWidth: 560 }}>
+
+            {/* Badge row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "rgba(249,115,22,0.18)", border: "1px solid rgba(249,115,22,0.45)",
+                color: "#F97316",
+                padding: "5px 13px", borderRadius: 999,
+                fontFamily: "var(--font-jetbrains), monospace", fontSize: 10,
+                letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700,
               }}>
-                Encuentra<br />
-                <span style={{ color: "var(--orange)" }}>maestros confiables</span><br />
-                para tu proyecto.
-              </h1>
-
-              <p style={{ fontSize: 17.5, color: "var(--ink-soft)", maxWidth: 520, marginTop: 22, lineHeight: 1.6 }}>
-                Albañiles, gasfiter, electricistas, carpinteros y más.
-                Revisa el perfil, las reseñas y contáctalos directamente — sin intermediarios.
-              </p>
-
-              <div className="row gap-10 wrap-flex" style={{ marginTop: 26 }}>
-                <Link href="/buscar" className="btn btn-lg"
-                  style={{ background: "var(--orange)", borderColor: "var(--orange)", color: "#fff", borderRadius: 10, fontWeight: 700, padding: "0 24px", textDecoration: "none" }}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-                  Buscar maestros
-                </Link>
-                <Link href="/registro" className="btn btn-lg"
-                  style={{ background: "#fff", borderColor: "var(--navy)", color: "var(--navy)", borderRadius: 10, fontWeight: 700, padding: "0 24px", textDecoration: "none" }}>
-                  ⛑ Registrarme como maestro
-                </Link>
-              </div>
-
-              <div className="row center gap-16 wrap-flex" style={{ marginTop: 26, fontSize: 12.5, color: "var(--mute)" }}>
-                {[
-                  { bg: "var(--navy)", color: "var(--orange)", text: "✓", label: "Maestros verificados" },
-                  { bg: "var(--orange)", color: "#fff", text: "%", label: "100% gratis" },
-                  { bg: "var(--navy)", color: "#fff", text: "★", label: "Calificaciones reales" },
-                ].map(({ bg, color, text, label }) => (
-                  <span key={label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 18, height: 18, background: bg, color, display: "grid", placeItems: "center", borderRadius: "50%", fontSize: 11, fontWeight: 900 }}>{text}</span>
-                    {label}
-                  </span>
-                ))}
-              </div>
+                <span style={{ width: 6, height: 6, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
+                ObraBien · Plataforma chilena
+              </span>
+              <span style={{
+                fontFamily: "var(--font-jetbrains), monospace", fontSize: 10.5,
+                color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.08em",
+              }}>
+                {displayMaestros} maestros · {displayCiudades} ciudades
+              </span>
             </div>
 
-            <div style={{ flex: "0.85 1 340px", minWidth: 240, maxWidth: 380, position: "relative" }}>
-              <div style={{
-                position: "relative", aspectRatio: "4/5", background: "var(--navy)",
-                borderRadius: 18, overflow: "hidden",
-                boxShadow: "0 20px 40px rgba(14,39,66,0.18), 0 4px 10px rgba(14,39,66,0.08)",
+            {/* Title */}
+            <h1 style={{
+              fontFamily: "var(--font-archivo), sans-serif",
+              fontSize: "clamp(34px, 4.8vw, 62px)", fontWeight: 900, lineHeight: 1.03,
+              color: "#fff", letterSpacing: "-0.025em", margin: "0 0 20px",
+            }}>
+              Encuentra maestros<br />
+              <span style={{ color: "#F97316" }}>confiables</span> para<br />
+              tu proyecto.
+            </h1>
+
+            {/* Subtitle */}
+            <p style={{ fontSize: 17, color: "rgba(255,255,255,0.72)", maxWidth: 480, margin: "0 0 28px", lineHeight: 1.65 }}>
+              Albañiles, gasfiter, electricistas, carpinteros y más.
+              Revisa perfiles, reseñas reales y contáctalos directo — sin intermediarios.
+            </p>
+
+            {/* Trust icons */}
+            <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap", marginBottom: 32 }}>
+              {[
+                { Icon: ShieldCheck, label: "Maestros verificados" },
+                { Icon: Star,        label: "Calificaciones reales" },
+                { Icon: Gift,        label: "100% gratis para clientes" },
+              ].map(({ Icon, label }) => (
+                <span key={label} style={{ display: "flex", alignItems: "center", gap: 7, color: "#fff", fontSize: 13.5, fontWeight: 500 }}>
+                  <Icon size={16} color="#F97316" strokeWidth={2.2} />
+                  {label}
+                </span>
+              ))}
+            </div>
+
+            {/* CTA Buttons */}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <Link href="/buscar" style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                background: "#F97316", color: "#fff",
+                padding: "14px 28px", borderRadius: 10,
+                fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15.5,
+                textDecoration: "none", letterSpacing: "-0.01em",
+                boxShadow: "0 4px 16px rgba(249,115,22,0.45)",
               }}>
-                <Image
-                  src="/assets/hero-worker.png"
-                  alt="Maestro de la construcción con casco"
-                  fill style={{ objectFit: "cover" }}
-                  priority
-                />
-                <div style={{
-                  position: "absolute", inset: "auto 0 0 0", height: "40%",
-                  background: "linear-gradient(180deg, transparent 0%, rgba(14,39,66,0.55) 100%)",
-                  pointerEvents: "none",
-                }} />
-                <div style={{
-                  position: "absolute", left: 14, right: 14, bottom: 14,
-                  background: "rgba(255,255,255,0.96)", backdropFilter: "blur(6px)",
-                  border: "1.5px solid var(--navy)", borderRadius: 12,
-                  padding: "9px 12px", display: "flex", alignItems: "center", gap: 10,
-                }}>
-                  <LogoMark size={28} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 12.5, color: "var(--navy)", lineHeight: 1.15, textTransform: "uppercase", textAlign: "center" }}>
-                      Nuevas oportunidades
-                    </div>
-                    <div style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: 9.5, color: "var(--mute)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2, textAlign: "center" }}>
-                      Están esperando por ti
-                    </div>
-                  </div>
-                </div>
-                <div style={{
-                  position: "absolute", top: 0, right: 0,
-                  background: "var(--orange)", color: "#fff", padding: "5px 11px",
-                  fontFamily: "var(--font-jetbrains), monospace", fontSize: 9.5,
-                  fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                  borderBottomLeftRadius: 12,
-                }}>
-                  Verificados ✓
-                </div>
-              </div>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                Buscar maestros
+              </Link>
+              <Link href="/registro" style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                background: "transparent", color: "#fff",
+                border: "2px solid rgba(255,255,255,0.65)",
+                padding: "14px 28px", borderRadius: 10,
+                fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 15,
+                textDecoration: "none",
+              }}>
+                ⛑ Regístrate como maestro
+              </Link>
             </div>
           </div>
         </div>
-        <div className="tape" />
       </section>
 
-      {/* CÓMO FUNCIONA */}
+      {/* ── STATS BAR ────────────────────────────────────────────────────────── */}
+      <section style={{ background: "#fff", boxShadow: "0 4px 24px rgba(27,43,75,0.10)", position: "relative", zIndex: 10 }}>
+        <div className="wrap">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+          }}>
+            {[
+              { Icon: Users,       value: displayMaestros,           label: "Maestros registrados" },
+              { Icon: Star,        value: displayResenas,             label: "Reseñas publicadas" },
+              { Icon: TrendingUp,  value: `${displayCal}/5`,         label: "Calificación promedio" },
+              { Icon: MapPin,      value: displayCiudades,            label: "Ciudades activas" },
+            ].map(({ Icon, value, label }, i) => (
+              <div key={label} style={{
+                padding: "28px 16px", textAlign: "center",
+                borderRight: i < 3 ? "1px solid #E2E8F0" : "none",
+              }}>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+                  <Icon size={22} color="#F97316" strokeWidth={1.8} />
+                </div>
+                <div style={{
+                  fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900,
+                  fontSize: "clamp(26px, 3.5vw, 38px)", color: "#1B2B4B",
+                  letterSpacing: "-0.03em", lineHeight: 1,
+                  marginBottom: 6,
+                }}>
+                  {value}
+                </div>
+                <div style={{ fontSize: 12.5, color: "#64748B", fontWeight: 500 }}>
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CÓMO FUNCIONA ────────────────────────────────────────────────────── */}
       <FadeIn>
         <HowSection />
       </FadeIn>
 
-      {/* MAESTROS DESTACADOS */}
+      {/* ── MAESTROS DESTACADOS ──────────────────────────────────────────────── */}
       <FadeIn>
         <FeaturedCarousel />
       </FadeIn>
 
-      {/* COMUNIDAD */}
+      {/* ── COMUNIDAD ────────────────────────────────────────────────────────── */}
       <FadeIn>
         <section style={{ background: "var(--navy)", color: "#fff" }}>
           <div className="tape-thin" />
@@ -267,19 +333,19 @@ export default async function Home() {
         </section>
       </FadeIn>
 
-      {/* APRENDE */}
+      {/* ── APRENDE ──────────────────────────────────────────────────────────── */}
       {featuredRecursos.length > 0 && (
         <FadeIn>
           <AprendeSection recursos={featuredRecursos} />
         </FadeIn>
       )}
 
-      {/* MARKETPLACE */}
+      {/* ── MARKETPLACE ──────────────────────────────────────────────────────── */}
       <FadeIn>
         <MarketSection listings={listings} />
       </FadeIn>
 
-      {/* ESPECIALIDADES */}
+      {/* ── ESPECIALIDADES ───────────────────────────────────────────────────── */}
       <FadeIn>
         <section className="block">
           <div className="wrap">
@@ -324,32 +390,46 @@ export default async function Home() {
         </section>
       </FadeIn>
 
-      {/* CTA FINAL */}
+      {/* ── BANNER FINAL — ¿Eres maestro? ────────────────────────────────────── */}
       <FadeIn>
-        <section style={{ background: "var(--navy)", color: "#fff", paddingBottom: 72 }}>
+        <section style={{ background: "#1B2B4B", color: "#fff", paddingBottom: 72 }}>
           <div className="tape" />
           <div className="wrap" style={{ paddingTop: 72, textAlign: "center" }}>
-            <span className="label" style={{ color: "var(--orange)", marginBottom: 12, display: "block" }}>// ¿Eres maestro?</span>
-            <h2 style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900, fontSize: "clamp(32px,5vw,60px)", color: "#fff", letterSpacing: "-0.025em", lineHeight: 1.05, margin: "0 0 16px" }}>
-              Únete gratis.
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+              <BadgeCheck size={48} color="#F97316" strokeWidth={1.6} />
+            </div>
+            <h2 style={{
+              fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900,
+              fontSize: "clamp(30px, 4.5vw, 52px)", color: "#fff",
+              letterSpacing: "-0.025em", lineHeight: 1.05, margin: "0 0 16px",
+            }}>
+              ¿Eres maestro?
             </h2>
-            <p style={{ fontSize: 17.5, color: "rgba(255,255,255,0.65)", maxWidth: 500, margin: "0 auto 36px", lineHeight: 1.6 }}>
-              Sin comisiones. Sin intermediarios. Solo tú y tus clientes.
+            <p style={{ fontSize: 17.5, color: "rgba(255,255,255,0.65)", maxWidth: 520, margin: "0 auto 36px", lineHeight: 1.65 }}>
+              Únete gratis a ObraBien y consigue nuevos clientes para crecer tu negocio.
+              Sin comisiones, sin intermediarios — solo tú y tus clientes.
             </p>
 
-            <Link href="/registro"
-              style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "var(--orange)", color: "#fff", fontWeight: 800, fontSize: 17, padding: "16px 36px", textDecoration: "none", letterSpacing: "-0.01em" }}>
-              ⛑ Registrarme como maestro
+            <Link href="/registro" style={{
+              display: "inline-flex", alignItems: "center", gap: 10,
+              background: "transparent", color: "#fff",
+              border: "2px solid rgba(255,255,255,0.70)",
+              fontWeight: 800, fontSize: 16, padding: "15px 36px",
+              textDecoration: "none", letterSpacing: "-0.01em",
+              borderRadius: 10,
+              transition: "background 0.2s",
+            }}>
+              ⛑ Regístrate como maestro
             </Link>
 
             <div style={{ display: "flex", gap: 40, justifyContent: "center", flexWrap: "wrap", marginTop: 52 }}>
               {[
-                { value: "10+", label: "Maestros verificados" },
-                { value: "6",   label: "Ciudades" },
-                { value: "100%", label: "Gratis" },
+                { value: `${displayMaestros}+`, label: "Maestros registrados" },
+                { value: `${displayCiudades}`,  label: "Ciudades" },
+                { value: "100%",                label: "Gratis" },
               ].map(({ value, label }) => (
                 <div key={label}>
-                  <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900, fontSize: 42, color: "var(--orange)", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                  <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900, fontSize: 42, color: "#F97316", letterSpacing: "-0.03em", lineHeight: 1 }}>
                     {value}
                   </div>
                   <div style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>{label}</div>
