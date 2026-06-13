@@ -149,7 +149,7 @@ export default async function Home() {
 
           {/* Badge */}
           <div style={{ marginBottom: 22 }}>
-            <span className="hero-badge">
+            <span className="hero-badge" style={{ color: "#FFFFFF", backgroundColor: "#1B2B4B" }}>
               <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
               ObraBien · Plataforma chilena
             </span>

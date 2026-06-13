@@ -322,11 +322,10 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
     padding: 6px 12px !important;
     border-radius: 20px !important;
   }
-  /* Forzar color navy en todos los elementos de texto del hero */
+  /* Forzar color navy en elementos de texto del hero (excluye el badge) */
   .hero-text h1,
   .hero-text h1 span,
-  .hero-text p,
-  .hero-text > div span {
+  .hero-text p {
     color: #1B2B4B !important;
   }
   .hero-text h1 {
