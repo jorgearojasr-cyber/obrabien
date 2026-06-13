@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { Suspense } from "react";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { SAMPLE_MASTERS, type Master } from "@/lib/data";
+import { type Master } from "@/lib/data";
 import BuscarContent from "./_content";
 
 type HorarioRow = { tipo?: string; desde?: string; hasta?: string; dias?: string[] } | null;
@@ -79,11 +79,8 @@ export default async function BuscarPage() {
     }
   }
 
-  // Real maestros first, then sample data (deduplicated by id)
-  const allMaestros = [
-    ...realMaestros,
-    ...SAMPLE_MASTERS.filter(m => !realIds.has(m.id)),
-  ];
+  // Solo maestros reales de Supabase
+  const allMaestros = realMaestros;
 
   return (
     <Suspense fallback={<div style={{ minHeight: "60vh" }} />}>

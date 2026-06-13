@@ -685,11 +685,19 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
             ) : (
               <div style={{ textAlign: "center", padding: "64px 24px", background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12 }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-                <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 20, color: "#1B2B4B", marginBottom: 8 }}>Sin resultados</div>
-                <p style={{ fontSize: 14.5, color: "#64748B", marginBottom: 24 }}>No encontramos maestros con esos filtros. Intenta ampliar la búsqueda.</p>
-                <button onClick={clearAll} style={{ height: 44, padding: "0 24px", background: "#F97316", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}>
-                  Ver todos los maestros
-                </button>
+                <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 20, color: "#1B2B4B", marginBottom: 8 }}>
+                  {allMaestros.length === 0 ? "Aún no hay maestros registrados" : "Sin resultados"}
+                </div>
+                <p style={{ fontSize: 14.5, color: "#64748B", marginBottom: 24 }}>
+                  {allMaestros.length === 0
+                    ? "Aún no hay maestros registrados en esta categoría. ¡Pronto habrá más!"
+                    : "No encontramos maestros con esos filtros. Intenta ampliar la búsqueda."}
+                </p>
+                {allMaestros.length > 0 && (
+                  <button onClick={clearAll} style={{ height: 44, padding: "0 24px", background: "#F97316", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}>
+                    Ver todos los maestros
+                  </button>
+                )}
               </div>
             )}
           </div>
