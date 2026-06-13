@@ -477,7 +477,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               padding: "9px 10px", textAlign: "center",
               fontSize: 11.5, fontWeight: 600, lineHeight: 1.3,
               color: isAvail ? VER_GREEN : "#64748B",
-              display: "flex", alignItems: "center", justifyContent: "center",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
             };
             return (
               <div style={{
@@ -496,7 +496,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                         animation: "pulse 2s infinite",
                         display: "inline-block",
                       }} />
-                      {" "}Disponible esta semana
+                      Disponible esta semana
                     </>
                   ) : "⚪ Consultar disponibilidad"}
                 </div>
