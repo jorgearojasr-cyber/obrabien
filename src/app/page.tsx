@@ -212,7 +212,7 @@ export default async function Home() {
               src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781318290/ChatGPT_Image_12_jun_2026_10_38_00_p.m._s7fqan.png"
               alt="Maestro de construcción"
               fill
-              style={{ objectFit: "cover", objectPosition: "center top" }}
+              style={{ objectFit: "cover", objectPosition: "60% 30%", transform: "scale(1.2)", transformOrigin: "60% 30%" }}
               priority
             />
           </div>

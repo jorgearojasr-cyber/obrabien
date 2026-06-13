@@ -281,7 +281,7 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 .hero-grid {
   display: grid;
   grid-template-columns: 55fr 45fr;
-  height: 580px;
+  min-height: 620px;
 }
 
 /* Left: beige background, text content */
