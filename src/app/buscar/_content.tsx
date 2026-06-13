@@ -424,15 +424,15 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
 type SortKey = "relevantes" | "rating" | "experiencia" | "recientes";
 
 /* ── Quick-filter pill button ───────────────────────────────────────────────── */
-function FilterPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function FilterPill({ label, active, onClick, activeColor = "#1B2B4B" }: { label: string; active: boolean; onClick: () => void; activeColor?: string }) {
   return (
     <button
       onClick={onClick}
       style={{
         display: "inline-flex", alignItems: "center", gap: 5,
         padding: "0 14px", height: 36, borderRadius: 999,
-        border: `1.5px solid ${active ? "#1B2B4B" : "#E2E8F0"}`,
-        background: active ? "#1B2B4B" : "#fff",
+        border: `1.5px solid ${active ? activeColor : "#E2E8F0"}`,
+        background: active ? activeColor : "#fff",
         color: active ? "#fff" : "#475569",
         fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
         transition: "all 0.15s",
@@ -566,7 +566,7 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0", flexWrap: "wrap" }}>
 
             {/* Text search */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, border: "1.5px solid #E2E8F0", background: "#F8FAFC", padding: "0 12px", height: 38, borderRadius: 8, flex: "1 1 180px", minWidth: 160 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, border: "1.5px solid #E2E8F0", background: "#F8FAFC", padding: "0 12px", height: 38, borderRadius: 8, width: 220, flexShrink: 0 }}>
               <SearchIcon />
               <input
                 value={q}
@@ -604,6 +604,7 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
             <FilterPill label="✓ Verificados" active={soloVerificados} onClick={() => setSoloVerificados(v => !v)} />
             <FilterPill label="🟢 Disponible" active={soloDisponibles} onClick={() => setSoloDisponibles(v => !v)} />
             <FilterPill label="⭐ 4+ estrellas" active={minRating >= 4} onClick={() => setMinRating(r => r >= 4 ? 0 : 4)} />
+            <FilterPill label="🚨 Urgencias" active={urgenciaCategoria === "Otros"} onClick={() => setUrgenciaCategoria(c => c === "Otros" ? "" : "Otros")} activeColor="#DC2626" />
 
             {/* Más filtros — dropdown */}
             <div ref={moreRef} style={{ position: "relative" }}>
