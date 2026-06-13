@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import ProfessionalCard from "@/components/ProfessionalCard";
 import ReviewSection, { type ExistingReview } from "@/components/ReviewSection";
 import GalleryCarousel from "@/components/GalleryCarousel";
+import ProfilePhotoLightbox from "@/components/ProfilePhotoLightbox";
 import AvailabilityPicker from "@/components/AvailabilityPicker";
 import UrgencyToggle from "@/components/UrgencyToggle";
 
@@ -310,17 +311,14 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
             {/* Header — hidden on mobile (ProfessionalCard shows it) */}
             <div className="maestro-profile-header" style={{ background: "#fff", border: "1px solid var(--line)", padding: 28 }}>
               <div className="row gap-20 wrap-flex" style={{ alignItems: "flex-start" }}>
-                <div style={{
-                  width: 160, height: 160, background: bg, color: fg, flexShrink: 0,
-                  display: "grid", placeItems: "center",
-                  fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 52,
-                  borderRadius: "50%", border: "3px solid var(--line)", overflow: "hidden",
-                }}>
-                  {m.photoUrl
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                    : m.initials}
-                </div>
+                <ProfilePhotoLightbox
+                  photoUrl={m.photoUrl ?? ""}
+                  name={m.name}
+                  initials={m.initials}
+                  bg={bg}
+                  fg={fg}
+                  size={160}
+                />
                 <div className="col gap-8" style={{ flex: 1, minWidth: 0 }}>
                   <div className="row center gap-10 wrap-flex">
                     <h1 style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 800, margin: 0, color: "var(--ink)" }}>
