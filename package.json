@@ -13,6 +13,7 @@
     "@clerk/nextjs": "^7.4.1",
     "@supabase/supabase-js": "^2.106.2",
     "cloudinary": "^2.10.0",
+    "dom-to-image-more": "^3.10.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.18.0",

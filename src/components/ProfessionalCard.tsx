@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Master } from "@/lib/data";
 import { LogoMark } from "@/components/LogoMark";
+import domtoimage from "dom-to-image-more";
 
 const NAVY = "#1B2B4B";
 const ORANGE = "#F97316";
@@ -234,209 +235,42 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
 
   const slug = m.name.toLowerCase().replace(/\s+/g, "-");
 
-  const buildCard = async (): Promise<HTMLCanvasElement> => {
-    const W = 390;
-    const H = 780;
-    const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d")!;
-
-    // ── helpers ──────────────────────────────────────────────────────────────
-    function rr(x: number, y: number, w: number, h: number, r: number) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.arcTo(x + w, y, x + w, y + r, r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-      ctx.lineTo(x + r, y + h);
-      ctx.arcTo(x, y + h, x, y + h - r, r);
-      ctx.lineTo(x, y + r);
-      ctx.arcTo(x, y, x + r, y, r);
-      ctx.closePath();
-      ctx.fill();
+  const captureBlob = async (): Promise<Blob> => {
+    const node = cardRef.current!;
+    const footer = node.querySelector<HTMLElement>(".botones-inferiores");
+    if (footer) footer.style.display = "none";
+    try {
+      return await domtoimage.toBlob(node, {
+        width: node.offsetWidth,
+        height: node.scrollHeight,
+        style: { transform: "none", overflow: "visible" },
+        bgcolor: "#ffffff",
+        scale: 2,
+      }) as Blob;
+    } finally {
+      if (footer) footer.style.display = "";
     }
-    function line(y: number) {
-      ctx.strokeStyle = "#E2E8F0"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(W - 20, y); ctx.stroke();
-    }
-
-    const NAVY   = "#1B2B4B";
-    const ORANGE = "#E86C1C";
-    const GREEN  = "#25D366";
-    const GBORDER= "#22C55E";
-
-    // ── background ────────────────────────────────────────────────────────────
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, W, H);
-
-    // ── header ────────────────────────────────────────────────────────────────
-    ctx.fillStyle = NAVY;
-    ctx.fillRect(0, 0, W, 60);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 17px Arial";
-    ctx.fillText("OBRA", 50, 36);
-    ctx.fillStyle = ORANGE;
-    ctx.fillText("BIEN", 50 + ctx.measureText("OBRA").width, 36);
-    ctx.fillStyle = "rgba(255,255,255,0.4)";
-    ctx.font = "8px Arial";
-    ctx.fillText("MAESTROS CONFIABLES", 50, 50);
-
-    if (m.verified) {
-      ctx.fillStyle = ORANGE;
-      rr(270, 16, 102, 28, 6);
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 10px Arial";
-      ctx.fillText("VERIFICADO", 280, 34);
-    }
-
-    // ── profile photo ─────────────────────────────────────────────────────────
-    const CX = 75, CY = 130, CR = 50;
-    if (m.photoUrl) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      await new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res(); img.src = m.photoUrl!; });
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(CX, CY, CR, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.drawImage(img, CX - CR, CY - CR, CR * 2, CR * 2);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = "#E2E8F0";
-      ctx.beginPath(); ctx.arc(CX, CY, CR, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = NAVY;
-      ctx.font = "bold 22px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(m.initials, CX, CY + 8);
-      ctx.textAlign = "left";
-    }
-    ctx.strokeStyle = ORANGE; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(CX, CY, CR + 2, 0, Math.PI * 2); ctx.stroke();
-
-    // ── identity ──────────────────────────────────────────────────────────────
-    const TX = 145;
-    ctx.fillStyle = NAVY;
-    ctx.font = "bold 18px Arial";
-    ctx.fillText(m.name, TX, 95);
-
-    ctx.fillStyle = ORANGE;
-    ctx.font = "bold 11px Arial";
-    ctx.fillText(m.specialties[0] ?? "", TX, 113);
-
-    ctx.fillStyle = "#334155";
-    ctx.font = "13px Arial";
-    ctx.fillText("Tel: " + m.phone, TX, 134);
-    ctx.fillText("Lugar: " + m.city, TX, 153);
-    if (m.schedule) { ctx.fillStyle = "#64748B"; ctx.font = "11px Arial"; ctx.fillText(m.schedule, TX, 170); }
-
-    line(188);
-
-    // ── specialty block ───────────────────────────────────────────────────────
-    ctx.fillStyle = ORANGE; ctx.font = "bold 9px Arial";
-    ctx.fillText("ESPECIALISTA EN", 20, 208);
-    ctx.fillStyle = NAVY; ctx.font = "bold 16px Arial";
-    ctx.fillText(m.specialties[0] ?? "", 20, 226);
-
-    if (m.specialties.length > 1) {
-      ctx.fillStyle = "#64748B"; ctx.font = "bold 9px Arial";
-      ctx.fillText("TAMBIEN REALIZA:", 210, 206);
-      m.specialties.slice(1, 4).forEach((s, i) => {
-        ctx.fillStyle = "#334155"; ctx.font = "12px Arial";
-        ctx.fillText("• " + s, 210, 220 + i * 17);
-      });
-    }
-
-    // ── stats row ─────────────────────────────────────────────────────────────
-    ctx.strokeStyle = "#E2E8F0"; ctx.lineWidth = 1;
-    ctx.strokeRect(20, 255, W - 40, 60);
-    const stats = [
-      { label: "UBICACION",   value: m.city },
-      { label: "EXPERIENCIA", value: m.yearsExp ? `${m.yearsExp} anos` : "-" },
-      { label: "RESENAS",     value: m.rating ? `${m.rating.toFixed(1)} / 5` : "Sin" },
-      { label: "ESTADO",      value: m.verified ? "Verificado" : "No verif." },
-    ];
-    stats.forEach((s, i) => {
-      const x = 20 + i * 87 + 43;
-      ctx.fillStyle = NAVY; ctx.font = "bold 11px Arial"; ctx.textAlign = "center";
-      ctx.fillText(s.value, x, 278);
-      ctx.fillStyle = "#94A3B8"; ctx.font = "7px Arial";
-      ctx.fillText(s.label, x, 292);
-    });
-    ctx.textAlign = "left";
-
-    // ── availability ──────────────────────────────────────────────────────────
-    const isAvail = (m.disponibilidad ?? "disponible") !== "no_disponible";
-    if (isAvail) {
-      ctx.fillStyle = "#F0FDF4"; ctx.fillRect(20, 328, 173, 30);
-      ctx.fillStyle = "#16A34A"; ctx.beginPath(); ctx.arc(35, 343, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.font = "bold 10px Arial"; ctx.fillText("Disponible esta semana", 44, 347);
-    }
-    if (m.atiendeUrgencias) {
-      ctx.fillStyle = "#FFF5F5"; ctx.fillRect(200, 328, 170, 30);
-      ctx.fillStyle = "#DC2626"; ctx.font = "bold 10px Arial";
-      ctx.fillText("Atiende urgencias", 210, 347);
-    }
-
-    // ── WhatsApp button ───────────────────────────────────────────────────────
-    ctx.fillStyle = GREEN;
-    rr(20, 372, W - 40, 46, 10);
-    ctx.fillStyle = "#ffffff"; ctx.font = "bold 13px Arial"; ctx.textAlign = "center";
-    ctx.fillText("CONTACTAR POR WHATSAPP", W / 2, 400);
-    ctx.textAlign = "left";
-
-    // ── social links ──────────────────────────────────────────────────────────
-    ctx.font = "12px Arial"; ctx.fillStyle = "#334155"; ctx.textAlign = "center";
-    const socials = [
-      m.social?.instagram ? "Instagram" : null,
-      m.social?.facebook  ? "Facebook"  : null,
-      m.social?.tiktok    ? "TikTok"    : null,
-    ].filter(Boolean) as string[];
-    if (socials.length) {
-      const step = (W - 40) / socials.length;
-      socials.forEach((s, i) => ctx.fillText(s, 20 + step * i + step / 2, 440));
-    }
-    ctx.textAlign = "left";
-
-    // ── QR section ────────────────────────────────────────────────────────────
-    line(458);
-    ctx.fillStyle = "#334155"; ctx.font = "bold 12px Arial";
-    ctx.fillText("Ver perfil completo en ObraBien", 20, 476);
-    ctx.fillStyle = "#94A3B8"; ctx.font = "9px Arial";
-    ctx.fillText(`obrabien.cl/maestro/${m.id ?? maestroId}`, 20, 490);
-
-    // ── footer buttons ────────────────────────────────────────────────────────
-    line(508);
-    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 1.5;
-    ctx.strokeRect(20, 516, 165, 38);
-    ctx.fillStyle = "#475569"; ctx.font = "12px Arial"; ctx.textAlign = "center";
-    ctx.fillText("Guardar contacto", 102, 540);
-
-    ctx.strokeStyle = GBORDER; ctx.lineWidth = 2;
-    ctx.strokeRect(200, 516, 170, 38);
-    ctx.fillStyle = "#22C55E"; ctx.font = "bold 12px Arial";
-    ctx.fillText("Compartir perfil", 285, 540);
-    ctx.textAlign = "left";
-
-    return canvas;
   };
 
   const downloadPNG = async () => {
     setShareOpen(false);
-    const canvas = await buildCard();
+    const blob = await captureBlob();
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
+    a.href = url;
     a.download = `tarjeta-${slug}-obrabien.png`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const downloadPDF = async () => {
     setShareOpen(false);
-    const canvas = await buildCard();
+    const blob = await captureBlob();
+    const reader = new FileReader();
+    const dataUrl = await new Promise<string>(res => { reader.onload = () => res(reader.result as string); reader.readAsDataURL(blob); });
     const { jsPDF } = await import("jspdf");
     const pdf = new jsPDF({ unit: "px", format: [390, 780], hotfixes: ["px_scaling"] });
-    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 390, 780);
+    pdf.addImage(dataUrl, "PNG", 0, 0, 390, 780);
     pdf.save(`tarjeta-${slug}-obrabien.pdf`);
   };
 
@@ -830,7 +664,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           </div>
 
           {/* 9. Footer: Save contact + Share */}
-          <div style={{ padding: "10px 12px", display: "flex", gap: 8 }}>
+          <div className="botones-inferiores" style={{ padding: "10px 12px", display: "flex", gap: 8 }}>
             <button
               onClick={downloadVCard}
               style={{
