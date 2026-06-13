@@ -18,7 +18,8 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); overflow-x: hidden; }
+html { overflow-x: hidden; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); overflow-x: hidden; max-width: 100%; }
 body {
   font-family: "Inter Tight", system-ui, sans-serif;
   font-size: 16px;
@@ -315,6 +316,20 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
     padding: 32px 20px 40px;
     justify-content: flex-start;
   }
+}
+
+/* === Stats bar grid — 4 col desktop / 2x2 mobile === */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-grid > div:nth-child(2) { border-right: none; }
+  .stats-grid > div:nth-child(1),
+  .stats-grid > div:nth-child(2) { border-bottom: 1px solid #E2E8F0; }
 }
 
 /* === Maestro profile responsive layout === */

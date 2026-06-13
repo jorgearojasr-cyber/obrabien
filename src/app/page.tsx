@@ -223,10 +223,7 @@ export default async function Home() {
       {/* ── STATS BAR ────────────────────────────────────────────────────────── */}
       <section style={{ background: "#fff", boxShadow: "0 4px 24px rgba(27,43,75,0.10)", position: "relative", zIndex: 10 }}>
         <div className="wrap">
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-          }}>
+          <div className="stats-grid">
             {[
               { Icon: Users,       value: displayMaestros,           label: "Maestros registrados" },
               { Icon: Star,        value: displayResenas,   label: "Reseñas publicadas" },
