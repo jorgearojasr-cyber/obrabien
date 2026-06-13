@@ -124,18 +124,29 @@ export default async function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="hero-section">
-        <div className="hero-grid">
 
-          {/* LEFT — navy solid background with text */}
-          <div className="hero-left">
+        {/* Full-bleed background image — maestro visible on right side */}
+        <Image
+          src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781316313/descarga_1_wgxkna.png"
+          alt="Maestro de construcción"
+          fill
+          style={{ objectFit: "cover", objectPosition: "70% center" }}
+          priority
+        />
+
+        {/* Cream gradient: left opaque → right transparent */}
+        <div className="hero-overlay" />
+
+        {/* Text content over the left (cream) side */}
+        <div className="wrap hero-content" style={{ position: "relative", zIndex: 1, paddingTop: 56, paddingBottom: 64, width: "100%" }}>
+          <div style={{ maxWidth: 520 }}>
 
             {/* Badge */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                background: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.40)",
-                color: "#F97316",
-                padding: "5px 12px", borderRadius: 999,
+                background: "#1B2B4B", color: "#fff",
+                padding: "5px 13px", borderRadius: 999,
                 fontFamily: "var(--font-jetbrains), monospace", fontSize: 9.5,
                 letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700,
               }}>
@@ -144,41 +155,38 @@ export default async function Home() {
               </span>
               <span style={{
                 fontFamily: "var(--font-jetbrains), monospace", fontSize: 10,
-                color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.07em",
+                color: "#6B7C8F", textTransform: "uppercase", letterSpacing: "0.07em",
               }}>
                 {displayMaestros} maestros · {displayCiudades} ciudades
               </span>
             </div>
 
-            {/* Title */}
+            {/* Title — navy text */}
             <h1 style={{
               fontFamily: "var(--font-archivo), sans-serif",
-              fontSize: "clamp(30px, 3.4vw, 54px)", fontWeight: 900, lineHeight: 1.06,
-              color: "#fff", letterSpacing: "-0.025em", margin: "0 0 18px",
+              fontSize: "clamp(34px, 4.5vw, 62px)", fontWeight: 900, lineHeight: 1.05,
+              color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 18px",
             }}>
               Encuentra<br />
-              <span style={{ color: "#F97316" }}>maestros</span><br />
-              <span style={{ color: "#F97316" }}>confiables</span><br />
+              <span style={{ color: "#F97316" }}>maestros confiables</span><br />
               para tu proyecto.
             </h1>
 
             {/* Subtitle */}
-            <p style={{ fontSize: 15.5, color: "rgba(255,255,255,0.68)", margin: "0 0 24px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: 16.5, color: "#475569", margin: "0 0 26px", lineHeight: 1.65 }}>
               Albañiles, gasfiter, electricistas, carpinteros y más.
-              Revisa perfiles, reseñas reales y contáctalos directo.
+              Revisa perfiles, reseñas reales y contáctalos directo — sin intermediarios.
             </p>
 
-            {/* Trust badges */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
+            {/* Trust items */}
+            <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 30 }}>
               {[
                 { Icon: ShieldCheck, label: "Maestros verificados" },
                 { Icon: Star,        label: "Calificaciones reales" },
-                { Icon: Gift,        label: "100% gratis para clientes" },
+                { Icon: Gift,        label: "100% gratis" },
               ].map(({ Icon, label }) => (
-                <span key={label} style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.88)", fontSize: 13.5, fontWeight: 500 }}>
-                  <span style={{ width: 22, height: 22, background: "rgba(249,115,22,0.20)", border: "1px solid rgba(249,115,22,0.35)", borderRadius: "50%", display: "grid", placeItems: "center", flexShrink: 0 }}>
-                    <Icon size={12} color="#F97316" strokeWidth={2.5} />
-                  </span>
+                <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, color: "#1B2B4B", fontSize: 13, fontWeight: 600 }}>
+                  <Icon size={15} color="#F97316" strokeWidth={2.2} />
                   {label}
                 </span>
               ))}
@@ -189,38 +197,26 @@ export default async function Home() {
               <Link href="/buscar" style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                 background: "#F97316", color: "#fff",
-                padding: "13px 26px", borderRadius: 10,
-                fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
+                padding: "14px 28px", borderRadius: 10,
+                fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15.5,
                 textDecoration: "none", letterSpacing: "-0.01em",
-                boxShadow: "0 4px 16px rgba(249,115,22,0.45)",
+                boxShadow: "0 4px 16px rgba(249,115,22,0.40)",
               }}>
                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
                 Buscar maestros
               </Link>
               <Link href="/registro" style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                background: "transparent", color: "#fff",
-                border: "1.5px solid rgba(255,255,255,0.55)",
-                padding: "13px 22px", borderRadius: 10,
-                fontFamily: "var(--font-archivo), sans-serif", fontWeight: 600, fontSize: 14.5,
+                background: "transparent", color: "#1B2B4B",
+                border: "1.5px solid #1B2B4B",
+                padding: "14px 24px", borderRadius: 10,
+                fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14.5,
                 textDecoration: "none",
               }}>
                 ⛑ Regístrate como maestro
               </Link>
             </div>
           </div>
-
-          {/* RIGHT — clean image, no overlay */}
-          <div className="hero-right">
-            <Image
-              src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781316313/descarga_1_wgxkna.png"
-              alt="Maestro de construcción"
-              fill
-              style={{ objectFit: "cover", objectPosition: "center top" }}
-              priority
-            />
-          </div>
-
         </div>
       </section>
 

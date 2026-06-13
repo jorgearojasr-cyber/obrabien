@@ -270,52 +270,48 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   }
 }
 
-/* === Hero section — two-zone layout === */
+/* === Hero section — full-bleed image + cream overlay === */
 .hero-section {
-  overflow: hidden;
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  height: 580px;
-}
-
-/* Left: solid navy, text centered vertically */
-.hero-left {
-  background: #1B2B4B;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 48px clamp(20px, 4vw, 56px);
-  overflow: hidden;
-}
-
-/* Right: image fills the column, no overlay */
-.hero-right {
   position: relative;
+  height: 600px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+/* Cream gradient left → transparent right so navy text is readable */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(248,245,240,0.96) 0%,
+    rgba(248,245,240,0.90) 30%,
+    rgba(248,245,240,0.40) 58%,
+    transparent 100%
+  );
 }
 
 @media (max-width: 768px) {
-  /* Stack vertically: image on top, navy text below */
-  .hero-grid {
-    display: flex;
-    flex-direction: column;
+  .hero-section {
     height: auto;
+    min-height: 500px;
+    align-items: flex-end;
   }
-  .hero-right {
-    height: 250px;
-    flex-shrink: 0;
-    order: -1; /* image goes above the text block */
+  /* Mobile: cream fades up from bottom where text sits */
+  .hero-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(248,245,240,0.98) 0%,
+      rgba(248,245,240,0.92) 42%,
+      rgba(248,245,240,0.35) 66%,
+      transparent 100%
+    );
   }
-  /* Show maestro face on mobile */
-  .hero-right img {
-    object-position: center 15% !important;
-  }
-  .hero-left {
-    padding: 28px 20px 36px;
-    justify-content: flex-start;
+  .hero-content {
+    padding-top: 28px !important;
+    padding-bottom: 36px !important;
   }
 }
 
