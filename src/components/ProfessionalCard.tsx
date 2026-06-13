@@ -11,6 +11,26 @@ const VER_GREEN = "#16A34A";
 const CARD_BG = "#F8FAFC";
 const BORDER = "#E2E8F0";
 
+function getEspecialidadIcon(especialidad: string): string {
+  const s = especialidad.toLowerCase();
+  if (s.includes("electr")) return "⚡";
+  if (s.includes("gasfiter") || s.includes("gasfitería") || s.includes("plomer") || s.includes("cañer")) return "🔧";
+  if (s.includes("pintur") || s.includes("enlucid") || s.includes("yeso")) return "🎨";
+  if (s.includes("albañil") || s.includes("construct") || s.includes("hormigón")) return "🧱";
+  if (s.includes("ventana") || s.includes("vidrio") || s.includes("aluminio")) return "🪟";
+  if (s.includes("techumb") || s.includes("techo") || s.includes("zinc")) return "🏠";
+  if (s.includes("carpint") || s.includes("madera") || s.includes("mueble")) return "🪵";
+  if (s.includes("cerraj") || s.includes("puerta") || s.includes("candado")) return "🔑";
+  if (s.includes("jardin") || s.includes("pasto") || s.includes("poda")) return "🌿";
+  if (s.includes("solar") || s.includes("panel")) return "☀️";
+  if (s.includes("aire") || s.includes("clima") || s.includes("refriger")) return "❄️";
+  if (s.includes("soldad") || s.includes("fierr") || s.includes("metal")) return "⚙️";
+  if (s.includes("cerami") || s.includes("porcelan") || s.includes("piso") || s.includes("baldos")) return "🔲";
+  if (s.includes("cámara") || s.includes("seguridad") || s.includes("alarma")) return "📷";
+  if (s.includes("gas ") || s.includes("calefon") || s.includes("caldera")) return "🔥";
+  return "🔨";
+}
+
 const SPECIALTY_EMOJI: Record<string, string> = {
   "Albañil": "🧱",
   "Gasfiter": "🔧",
@@ -387,7 +407,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       {otherSpecialties.map(sp => (
                         <div key={sp} style={{ fontSize: 11.5, color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 16, flexShrink: 0 }}>{SPECIALTY_EMOJI[sp] ?? "🛠️"}</span>
+                          <span style={{ fontSize: 16, flexShrink: 0 }}>{getEspecialidadIcon(sp)}</span>
                           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sp}</span>
                         </div>
                       ))}
