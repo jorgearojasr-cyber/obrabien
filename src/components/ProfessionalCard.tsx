@@ -111,6 +111,14 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   const qrRef = useRef<HTMLCanvasElement>(null);
   const qrModalRef = useRef<HTMLCanvasElement>(null);
   const [qrOpen, setQrOpen] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
+
+  useEffect(() => {
+    if (!photoOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPhotoOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [photoOpen]);
 
   useEffect(() => {
     const canvas = qrRef.current;
@@ -251,16 +259,21 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           {/* 2. Avatar + Identity */}
           <div style={{ ...sep, background: CARD_BG, padding: "16px 16px 12px", textAlign: "center" }}>
             <div style={{ position: "relative", display: "inline-block", marginBottom: 10 }}>
-              <div style={{
-                width: 80, height: 80,
-                borderRadius: "50%",
-                background: m.photoUrl ? "transparent" : ORANGE,
-                color: "#fff",
-                display: "grid", placeItems: "center",
-                fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 26,
-                border: `4px solid ${ORANGE}`,
-                overflow: "hidden",
-              }}>
+              <div
+                onClick={() => m.photoUrl && setPhotoOpen(true)}
+                title={m.photoUrl ? "Ver foto" : undefined}
+                style={{
+                  width: 80, height: 80,
+                  borderRadius: "50%",
+                  background: m.photoUrl ? "transparent" : ORANGE,
+                  color: "#fff",
+                  display: "grid", placeItems: "center",
+                  fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 26,
+                  border: `4px solid ${ORANGE}`,
+                  overflow: "hidden",
+                  cursor: m.photoUrl ? "pointer" : "default",
+                }}
+              >
                 {m.photoUrl
                   /* eslint-disable-next-line @next/next/no-img-element */
                   ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -551,6 +564,47 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
         </div>
       </div>
     </div>
+
+      {/* Photo lightbox */}
+      {photoOpen && m.photoUrl && (
+        <div
+          onClick={() => setPhotoOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9998,
+            background: "rgba(0,0,0,0.90)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "zoom-out",
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={e => { e.stopPropagation(); setPhotoOpen(false); }}
+            aria-label="Cerrar"
+            style={{
+              position: "absolute", top: 16, right: 16,
+              width: 36, height: 36, background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.3)", color: "#fff",
+              borderRadius: "50%", display: "flex", alignItems: "center",
+              justifyContent: "center", cursor: "pointer", fontSize: 20, lineHeight: 1,
+            }}
+          >×</button>
+          {/* Photo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={m.photoUrl}
+            alt={m.name}
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: 320, maxHeight: 320,
+              width: "80vw", height: "80vw",
+              borderRadius: "50%", objectFit: "cover",
+              display: "block", cursor: "default",
+              border: `4px solid ${ORANGE}`,
+              boxShadow: "0 0 40px rgba(0,0,0,0.6)",
+            }}
+          />
+        </div>
+      )}
 
       {/* QR modal */}
       {qrOpen && (
