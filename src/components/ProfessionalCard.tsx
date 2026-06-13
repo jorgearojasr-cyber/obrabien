@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Master } from "@/lib/data";
 import { LogoMark } from "@/components/LogoMark";
 import domtoimage from "dom-to-image-more";
@@ -782,8 +783,8 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
         </div>
       )}
 
-      {/* Share bottom sheet */}
-      {shareOpen && (
+      {/* Share bottom sheet — portal so it never affects card layout */}
+      {shareOpen && createPortal(
         <div
           onClick={() => setShareOpen(false)}
           style={{
@@ -802,7 +803,6 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               boxShadow: "0 -4px 32px rgba(0,0,0,0.18)",
             }}
           >
-            {/* drag handle */}
             <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 14px" }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "#CBD5E1" }} />
             </div>
@@ -852,11 +852,12 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               }}
             >Cancelar</button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Toast */}
-      {toastMsg && (
+      {/* Toast — portal so it's always on top regardless of stacking context */}
+      {toastMsg && createPortal(
         <div style={{
           position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)",
           zIndex: 10000,
@@ -866,7 +867,8 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           fontFamily: "'Inter Tight', system-ui, sans-serif",
           boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
           pointerEvents: "none",
-        }}>{toastMsg}</div>
+        }}>{toastMsg}</div>,
+        document.body
       )}
   </>);
 }
