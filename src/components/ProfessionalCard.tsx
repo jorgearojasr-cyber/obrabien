@@ -301,14 +301,24 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               )}
             </div>
 
-            {m.verified && (
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                color: VER_GREEN, fontSize: 11.5, fontWeight: 600,
-              }}>
-                <ShieldCheckIcon /> Maestro Verificado
-              </div>
-            )}
+            {(() => {
+              const raw = (m.social?.whatsapp || m.phone || "").replace(/\D/g, "");
+              if (!raw) return null;
+              const national = raw.startsWith("56") && raw.length >= 10 ? raw.slice(2) : raw;
+              const tel = `+56${national}`;
+              const display = national.startsWith("9") && national.length === 9
+                ? `+56 ${national[0]} ${national.slice(1, 5)} ${national.slice(5)}`
+                : `+56 ${national}`;
+              return (
+                <a href={`tel:${tel}`} style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  color: NAVY, fontSize: 12, fontWeight: 500,
+                  textDecoration: "none",
+                }}>
+                  📞 {display}
+                </a>
+              );
+            })()}
           </div>
 
           {/* 3. Specialty block */}
