@@ -208,39 +208,7 @@ export default async function Home() {
         </div>{/* /.wrap */}
       </div>{/* /hero wrapper */}
 
-      {/* ── STATS BAR ────────────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", boxShadow: "0 4px 24px rgba(27,43,75,0.10)", position: "relative", zIndex: 10 }}>
-        <div className="wrap">
-          <div className="stats-grid">
-            {[
-              { Icon: Users,       value: displayMaestros,           label: "Maestros registrados" },
-              { Icon: Star,        value: displayResenas,   label: "Reseñas publicadas" },
-              { Icon: TrendingUp,  value: displayCal,       label: "Calificación promedio" },
-              { Icon: MapPin,      value: displayCiudades,            label: "Ciudades activas" },
-            ].map(({ Icon, value, label }, i) => (
-              <div key={label} style={{
-                padding: "28px 16px", textAlign: "center",
-                borderRight: i < 3 ? "1px solid #E2E8F0" : "none",
-              }}>
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-                  <Icon size={22} color="#F97316" strokeWidth={1.8} />
-                </div>
-                <div style={{
-                  fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900,
-                  fontSize: "clamp(26px, 3.5vw, 38px)", color: "#1B2B4B",
-                  letterSpacing: "-0.03em", lineHeight: 1,
-                  marginBottom: 6,
-                }}>
-                  {value}
-                </div>
-                <div style={{ fontSize: 12.5, color: "#64748B", fontWeight: 500 }}>
-                  {label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── STATS BAR — oculta temporalmente ── */}
 
       {/* ── CÓMO FUNCIONA ────────────────────────────────────────────────────── */}
       <FadeIn>
