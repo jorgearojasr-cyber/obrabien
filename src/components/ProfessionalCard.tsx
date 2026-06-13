@@ -232,20 +232,20 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     setShareOpen(false);
   };
 
-  const captureCard = async () => {
+  const slug = m.name.toLowerCase().replace(/\s+/g, "-");
+
+  const captureCard = async (): Promise<HTMLCanvasElement | null> => {
     const el = cardRef.current;
     if (!el) return null;
 
-    // Clone into a hidden off-screen container so scroll position / viewport clipping never affects capture
     const wrapper = document.createElement("div");
-    wrapper.style.cssText = "position:fixed;left:-9999px;top:0;width:390px;height:auto;overflow:visible;z-index:-1;";
+    wrapper.style.cssText = "position:fixed;left:-9999px;top:0;width:390px;overflow:visible;z-index:-1;";
     const clone = el.cloneNode(true) as HTMLElement;
     clone.style.cssText = "width:390px;height:auto;overflow:visible;";
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
 
-    // Let the browser lay out the clone and load images
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 800));
 
     const { default: html2canvas } = await import("html2canvas");
     let canvas: HTMLCanvasElement | null = null;
@@ -260,10 +260,23 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
         scrollX: 0,
         scrollY: 0,
         onclone: (_doc: Document, cloned: HTMLElement) => {
-          // Wait for all images inside the cloned doc to finish loading
+          // Expand every element so nothing gets clipped
+          cloned.querySelectorAll<HTMLElement>("*").forEach(el => {
+            el.style.overflow = "visible";
+            el.style.textOverflow = "unset";
+            el.style.whiteSpace = "normal";
+          });
+          // Let stat containers size to their content
+          cloned.querySelectorAll<HTMLElement>("[data-stat]").forEach(el => {
+            el.style.height = "auto";
+            el.style.minHeight = "unset";
+          });
+          // Wait for images
           const imgs = Array.from(cloned.querySelectorAll("img"));
           return Promise.all(imgs.map(img =>
-            img.complete ? Promise.resolve() : new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res(); })
+            img.complete
+              ? Promise.resolve()
+              : new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res(); })
           ));
         },
       });
@@ -272,8 +285,6 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     }
     return canvas;
   };
-
-  const slug = m.name.toLowerCase().replace(/\s+/g, "-");
 
   const downloadPNG = async () => {
     setShareOpen(false);
@@ -285,16 +296,125 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     a.click();
   };
 
-  const downloadPDF = async () => {
+  const downloadPDF = () => {
     setShareOpen(false);
-    const canvas = await captureCard();
-    if (!canvas) return;
-    const { jsPDF } = await import("jspdf");
-    const pdfW = 390;
-    const pdfH = Math.round((canvas.height / canvas.width) * pdfW);
-    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [pdfW, pdfH] });
-    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfW, pdfH);
-    pdf.save(`tarjeta-${slug}-obrabien.pdf`);
+    import("jspdf").then(({ jsPDF }) => {
+      const W = 390;
+      const H = 844;
+      const pdf = new jsPDF({ unit: "pt", format: [W, H] });
+
+      const navy = [20, 55, 95] as const;
+      const orange = [230, 108, 28] as const;
+      const green = [37, 211, 102] as const;
+
+      // Header background
+      pdf.setFillColor(...navy);
+      pdf.rect(0, 0, W, 60, "F");
+
+      // OBRABIEN logo text
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("OBRABIEN", 50, 38);
+
+      // VERIFICADO badge
+      if (m.verified) {
+        pdf.setFillColor(...orange);
+        pdf.roundedRect(272, 18, 100, 24, 4, 4, "F");
+        pdf.setFontSize(9);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text("✓ VERIFICADO", 277, 34);
+      }
+
+      // Name
+      pdf.setTextColor(...navy);
+      pdf.setFontSize(20);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(m.name, 20, 100);
+
+      // Specialties
+      pdf.setFontSize(12);
+      pdf.setTextColor(...orange);
+      pdf.text(m.specialties.join(" · "), 20, 120);
+
+      // Phone (clickable)
+      pdf.setFontSize(13);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`📞  ${m.phone}`, 20, 148);
+      pdf.link(20, 136, 200, 18, { url: `tel:${m.phone.replace(/\s/g, "")}` });
+
+      // City
+      pdf.text(`📍  ${m.city}`, 20, 170);
+
+      // Schedule
+      if (m.schedule) {
+        pdf.setFontSize(11);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`🕐  ${m.schedule}`, 20, 190);
+      }
+
+      // Stats row
+      const stats = [
+        m.yearsExp ? `${m.yearsExp} años exp.` : null,
+        m.jobs ? `${m.jobs} trabajos` : null,
+        m.rating ? `${m.rating.toFixed(1)} ★` : "Sin reseñas",
+        m.verified ? "Verificado ✓" : null,
+      ].filter(Boolean) as string[];
+      pdf.setFontSize(10);
+      pdf.setTextColor(60, 60, 60);
+      stats.forEach((s, i) => pdf.text(s, 20 + i * 92, 220));
+
+      // Description
+      if (m.description) {
+        pdf.setFontSize(10);
+        pdf.setTextColor(80, 80, 80);
+        pdf.setFont("helvetica", "normal");
+        const lines = pdf.splitTextToSize(m.description, W - 40) as string[];
+        pdf.text(lines.slice(0, 5), 20, 248);
+      }
+
+      // WhatsApp button
+      const waPhone = (m.social?.whatsapp ?? m.phone).replace(/\D/g, "");
+      pdf.setFillColor(...green);
+      pdf.roundedRect(20, 320, W - 40, 44, 8, 8, "F");
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(13);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("CONTACTAR POR WHATSAPP", W / 2, 347, { align: "center" });
+      pdf.link(20, 320, W - 40, 44, { url: `https://wa.me/${waPhone}` });
+
+      // Social links
+      let yS = 390;
+      pdf.setFont("helvetica", "normal");
+      if (m.social?.instagram) {
+        pdf.setFontSize(12);
+        pdf.setTextColor(193, 53, 132);
+        pdf.text(`Instagram: @${m.social.instagram}`, 20, yS);
+        pdf.link(20, yS - 12, 220, 16, { url: `https://instagram.com/${m.social.instagram}` });
+        yS += 26;
+      }
+      if (m.social?.facebook) {
+        pdf.setTextColor(24, 119, 242);
+        pdf.text(`Facebook: ${m.social.facebook}`, 20, yS);
+        pdf.link(20, yS - 12, 220, 16, { url: `https://facebook.com/${m.social.facebook}` });
+        yS += 26;
+      }
+      if (m.social?.tiktok) {
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`TikTok: @${m.social.tiktok}`, 20, yS);
+        pdf.link(20, yS - 12, 180, 16, { url: `https://tiktok.com/@${m.social.tiktok}` });
+      }
+
+      // Profile URL
+      const urlPerfil = `obrabien.cl/maestro/${m.id}`;
+      pdf.setFontSize(10);
+      pdf.setTextColor(120, 120, 120);
+      pdf.text(`Ver perfil completo: ${urlPerfil}`, 20, H - 40);
+      pdf.link(20, H - 52, 300, 16, { url: `https://${urlPerfil}` });
+
+      pdf.save(`tarjeta-${slug}-obrabien.pdf`);
+    });
   };
 
   const showQrLarge = () => {
