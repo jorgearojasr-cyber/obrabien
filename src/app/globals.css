@@ -273,7 +273,9 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 /* === Hero section — full-bleed image + cream overlay === */
 .hero-section {
   position: relative;
-  height: 600px;
+  min-height: 650px;
+  width: 100%;
+  margin: 0;
   overflow: hidden;
   display: flex;
   align-items: center;

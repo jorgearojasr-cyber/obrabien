@@ -130,7 +130,7 @@ export default async function Home() {
           src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781318290/ChatGPT_Image_12_jun_2026_10_38_00_p.m._s7fqan.png"
           alt="Maestro de construcción"
           fill
-          style={{ objectFit: "cover", objectPosition: "45% center" }}
+          style={{ objectFit: "cover", objectPosition: "55% 80%", transform: "scale(1.1)", transformOrigin: "55% 80%" }}
           priority
         />
 
@@ -164,7 +164,7 @@ export default async function Home() {
             {/* Title — navy text */}
             <h1 style={{
               fontFamily: "var(--font-archivo), sans-serif",
-              fontSize: "clamp(26px, 3.2vw, 48px)", fontWeight: 900, lineHeight: 1.05,
+              fontSize: "clamp(32px, 4.2vw, 58px)", fontWeight: 900, lineHeight: 1.05,
               color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 18px",
             }}>
               Encuentra<br />
@@ -173,7 +173,7 @@ export default async function Home() {
             </h1>
 
             {/* Subtitle */}
-            <p style={{ fontSize: 14.5, color: "#475569", margin: "0 0 22px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: 15.5, color: "#475569", margin: "0 0 24px", lineHeight: 1.65 }}>
               Albañiles, gasfiter, electricistas, carpinteros y más.
               Revisa perfiles, reseñas reales y contáctalos directo — sin intermediarios.
             </p>
