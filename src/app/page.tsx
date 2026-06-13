@@ -127,10 +127,10 @@ export default async function Home() {
 
         {/* Full-bleed background image — maestro visible on right side */}
         <Image
-          src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781316313/descarga_1_wgxkna.png"
+          src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781318032/ChatGPT_Image_12_jun_2026_10_33_32_p.m._rc9dbq.png"
           alt="Maestro de construcción"
           fill
-          style={{ objectFit: "cover", objectPosition: "70% center" }}
+          style={{ objectFit: "cover", objectPosition: "60% center" }}
           priority
         />
 
