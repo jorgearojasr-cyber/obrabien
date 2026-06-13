@@ -113,8 +113,8 @@ export default async function Home() {
 
   const displayMaestros = heroStats.maestros > 0 ? heroStats.maestros : SAMPLE_MASTERS.length;
   const displayCiudades = heroStats.ciudades  > 0 ? heroStats.ciudades  : new Set(SAMPLE_MASTERS.map(m => m.city)).size;
-  const displayResenas  = heroStats.resenas   > 0 ? heroStats.resenas   : 0;
-  const displayCal      = heroStats.calificacion > 0 ? heroStats.calificacion.toFixed(1) : "5.0";
+  const displayResenas  = heroStats.resenas   > 0 ? String(heroStats.resenas) : "—";
+  const displayCal      = heroStats.calificacion > 0 ? `${heroStats.calificacion.toFixed(1)}/5` : "—";
 
   const specialtiesStats = { total: SAMPLE_MASTERS.length, cities: new Set(SAMPLE_MASTERS.map(m => m.city)).size };
 
@@ -123,25 +123,22 @@ export default async function Home() {
       <HomeSearch />
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", minHeight: 600, display: "flex", alignItems: "center", overflow: "hidden" }}>
+      <section className="hero-section">
         {/* Background image */}
         <Image
           src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781316313/descarga_1_wgxkna.png"
           alt="Maestro de construcción"
           fill
-          style={{ objectFit: "cover", objectPosition: "center right" }}
+          className="hero-bg-img"
+          style={{ objectFit: "cover" }}
           priority
         />
 
-        {/* Left-to-right navy overlay */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to right, rgba(27,43,75,0.92) 0%, rgba(27,43,75,0.88) 40%, rgba(27,43,75,0.40) 68%, transparent 100%)",
-          pointerEvents: "none",
-        }} />
+        {/* Directional overlay — CSS controls desktop vs mobile behaviour */}
+        <div className="hero-overlay" />
 
         {/* Content */}
-        <div className="wrap" style={{ position: "relative", zIndex: 1, paddingTop: 64, paddingBottom: 72, width: "100%" }}>
+        <div className="wrap hero-content" style={{ position: "relative", zIndex: 1, paddingTop: 64, paddingBottom: 72, width: "100%" }}>
           <div style={{ maxWidth: 560 }}>
 
             {/* Badge row */}
@@ -168,12 +165,12 @@ export default async function Home() {
             {/* Title */}
             <h1 style={{
               fontFamily: "var(--font-archivo), sans-serif",
-              fontSize: "clamp(34px, 4.8vw, 62px)", fontWeight: 900, lineHeight: 1.03,
+              fontSize: "clamp(32px, 4.8vw, 62px)", fontWeight: 900, lineHeight: 1.06,
               color: "#fff", letterSpacing: "-0.025em", margin: "0 0 20px",
             }}>
-              Encuentra maestros<br />
-              <span style={{ color: "#F97316" }}>confiables</span> para<br />
-              tu proyecto.
+              Encuentra<br />
+              <span style={{ color: "#F97316" }}>maestros confiables</span><br />
+              para tu proyecto.
             </h1>
 
             {/* Subtitle */}
@@ -233,8 +230,8 @@ export default async function Home() {
           }}>
             {[
               { Icon: Users,       value: displayMaestros,           label: "Maestros registrados" },
-              { Icon: Star,        value: displayResenas,             label: "Reseñas publicadas" },
-              { Icon: TrendingUp,  value: `${displayCal}/5`,         label: "Calificación promedio" },
+              { Icon: Star,        value: displayResenas,   label: "Reseñas publicadas" },
+              { Icon: TrendingUp,  value: displayCal,       label: "Calificación promedio" },
               { Icon: MapPin,      value: displayCiudades,            label: "Ciudades activas" },
             ].map(({ Icon, value, label }, i) => (
               <div key={label} style={{

@@ -270,6 +270,57 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   }
 }
 
+/* === Hero section === */
+.hero-section {
+  position: relative;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hero-bg-img {
+  object-position: right center !important;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Desktop: navy left 65% → transparent right, letting 40%+ of photo show */
+  background: linear-gradient(
+    to right,
+    rgba(27,43,75,0.80) 0%,
+    rgba(27,43,75,0.72) 32%,
+    rgba(27,43,75,0.22) 58%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 500px;
+    align-items: flex-end;
+  }
+  .hero-bg-img {
+    object-position: center 20% !important;
+  }
+  /* Mobile: darker at bottom (where text sits), fade to transparent at top */
+  .hero-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(27,43,75,0.96) 0%,
+      rgba(27,43,75,0.85) 38%,
+      rgba(27,43,75,0.30) 62%,
+      transparent 100%
+    );
+  }
+  .hero-content {
+    padding-top: 32px !important;
+    padding-bottom: 36px !important;
+  }
+}
+
 /* === Maestro profile responsive layout === */
 .maestro-grid {
   display: grid;
