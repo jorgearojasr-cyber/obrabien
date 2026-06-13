@@ -65,17 +65,17 @@ function FacebookIcon({ size = 40 }: { size?: number }) {
   );
 }
 
-function StarFilled({ size = 14 }: { size?: number }) {
+function StarFilled({ size = 12 }: { size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor"><path d="M12 17.3 5.8 21l1.6-7.1L2 9.3l7.2-.6L12 2l2.8 6.7 7.2.6-5.4 4.6L18.2 21z" /></svg>;
 }
 
-function StarEmpty({ size = 14 }: { size?: number }) {
+function StarEmpty({ size = 12 }: { size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 17.3 5.8 21l1.6-7.1L2 9.3l7.2-.6L12 2l2.8 6.7 7.2.6-5.4 4.6L18.2 21z" /></svg>;
 }
 
 function ShieldCheckIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       <path d="m9 12 2 2 4-4" />
     </svg>
@@ -84,7 +84,7 @@ function ShieldCheckIcon() {
 
 function MobileIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
       <rect x="5" y="2" width="14" height="20" rx="2" />
       <path d="M12 18h.01" />
     </svg>
@@ -93,7 +93,7 @@ function MobileIcon() {
 
 function ContactIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
@@ -116,7 +116,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     const url = `${window.location.origin}/maestro/${m.id}`;
     import("qrcode").then((QRCode) => {
       QRCode.toCanvas(canvas, url, {
-        width: 100,
+        width: 80,
         margin: 1,
         color: { dark: NAVY, light: "#FFFFFF" },
       });
@@ -156,6 +156,8 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   const mainSpecialty = m.specialties[0] ?? "";
   const otherSpecialties = m.specialties.slice(1);
   const specialtyEmoji = SPECIALTY_EMOJI[mainSpecialty] ?? "🛠️";
+  // Two-column specialty layout only when there are 2+ additional specialties
+  const showTwoColSpecialty = otherSpecialties.length >= 2;
 
   const whatsappUrl = m.social?.whatsapp
     ? `https://wa.me/${m.social.whatsapp.replace(/\D/g, "")}`
@@ -179,9 +181,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     ? Math.max(0, Math.floor((Date.now() - new Date(m.createdAt).getTime()) / (365.25 * 24 * 3600 * 1000)))
     : m.yearsExp;
 
-  const section: React.CSSProperties = {
-    borderBottom: `1px solid ${BORDER}`,
-  };
+  const sep: React.CSSProperties = { borderBottom: `1px solid ${BORDER}` };
 
   return (
     <div style={{
@@ -191,310 +191,320 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
       minHeight: "100%",
       background: "#F1F5F9",
       borderRadius: 16,
-      padding: "16px 0",
+      padding: "12px 0",
     }}>
-    <div style={{ width: 390, maxWidth: "100vw", fontFamily: "'Inter Tight', system-ui, sans-serif" }}>
-      <div style={{
-        background: "#fff",
-        borderRadius: 16,
-        overflow: "hidden",
-        boxShadow: "0 4px 24px rgba(27,43,75,0.10)",
-        border: `1px solid ${BORDER}`,
-      }}>
-
-        {/* 1. Header */}
+      <div style={{ width: 390, maxWidth: "100vw", fontFamily: "'Inter Tight', system-ui, sans-serif" }}>
         <div style={{
-          background: NAVY,
-          padding: "14px 18px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "#fff",
+          borderRadius: 16,
+          overflow: "hidden",
+          boxShadow: "0 4px 24px rgba(27,43,75,0.10)",
+          border: `1px solid ${BORDER}`,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <LogoMark size={28} navy="#fff" orange={ORANGE} />
-            <div style={{ lineHeight: 1 }}>
-              <div style={{ fontFamily: "Archivo, sans-serif", fontWeight: 900, fontSize: 16, letterSpacing: "-0.02em" }}>
-                <span style={{ color: "#fff" }}>OBRA</span>
-                <span style={{ color: ORANGE }}>BIEN</span>
-              </div>
-              <div style={{ fontSize: 8, color: "rgba(255,255,255,0.4)", fontFamily: "JetBrains Mono, monospace", textTransform: "uppercase", letterSpacing: "0.07em", marginTop: 3 }}>
-                Maestros confiables
-              </div>
-            </div>
-          </div>
-          {m.verified && (
-            <span style={{
-              background: ORANGE, color: "#fff",
-              padding: "4px 12px", borderRadius: 20,
-              fontSize: 10, fontWeight: 700, fontFamily: "JetBrains Mono, monospace",
-              textTransform: "uppercase", letterSpacing: "0.07em",
-              whiteSpace: "nowrap",
-            }}>
-              ✓ VERIFICADO
-            </span>
-          )}
-        </div>
 
-        {/* 2. Avatar + Identity */}
-        <div style={{ ...section, background: CARD_BG, padding: "24px 20px 20px", textAlign: "center" }}>
-          <div style={{ position: "relative", display: "inline-block", marginBottom: 14 }}>
-            <div style={{
-              width: 96, height: 96,
-              borderRadius: "50%",
-              background: m.photoUrl ? "transparent" : ORANGE,
-              color: "#fff",
-              display: "grid", placeItems: "center",
-              fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 32,
-              border: `4px solid ${ORANGE}`,
-              overflow: "hidden",
-            }}>
-              {m.photoUrl
-                /* eslint-disable-next-line @next/next/no-img-element */
-                ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                : m.initials}
-            </div>
-            <div style={{
-              position: "absolute", bottom: 2, right: 2,
-              width: 24, height: 24,
-              background: VER_GREEN, borderRadius: "50%",
-              border: "2.5px solid #fff",
-              display: "grid", placeItems: "center",
-              color: "#fff", fontSize: 11, fontWeight: 800,
-            }}>✓</div>
-          </div>
-
+          {/* 1. Header */}
           <div style={{
-            fontFamily: "Archivo, sans-serif", fontWeight: 800,
-            fontSize: 21, color: NAVY,
-            letterSpacing: "-0.02em", lineHeight: 1.15,
-            marginBottom: 8,
+            background: NAVY,
+            padding: "11px 16px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
-            {m.name}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 8 }}>
-            <span style={{ display: "flex", gap: 1, color: "#F59E0B" }}>
-              {[1,2,3,4,5].map(i => i <= Math.round(m.rating)
-                ? <StarFilled key={i} size={14} />
-                : <StarEmpty key={i} size={14} />
-              )}
-            </span>
-            {m.rating > 0 ? (
-              <span style={{ fontSize: 12, color: "#64748B", fontFamily: "JetBrains Mono, monospace" }}>
-                {m.rating.toFixed(1)} · {m.jobs} reseña{m.jobs !== 1 ? "s" : ""}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <LogoMark size={26} navy="#fff" orange={ORANGE} />
+              <div style={{ lineHeight: 1 }}>
+                <div style={{ fontFamily: "Archivo, sans-serif", fontWeight: 900, fontSize: 15, letterSpacing: "-0.02em" }}>
+                  <span style={{ color: "#fff" }}>OBRA</span>
+                  <span style={{ color: ORANGE }}>BIEN</span>
+                </div>
+                <div style={{ fontSize: 7.5, color: "rgba(255,255,255,0.4)", fontFamily: "JetBrains Mono, monospace", textTransform: "uppercase", letterSpacing: "0.07em", marginTop: 2 }}>
+                  Maestros confiables
+                </div>
+              </div>
+            </div>
+            {m.verified && (
+              <span style={{
+                background: ORANGE, color: "#fff",
+                padding: "3px 10px", borderRadius: 20,
+                fontSize: 9, fontWeight: 700, fontFamily: "JetBrains Mono, monospace",
+                textTransform: "uppercase", letterSpacing: "0.07em",
+                whiteSpace: "nowrap",
+              }}>
+                ✓ VERIFICADO
               </span>
-            ) : (
-              <span style={{ fontSize: 12, color: "#94A3B8" }}>Sin reseñas aún</span>
             )}
           </div>
 
-          {m.verified && (
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              color: VER_GREEN, fontSize: 12.5, fontWeight: 600,
-            }}>
-              <ShieldCheckIcon /> Maestro Verificado
-            </div>
-          )}
-        </div>
-
-        {/* 3. Specialty block */}
-        {mainSpecialty && (
-          <div style={{ ...section, padding: "14px 16px" }}>
-            <div style={{
-              background: CARD_BG, borderRadius: 12, padding: "14px 16px",
-              border: `1px solid ${BORDER}`,
-              display: "flex", gap: 14, alignItems: "flex-start",
-            }}>
-              <div style={{ flex: "0 0 auto" }}>
-                <div style={{ fontSize: 38, lineHeight: 1, marginBottom: 6 }}>{specialtyEmoji}</div>
-                <div style={{
-                  fontSize: 9, fontFamily: "JetBrains Mono, monospace",
-                  textTransform: "uppercase", letterSpacing: "0.1em",
-                  color: ORANGE, fontWeight: 700, marginBottom: 3,
-                }}>
-                  Especialista en
-                </div>
-                <div style={{
-                  fontSize: 16, fontFamily: "Archivo, sans-serif",
-                  fontWeight: 800, color: NAVY, lineHeight: 1.2,
-                }}>
-                  {mainSpecialty}
-                </div>
+          {/* 2. Avatar + Identity */}
+          <div style={{ ...sep, background: CARD_BG, padding: "16px 16px 12px", textAlign: "center" }}>
+            <div style={{ position: "relative", display: "inline-block", marginBottom: 10 }}>
+              <div style={{
+                width: 80, height: 80,
+                borderRadius: "50%",
+                background: m.photoUrl ? "transparent" : ORANGE,
+                color: "#fff",
+                display: "grid", placeItems: "center",
+                fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 26,
+                border: `4px solid ${ORANGE}`,
+                overflow: "hidden",
+              }}>
+                {m.photoUrl
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  : m.initials}
               </div>
+              <div style={{
+                position: "absolute", bottom: 1, right: 1,
+                width: 22, height: 22,
+                background: VER_GREEN, borderRadius: "50%",
+                border: "2px solid #fff",
+                display: "grid", placeItems: "center",
+                color: "#fff", fontSize: 10, fontWeight: 800,
+              }}>✓</div>
+            </div>
 
-              {otherSpecialties.length > 0 && (
-                <div style={{
-                  flex: 1, borderLeft: `1px solid ${BORDER}`,
-                  paddingLeft: 14, minWidth: 0,
-                }}>
-                  <div style={{
-                    fontSize: 10, color: "#94A3B8", fontWeight: 600,
-                    marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em",
-                  }}>
-                    También realiza:
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                    {otherSpecialties.map(sp => (
-                      <div key={sp} style={{ fontSize: 12.5, color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ color: ORANGE, fontWeight: 800, lineHeight: 1 }}>·</span>
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sp}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            <div style={{
+              fontFamily: "Archivo, sans-serif", fontWeight: 800,
+              fontSize: 18, color: NAVY,
+              letterSpacing: "-0.02em", lineHeight: 1.15,
+              marginBottom: 6,
+            }}>
+              {m.name}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginBottom: 6 }}>
+              <span style={{ display: "flex", gap: 1, color: "#F59E0B" }}>
+                {[1,2,3,4,5].map(i => i <= Math.round(m.rating)
+                  ? <StarFilled key={i} size={12} />
+                  : <StarEmpty key={i} size={12} />
+                )}
+              </span>
+              {m.rating > 0 ? (
+                <span style={{ fontSize: 11, color: "#64748B", fontFamily: "JetBrains Mono, monospace" }}>
+                  {m.rating.toFixed(1)} · {m.jobs} reseña{m.jobs !== 1 ? "s" : ""}
+                </span>
+              ) : (
+                <span style={{ fontSize: 11, color: "#94A3B8" }}>Sin reseñas aún</span>
               )}
             </div>
-          </div>
-        )}
 
-        {/* 4. Stats row */}
-        <div style={{
-          ...section,
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          background: "#fff",
-        }}>
-          {([
-            { icon: "📍", label: m.city || "Chile" },
-            { icon: "💼", label: m.jobs > 0 ? `${m.jobs} trabajos` : "Nuevo" },
-            { icon: "⭐", label: m.rating > 0 ? `${m.rating.toFixed(1)} cal.` : "—" },
-            { icon: "📅", label: yearsOnPlatform > 0 ? `${yearsOnPlatform} años` : "Nuevo" },
-          ] as const).map((stat, i) => (
-            <div key={i} style={{
-              padding: "12px 4px", textAlign: "center",
-              borderRight: i < 3 ? `1px solid ${BORDER}` : "none",
-            }}>
-              <div style={{ fontSize: 17, lineHeight: 1, marginBottom: 5 }}>{stat.icon}</div>
+            {m.verified && (
               <div style={{
-                fontSize: 10.5, color: "#475569", fontWeight: 500,
-                lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                paddingInline: 2,
+                display: "inline-flex", alignItems: "center", gap: 4,
+                color: VER_GREEN, fontSize: 11.5, fontWeight: 600,
               }}>
-                {stat.label}
+                <ShieldCheckIcon /> Maestro Verificado
+              </div>
+            )}
+          </div>
+
+          {/* 3. Specialty block */}
+          {mainSpecialty && (
+            <div style={{ ...sep, padding: "10px 12px" }}>
+              <div style={{
+                background: CARD_BG, borderRadius: 10, padding: "10px 12px",
+                border: `1px solid ${BORDER}`,
+                display: "flex",
+                gap: showTwoColSpecialty ? 12 : 0,
+                alignItems: showTwoColSpecialty ? "flex-start" : "center",
+                justifyContent: showTwoColSpecialty ? "flex-start" : "center",
+                flexDirection: showTwoColSpecialty ? "row" : "column",
+                textAlign: showTwoColSpecialty ? "left" : "center",
+              }}>
+                {/* Main specialty */}
+                <div style={{ flex: showTwoColSpecialty ? "0 0 auto" : undefined }}>
+                  <div style={{ fontSize: showTwoColSpecialty ? 30 : 34, lineHeight: 1, marginBottom: 4 }}>
+                    {specialtyEmoji}
+                  </div>
+                  <div style={{
+                    fontSize: 8, fontFamily: "JetBrains Mono, monospace",
+                    textTransform: "uppercase", letterSpacing: "0.1em",
+                    color: ORANGE, fontWeight: 700, marginBottom: 2,
+                  }}>
+                    Especialista en
+                  </div>
+                  <div style={{
+                    fontSize: showTwoColSpecialty ? 14 : 19,
+                    fontFamily: "Archivo, sans-serif",
+                    fontWeight: 800, color: NAVY, lineHeight: 1.2,
+                  }}>
+                    {mainSpecialty}
+                  </div>
+                </div>
+
+                {/* Other specialties — only shown when 2+ */}
+                {showTwoColSpecialty && (
+                  <div style={{
+                    flex: 1, borderLeft: `1px solid ${BORDER}`,
+                    paddingLeft: 12, minWidth: 0,
+                  }}>
+                    <div style={{
+                      fontSize: 9, color: "#94A3B8", fontWeight: 600,
+                      marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em",
+                    }}>
+                      También realiza:
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {otherSpecialties.map(sp => (
+                        <div key={sp} style={{ fontSize: 11.5, color: "#475569", display: "flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ color: ORANGE, fontWeight: 800, lineHeight: 1 }}>·</span>
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sp}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* 5. Availability banner */}
-        <div style={{
-          ...section,
-          padding: "11px 18px",
-          background: m.atiendeUrgencias ? "#F0FDF4" : CARD_BG,
-          display: "flex", alignItems: "center", gap: 9,
-        }}>
-          <span style={{ fontSize: 18, flexShrink: 0 }}>{m.atiendeUrgencias ? "🕐" : "📅"}</span>
-          <span style={{
-            fontSize: 12.5, fontWeight: 600,
-            color: m.atiendeUrgencias ? VER_GREEN : "#64748B",
-            lineHeight: 1.35,
-          }}>
-            {m.atiendeUrgencias
-              ? "Disponible esta semana · Responde en menos de 1 hora"
-              : "Consultar disponibilidad"}
-          </span>
-        </div>
-
-        {/* 6. WhatsApp CTA */}
-        {whatsappUrl && (
-          <div style={{ ...section, padding: "16px 16px" }}>
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={trackWhatsApp}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                background: WA_GREEN, color: "#fff",
-                borderRadius: 12, height: 56,
-                fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 15,
-                textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.03em",
-                width: "100%",
-                boxShadow: "0 2px 8px rgba(37,211,102,0.30)",
-              }}
-            >
-              <WhatsAppIcon size={22} /> Contactar por WhatsApp
-            </a>
-          </div>
-        )}
-
-        {/* 7. Other social media */}
-        {otherSocials.length > 0 && (
+          {/* 4. Stats row */}
           <div style={{
-            ...section,
-            padding: "16px",
-            display: "flex", justifyContent: "space-evenly", alignItems: "center",
+            ...sep,
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            background: "#fff",
           }}>
-            {otherSocials.map(s => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
-                  textDecoration: "none", color: s.color, flex: 1,
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40 }}>
-                  {s.icon}
-                </span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>{s.label}</span>
-              </a>
+            {([
+              { icon: "📍", label: m.city || "Chile" },
+              { icon: "💼", label: m.jobs > 0 ? `${m.jobs} trab.` : "Nuevo" },
+              { icon: "⭐", label: m.rating > 0 ? `${m.rating.toFixed(1)} cal.` : "—" },
+              { icon: "📅", label: yearsOnPlatform > 0 ? `${yearsOnPlatform} años` : "Nuevo" },
+            ] as const).map((stat, i) => (
+              <div key={i} style={{
+                padding: "8px 3px", textAlign: "center",
+                borderRight: i < 3 ? `1px solid ${BORDER}` : "none",
+              }}>
+                <div style={{ fontSize: 15, lineHeight: 1, marginBottom: 4 }}>{stat.icon}</div>
+                <div style={{
+                  fontSize: 10, color: "#475569", fontWeight: 500,
+                  lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  paddingInline: 2,
+                }}>
+                  {stat.label}
+                </div>
+              </div>
             ))}
           </div>
-        )}
 
-        {/* 8. QR section */}
-        <div style={{ ...section, padding: "14px 16px" }}>
+          {/* 5. Availability banner */}
           <div style={{
-            background: CARD_BG, borderRadius: 12, padding: "14px 16px",
-            border: `1px solid ${BORDER}`,
-            display: "flex", alignItems: "center", gap: 14,
+            ...sep,
+            padding: "8px 14px",
+            background: m.atiendeUrgencias ? "#F0FDF4" : CARD_BG,
+            display: "flex", alignItems: "center", gap: 8,
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
-              <div style={{ color: NAVY, flexShrink: 0 }}>
-                <MobileIcon />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{
-                  fontFamily: "Archivo, sans-serif", fontWeight: 700,
-                  fontSize: 13.5, color: NAVY, marginBottom: 3,
-                }}>
-                  Ver perfil completo
-                </div>
-                <div style={{ fontSize: 11, color: "#94A3B8", lineHeight: 1.4 }}>
-                  Escanea con tu celular para ver el perfil, galería y reseñas
-                </div>
-              </div>
-            </div>
-            <canvas
-              ref={qrRef}
-              style={{ background: "#fff", display: "block", borderRadius: 6, flexShrink: 0 }}
-            />
+            <span style={{ fontSize: 16, flexShrink: 0 }}>{m.atiendeUrgencias ? "🕐" : "📅"}</span>
+            <span style={{
+              fontSize: 11.5, fontWeight: 600,
+              color: m.atiendeUrgencias ? VER_GREEN : "#64748B",
+              lineHeight: 1.3,
+            }}>
+              {m.atiendeUrgencias
+                ? "Disponible esta semana · Responde en menos de 1 hora"
+                : "Consultar disponibilidad"}
+            </span>
           </div>
-        </div>
 
-        {/* 9. Footer: Save contact */}
-        <div style={{ padding: "14px 16px" }}>
-          <button
-            onClick={downloadVCard}
-            style={{
-              width: "100%",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              padding: "13px 16px",
-              border: `1.5px solid #CBD5E1`, borderRadius: 10,
-              background: "#fff", color: "#475569",
-              fontSize: 14, fontWeight: 600, cursor: "pointer",
-              fontFamily: "'Inter Tight', system-ui, sans-serif",
-              transition: "background 0.15s",
-            }}
-          >
-            <ContactIcon /> Guardar contacto
-          </button>
-        </div>
+          {/* 6. WhatsApp CTA */}
+          {whatsappUrl && (
+            <div style={{ ...sep, padding: "12px 14px" }}>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={trackWhatsApp}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+                  background: WA_GREEN, color: "#fff",
+                  borderRadius: 12, height: 48,
+                  fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 14,
+                  textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.03em",
+                  width: "100%",
+                  boxShadow: "0 2px 8px rgba(37,211,102,0.30)",
+                }}
+              >
+                <WhatsAppIcon size={20} /> Contactar por WhatsApp
+              </a>
+            </div>
+          )}
 
+          {/* 7. Other social media */}
+          {otherSocials.length > 0 && (
+            <div style={{
+              ...sep,
+              padding: "10px 16px",
+              display: "flex", justifyContent: "space-evenly", alignItems: "center",
+            }}>
+              {otherSocials.map(s => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+                    textDecoration: "none", color: s.color, flex: 1,
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40 }}>
+                    {s.icon}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B" }}>{s.label}</span>
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* 8. QR section */}
+          <div style={{ ...sep, padding: "10px 12px" }}>
+            <div style={{
+              background: CARD_BG, borderRadius: 10, padding: "10px 12px",
+              border: `1px solid ${BORDER}`,
+              display: "flex", alignItems: "center", gap: 12,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
+                <div style={{ color: NAVY, flexShrink: 0 }}>
+                  <MobileIcon />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: "Archivo, sans-serif", fontWeight: 700,
+                    fontSize: 12.5, color: NAVY, marginBottom: 2,
+                  }}>
+                    Ver perfil completo
+                  </div>
+                  <div style={{ fontSize: 10, color: "#94A3B8", lineHeight: 1.35 }}>
+                    Escanea para ver galería y reseñas
+                  </div>
+                </div>
+              </div>
+              <canvas
+                ref={qrRef}
+                style={{ background: "#fff", display: "block", borderRadius: 5, flexShrink: 0 }}
+              />
+            </div>
+          </div>
+
+          {/* 9. Footer: Save contact */}
+          <div style={{ padding: "10px 12px" }}>
+            <button
+              onClick={downloadVCard}
+              style={{
+                width: "100%",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                padding: "10px 14px",
+                border: `1.5px solid #CBD5E1`, borderRadius: 10,
+                background: "#fff", color: "#475569",
+                fontSize: 13, fontWeight: 600, cursor: "pointer",
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                transition: "background 0.15s",
+              }}
+            >
+              <ContactIcon /> Guardar contacto
+            </button>
+          </div>
+
+        </div>
       </div>
-    </div>
     </div>
   );
 }
