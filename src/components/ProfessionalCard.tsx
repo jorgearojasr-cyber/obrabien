@@ -259,20 +259,31 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
         height: clone.scrollHeight,
         scrollX: 0,
         scrollY: 0,
+        backgroundColor: "#ffffff",
         onclone: (_doc: Document, cloned: HTMLElement) => {
-          // Expand every element so nothing gets clipped
-          cloned.querySelectorAll<HTMLElement>("*").forEach(el => {
-            el.style.overflow = "visible";
-            el.style.textOverflow = "unset";
-            el.style.whiteSpace = "normal";
+          // White background on root and all elements, remove filters
+          cloned.style.backgroundColor = "white";
+          cloned.style.background = "white";
+          cloned.querySelectorAll<HTMLElement>("*").forEach(node => {
+            node.style.overflow = "visible";
+            node.style.textOverflow = "unset";
+            node.style.whiteSpace = "normal";
+            node.style.backdropFilter = "none";
+            node.style.filter = "none";
+            if (node.tagName === "DIV") {
+              node.style.height = "auto";
+              node.style.maxHeight = "none";
+            }
+            if (!node.style.backgroundColor) {
+              node.style.backgroundColor = "white";
+            }
           });
-          // Let stat containers size to their content
-          cloned.querySelectorAll<HTMLElement>("[data-stat]").forEach(el => {
-            el.style.height = "auto";
-            el.style.minHeight = "unset";
+          // Ensure images load cross-origin
+          cloned.querySelectorAll<HTMLImageElement>("img").forEach(img => {
+            img.crossOrigin = "anonymous";
           });
           // Wait for images
-          const imgs = Array.from(cloned.querySelectorAll("img"));
+          const imgs = Array.from(cloned.querySelectorAll<HTMLImageElement>("img"));
           return Promise.all(imgs.map(img =>
             img.complete
               ? Promise.resolve()
@@ -323,7 +334,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
         pdf.roundedRect(272, 18, 100, 24, 4, 4, "F");
         pdf.setFontSize(9);
         pdf.setTextColor(255, 255, 255);
-        pdf.text("✓ VERIFICADO", 277, 34);
+        pdf.text("VERIFICADO", 281, 34);
       }
 
       // Name
@@ -341,25 +352,25 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
       pdf.setFontSize(13);
       pdf.setTextColor(0, 0, 0);
       pdf.setFont("helvetica", "normal");
-      pdf.text(`📞  ${m.phone}`, 20, 148);
+      pdf.text(`Tel: ${m.phone}`, 20, 148);
       pdf.link(20, 136, 200, 18, { url: `tel:${m.phone.replace(/\s/g, "")}` });
 
       // City
-      pdf.text(`📍  ${m.city}`, 20, 170);
+      pdf.text(`Lugar: ${m.city}`, 20, 170);
 
       // Schedule
       if (m.schedule) {
         pdf.setFontSize(11);
         pdf.setTextColor(100, 100, 100);
-        pdf.text(`🕐  ${m.schedule}`, 20, 190);
+        pdf.text(`Horario: ${m.schedule}`, 20, 190);
       }
 
       // Stats row
       const stats = [
-        m.yearsExp ? `${m.yearsExp} años exp.` : null,
+        m.yearsExp ? `${m.yearsExp} anos exp.` : null,
         m.jobs ? `${m.jobs} trabajos` : null,
-        m.rating ? `${m.rating.toFixed(1)} ★` : "Sin reseñas",
-        m.verified ? "Verificado ✓" : null,
+        m.rating ? `${m.rating.toFixed(1)} estrellas` : "Sin resenas",
+        m.verified ? "Verificado" : null,
       ].filter(Boolean) as string[];
       pdf.setFontSize(10);
       pdf.setTextColor(60, 60, 60);
