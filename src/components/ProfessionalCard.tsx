@@ -129,6 +129,15 @@ function ContactIcon() {
   );
 }
 
+function ShareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+    </svg>
+  );
+}
+
 interface Props {
   m: Master;
   bg: string;
@@ -139,8 +148,11 @@ interface Props {
 export default function ProfessionalCard({ m, maestroId }: Props) {
   const qrRef = useRef<HTMLCanvasElement>(null);
   const qrModalRef = useRef<HTMLCanvasElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
 
   useEffect(() => {
     if (!photoOpen) return;
@@ -205,6 +217,51 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     }
   };
 
+  const profileUrl = typeof window !== "undefined" ? `${window.location.origin}/maestro/${m.id ?? maestroId}` : "";
+
+  const shareWhatsApp = () => {
+    const text = encodeURIComponent(`Mira el perfil de ${m.name} en ObraBien: ${profileUrl}`);
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+    setShareOpen(false);
+  };
+
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(profileUrl); } catch { /* ignore */ }
+    setToastMsg("¡Enlace copiado!");
+    setTimeout(() => setToastMsg(""), 2500);
+    setShareOpen(false);
+  };
+
+  const downloadPNG = async () => {
+    if (!cardRef.current) return;
+    setShareOpen(false);
+    const { default: html2canvas } = await import("html2canvas");
+    const canvas = await html2canvas(cardRef.current, { useCORS: true, scale: 2 });
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = `${m.name.toLowerCase().replace(/\s+/g, "-")}-obrabien.png`;
+    a.click();
+  };
+
+  const downloadPDF = async () => {
+    if (!cardRef.current) return;
+    setShareOpen(false);
+    const { default: html2canvas } = await import("html2canvas");
+    const { jsPDF } = await import("jspdf");
+    const canvas = await html2canvas(cardRef.current, { useCORS: true, scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const w = canvas.width / 2;
+    const h = canvas.height / 2;
+    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [w, h] });
+    pdf.addImage(imgData, "PNG", 0, 0, w, h);
+    pdf.save(`${m.name.toLowerCase().replace(/\s+/g, "-")}-obrabien.pdf`);
+  };
+
+  const showQrLarge = () => {
+    setShareOpen(false);
+    setQrOpen(true);
+  };
+
   const mainSpecialty = m.specialties[0] ?? "";
   const otherSpecialties = m.specialties.slice(1);
   const specialtyEmoji = SPECIALTY_EMOJI[mainSpecialty] ?? "🛠️";
@@ -247,7 +304,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
       padding: "12px 0",
     }}>
       <div style={{ width: "100%", maxWidth: 420, fontFamily: "'Inter Tight', system-ui, sans-serif" }}>
-        <div style={{
+        <div ref={cardRef} style={{
           background: "#fff",
           borderRadius: 16,
           overflow: "hidden",
@@ -589,22 +646,35 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             </div>
           </div>
 
-          {/* 9. Footer: Save contact */}
-          <div style={{ padding: "10px 12px" }}>
+          {/* 9. Footer: Save contact + Share */}
+          <div style={{ padding: "10px 12px", display: "flex", gap: 8 }}>
             <button
               onClick={downloadVCard}
               style={{
-                width: "100%",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                padding: "10px 14px",
+                flex: 1,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                padding: "9px 10px",
                 border: `1.5px solid #CBD5E1`, borderRadius: 10,
                 background: "#fff", color: "#475569",
-                fontSize: 13, fontWeight: 600, cursor: "pointer",
+                fontSize: 12, fontWeight: 600, cursor: "pointer",
                 fontFamily: "'Inter Tight', system-ui, sans-serif",
-                transition: "background 0.15s",
               }}
             >
               <ContactIcon /> Guardar contacto
+            </button>
+            <button
+              onClick={() => setShareOpen(true)}
+              style={{
+                flex: 1,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                padding: "9px 10px",
+                border: `1.5px solid #CBD5E1`, borderRadius: 10,
+                background: "#fff", color: "#475569",
+                fontSize: 12, fontWeight: 600, cursor: "pointer",
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+              }}
+            >
+              <ShareIcon /> Compartir perfil
             </button>
           </div>
 
@@ -687,6 +757,93 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             Toca fuera para cerrar
           </p>
         </div>
+      )}
+
+      {/* Share bottom sheet */}
+      {shareOpen && (
+        <div
+          onClick={() => setShareOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: "100%", maxWidth: 480,
+              background: "#fff",
+              borderRadius: "16px 16px 0 0",
+              padding: "8px 0 24px",
+              boxShadow: "0 -4px 32px rgba(0,0,0,0.18)",
+            }}
+          >
+            {/* drag handle */}
+            <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 14px" }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "#CBD5E1" }} />
+            </div>
+            <p style={{
+              margin: "0 0 12px", textAlign: "center",
+              fontSize: 13, fontWeight: 700, color: NAVY,
+              fontFamily: "'Inter Tight', system-ui, sans-serif",
+              letterSpacing: "0.01em",
+            }}>Compartir perfil</p>
+            {[
+              { emoji: "💬", label: "Compartir por WhatsApp", action: shareWhatsApp, color: WA_GREEN },
+              { emoji: "🔗", label: "Copiar enlace",          action: copyLink,      color: "#3B82F6" },
+              { emoji: "🖼️", label: "Descargar imagen (PNG)", action: downloadPNG,   color: "#7C3AED" },
+              { emoji: "📄", label: "Descargar PDF",          action: downloadPDF,   color: "#DC2626" },
+              { emoji: "📱", label: "Mostrar código QR",      action: showQrLarge,   color: NAVY },
+            ].map(({ emoji, label, action, color }) => (
+              <button
+                key={label}
+                onClick={action}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 14,
+                  padding: "13px 24px", background: "none", border: "none",
+                  cursor: "pointer", textAlign: "left",
+                  fontFamily: "'Inter Tight', system-ui, sans-serif",
+                  fontSize: 14, fontWeight: 500, color: "#1E293B",
+                  borderBottom: "1px solid #F1F5F9",
+                }}
+              >
+                <span style={{
+                  width: 38, height: 38, borderRadius: 10,
+                  background: color + "18",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 18, flexShrink: 0,
+                }}>{emoji}</span>
+                {label}
+              </button>
+            ))}
+            <button
+              onClick={() => setShareOpen(false)}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "14px 24px", background: "none", border: "none",
+                cursor: "pointer",
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                fontSize: 14, fontWeight: 600, color: "#94A3B8",
+                marginTop: 4,
+              }}
+            >Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toastMsg && (
+        <div style={{
+          position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)",
+          zIndex: 10000,
+          background: "#1E293B", color: "#fff",
+          padding: "10px 20px", borderRadius: 10,
+          fontSize: 13, fontWeight: 600,
+          fontFamily: "'Inter Tight', system-ui, sans-serif",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+          pointerEvents: "none",
+        }}>{toastMsg}</div>
       )}
   </>);
 }
