@@ -273,7 +273,7 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 /* === Maestro profile responsive layout === */
 .maestro-grid {
   display: grid;
-  grid-template-columns: 1fr min(420px, 100%);
+  grid-template-columns: 1fr min(422px, 100%);
   gap: 28px;
   align-items: start;
 }
@@ -290,7 +290,7 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
     position: static;
     order: -1;
     width: 100%;
-    max-width: 420px;
+    max-width: 422px;
     margin: 0 auto;
   }
   .maestro-profile-header {
