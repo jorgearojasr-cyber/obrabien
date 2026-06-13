@@ -232,29 +232,45 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     setShareOpen(false);
   };
 
-  const downloadPNG = async () => {
-    if (!cardRef.current) return;
-    setShareOpen(false);
+  const captureCard = async () => {
+    const el = cardRef.current;
+    if (!el) return null;
+    el.scrollIntoView({ block: "start", behavior: "instant" });
+    await new Promise(r => setTimeout(r, 80));
     const { default: html2canvas } = await import("html2canvas");
-    const canvas = await html2canvas(cardRef.current, { useCORS: true, scale: 2 });
+    return html2canvas(el, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      scrollY: -window.scrollY,
+      width: el.scrollWidth,
+      height: el.scrollHeight,
+      windowWidth: el.scrollWidth,
+    });
+  };
+
+  const slug = m.name.toLowerCase().replace(/\s+/g, "-");
+
+  const downloadPNG = async () => {
+    setShareOpen(false);
+    const canvas = await captureCard();
+    if (!canvas) return;
     const a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
-    a.download = `${m.name.toLowerCase().replace(/\s+/g, "-")}-obrabien.png`;
+    a.download = `tarjeta-${slug}-obrabien.png`;
     a.click();
   };
 
   const downloadPDF = async () => {
-    if (!cardRef.current) return;
     setShareOpen(false);
-    const { default: html2canvas } = await import("html2canvas");
+    const canvas = await captureCard();
+    if (!canvas) return;
     const { jsPDF } = await import("jspdf");
-    const canvas = await html2canvas(cardRef.current, { useCORS: true, scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const w = canvas.width / 2;
-    const h = canvas.height / 2;
-    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [w, h] });
-    pdf.addImage(imgData, "PNG", 0, 0, w, h);
-    pdf.save(`${m.name.toLowerCase().replace(/\s+/g, "-")}-obrabien.pdf`);
+    const pdfW = 390;
+    const pdfH = Math.round((canvas.height / canvas.width) * pdfW);
+    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [pdfW, pdfH] });
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfW, pdfH);
+    pdf.save(`tarjeta-${slug}-obrabien.pdf`);
   };
 
   const showQrLarge = () => {
