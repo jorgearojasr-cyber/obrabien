@@ -278,25 +278,72 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   overflow: hidden;
 }
 
-/* Hero text content — responsive padding and font size */
+/* Background-position controlled here so mobile can override */
+.hero-bg {
+  background-position: 60% center;
+}
+
+/* Overlay gradient — desktop: left-to-right white fade */
+.hero-overlay-gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(255,255,255,1.00) 0%,
+    rgba(255,255,255,0.98) 35%,
+    rgba(255,255,255,0.60) 55%,
+    transparent 75%
+  );
+}
+
+/* Hero text content */
 .hero-text {
   position: relative;
   z-index: 1;
-  max-width: 500px;
+  max-width: 520px;
   padding: 60px 48px 60px 0;
 }
 
+/* CTA button row */
+.hero-cta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
+  .hero-bg {
+    background-position: 65% 15%;
+  }
+  /* Solid white overlay on mobile so text stays readable */
+  .hero-overlay-gradient {
+    background: rgba(255,255,255,0.82) !important;
+  }
   .hero-text {
     padding: 28px 16px 36px;
     max-width: 100%;
   }
   .hero-text h1 {
-    font-size: clamp(22px, 7.5vw, 30px) !important;
+    font-size: clamp(22px, 7vw, 30px) !important;
     line-height: 1.1 !important;
   }
+  .hero-text h1 span {
+    font-size: clamp(26px, 8.5vw, 36px) !important;
+  }
   .hero-text p {
-    font-size: 14px !important;
+    font-size: 13.5px !important;
+  }
+  .hero-benefits {
+    gap: 10px 16px !important;
+  }
+  .hero-cta {
+    flex-direction: column;
+  }
+  .hero-cta a {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
   }
 }
 

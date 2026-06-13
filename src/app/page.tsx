@@ -125,105 +125,95 @@ export default async function Home() {
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <div style={{ background: "var(--bg)", padding: "16px 0 0" }}>
         <div className="wrap">
-      <section style={{
-        position: "relative",
-        width: "100%",
-        minHeight: 550,
-        margin: 0,
-        overflow: "hidden",
-        borderRadius: 12,
-        display: "flex",
-        alignItems: "center",
-        backgroundImage: "url(https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png)",
-        backgroundSize: "cover",
-        backgroundPosition: "60% center",
-      }}>
-        {/* Beige overlay: opaque left → transparent right */}
-        <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none",
-          background: "linear-gradient(to right, rgba(248,245,240,0.96) 0%, rgba(248,245,240,0.96) 42%, rgba(248,245,240,0.4) 62%, transparent 80%)",
-        }} />
-
-        {/* Content */}
-        <div className="hero-text">
-
-          {/* Badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#1B2B4B", color: "#fff",
-              padding: "5px 13px", borderRadius: 999,
-              fontFamily: "var(--font-jetbrains), monospace", fontSize: 9.5,
-              letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700,
-            }}>
-              <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
-              ObraBien · Plataforma chilena
-            </span>
-            <span style={{
-              fontFamily: "var(--font-jetbrains), monospace", fontSize: 10,
-              color: "#6B7C8F", textTransform: "uppercase", letterSpacing: "0.07em",
-            }}>
-              {displayMaestros} maestros · {displayCiudades} ciudades
-            </span>
-          </div>
-
-          {/* Title */}
-          <h1 style={{
-            fontFamily: "var(--font-archivo), sans-serif",
-            fontSize: "clamp(30px, 3.6vw, 56px)", fontWeight: 900, lineHeight: 1.05,
-            color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 18px",
+          <section className="hero-bg" style={{
+            position: "relative",
+            width: "100%",
+            minHeight: 550,
+            margin: 0,
+            overflow: "hidden",
+            borderRadius: 12,
+            display: "flex",
+            alignItems: "center",
+            backgroundImage: "url(https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png)",
+            backgroundSize: "cover",
           }}>
-            Encuentra<br />
-            <span style={{ color: "#F97316" }}>maestros confiables</span><br />
-            para tu proyecto.
-          </h1>
+            {/* Overlay — CSS class controls desktop vs mobile */}
+            <div className="hero-overlay-gradient" />
 
-          {/* Subtitle */}
-          <p style={{ fontSize: 15.5, color: "#475569", margin: "0 0 24px", lineHeight: 1.65 }}>
-            Albañiles, gasfiter, electricistas, carpinteros y más.
-            Revisa perfiles, reseñas reales y contáctalos directo — sin intermediarios.
-          </p>
+            {/* Content */}
+            <div className="hero-text">
 
-          {/* Trust items */}
-          <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 30 }}>
-            {[
-              { Icon: ShieldCheck, label: "Maestros verificados" },
-              { Icon: Star,        label: "Calificaciones reales" },
-              { Icon: Gift,        label: "100% gratis" },
-            ].map(({ Icon, label }) => (
-              <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, color: "#1B2B4B", fontSize: 13, fontWeight: 600 }}>
-                <Icon size={15} color="#F97316" strokeWidth={2.2} />
-                {label}
-              </span>
-            ))}
-          </div>
+              {/* Badge */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  background: "#1B2B4B", color: "#fff",
+                  padding: "5px 13px", borderRadius: 999,
+                  fontFamily: "var(--font-jetbrains), monospace", fontSize: 9.5,
+                  letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700,
+                }}>
+                  <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
+                  ObraBien · Plataforma chilena
+                </span>
+                <span style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: 10, color: "#6B7C8F", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                  {displayMaestros} maestros · {displayCiudades} ciudades
+                </span>
+              </div>
 
-          {/* CTA Buttons */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link href="/buscar" style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-              background: "#F97316", color: "#fff",
-              padding: "14px 28px", borderRadius: 10,
-              fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15.5,
-              textDecoration: "none", letterSpacing: "-0.01em",
-              boxShadow: "0 4px 16px rgba(249,115,22,0.40)",
-            }}>
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-              Buscar maestros
-            </Link>
-            <Link href="/registro" style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-              background: "transparent", color: "#1B2B4B",
-              border: "1.5px solid #1B2B4B",
-              padding: "14px 24px", borderRadius: 10,
-              fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14.5,
-              textDecoration: "none",
-            }}>
-              ⛑ Regístrate como maestro
-            </Link>
-          </div>
-        </div>
-      </section>
+              {/* Title — orange words are larger for visual impact */}
+              <h1 style={{
+                fontFamily: "var(--font-archivo), sans-serif",
+                fontSize: "clamp(26px, 3.0vw, 46px)", fontWeight: 900, lineHeight: 1.06,
+                color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 16px",
+              }}>
+                Encuentra<br />
+                <span style={{ color: "#F97316", fontSize: "clamp(34px, 4.4vw, 66px)" }}>maestros</span><br />
+                <span style={{ color: "#F97316", fontSize: "clamp(34px, 4.4vw, 66px)" }}>confiables</span><br />
+                para tu proyecto.
+              </h1>
+
+              {/* Subtitle */}
+              <p style={{ fontSize: 14, color: "#6B7280", margin: "0 0 22px", lineHeight: 1.6 }}>
+                Albañiles, gasfiter, electricistas, carpinteros y más.
+                Revisa perfiles, reseñas reales y contáctalos directamente.
+              </p>
+
+              {/* Benefits row */}
+              <div className="hero-benefits" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 28 }}>
+                {["Maestros verificados", "Calificaciones reales", "100% gratis"].map((label, i) => (
+                  <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, color: "#374151", fontSize: 13, fontWeight: 500 }}>
+                    {i > 0 && <span style={{ color: "#D1D5DB", marginRight: 4 }}>·</span>}
+                    <span style={{ color: "#16A34A", fontWeight: 700 }}>✓</span>
+                    {label}
+                  </span>
+                ))}
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="hero-cta">
+                <Link href="/buscar" style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  background: "#F97316", color: "#fff",
+                  padding: "14px 28px", borderRadius: 10,
+                  fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15.5,
+                  textDecoration: "none", letterSpacing: "-0.01em",
+                  boxShadow: "0 4px 16px rgba(249,115,22,0.40)",
+                }}>
+                  🔍 Buscar maestros
+                </Link>
+                <Link href="/registro" style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  background: "transparent", color: "#1B2B4B",
+                  border: "1.5px solid #1B2B4B",
+                  padding: "14px 22px", borderRadius: 10,
+                  fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14,
+                  textDecoration: "none",
+                }}>
+                  👷 Soy maestro · Publica tu perfil gratis
+                </Link>
+              </div>
+            </div>
+          </section>
         </div>{/* /.wrap */}
       </div>{/* /hero wrapper */}
 
