@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Master } from "@/lib/data";
 import { LogoMark } from "@/components/LogoMark";
 
@@ -109,6 +109,8 @@ interface Props {
 
 export default function ProfessionalCard({ m, maestroId }: Props) {
   const qrRef = useRef<HTMLCanvasElement>(null);
+  const qrModalRef = useRef<HTMLCanvasElement>(null);
+  const [qrOpen, setQrOpen] = useState(false);
 
   useEffect(() => {
     const canvas = qrRef.current;
@@ -122,6 +124,19 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
       });
     });
   }, [m.id]);
+
+  useEffect(() => {
+    const canvas = qrModalRef.current;
+    if (!canvas || !qrOpen) return;
+    const url = `${window.location.origin}/maestro/${m.id}`;
+    import("qrcode").then((QRCode) => {
+      QRCode.toCanvas(canvas, url, {
+        width: 280,
+        margin: 2,
+        color: { dark: NAVY, light: "#FFFFFF" },
+      });
+    });
+  }, [m.id, qrOpen]);
 
   const downloadVCard = () => {
     const lines = [
@@ -183,7 +198,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
 
   const sep: React.CSSProperties = { borderBottom: `1px solid ${BORDER}` };
 
-  return (
+  return (<>
     <div style={{
       display: "flex",
       alignItems: "center",
@@ -479,7 +494,9 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               </div>
               <canvas
                 ref={qrRef}
-                style={{ background: "#fff", display: "block", borderRadius: 5, flexShrink: 0 }}
+                onClick={() => setQrOpen(true)}
+                title="Toca para ampliar"
+                style={{ background: "#fff", display: "block", borderRadius: 5, flexShrink: 0, cursor: "pointer" }}
               />
             </div>
           </div>
@@ -506,5 +523,41 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
         </div>
       </div>
     </div>
-  );
+
+      {/* QR modal */}
+      {qrOpen && (
+        <div
+          onClick={() => setQrOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0,0,0,0.85)",
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center",
+            gap: 20, cursor: "pointer",
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: 16, padding: 28,
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+              boxShadow: "0 8px 40px rgba(0,0,0,0.4)",
+              cursor: "default",
+            }}
+          >
+            <canvas ref={qrModalRef} style={{ display: "block", borderRadius: 8 }} />
+            <p style={{
+              margin: 0, fontSize: 14, fontWeight: 600, color: NAVY,
+              fontFamily: "'Inter Tight', system-ui, sans-serif",
+              textAlign: "center",
+            }}>
+              Escanea para ver el perfil completo
+            </p>
+          </div>
+          <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>
+            Toca fuera para cerrar
+          </p>
+        </div>
+      )}
+  </>);
 }
