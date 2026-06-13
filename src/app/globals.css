@@ -287,9 +287,24 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 }
 
 @media (max-width: 768px) {
+  /* Background position: maestro a la derecha, texto visible a la izquierda */
+  .hero-section-img {
+    background-position: 70% 15% !important;
+  }
+  /* Overlay sólido blanco para garantizar legibilidad del texto */
+  .hero-overlay {
+    background: rgba(255,255,255,0.88) !important;
+  }
   .hero-text {
     padding: 28px 16px 36px;
     max-width: 100%;
+  }
+  /* Forzar color navy en todos los elementos de texto del hero */
+  .hero-text h1,
+  .hero-text h1 span,
+  .hero-text p,
+  .hero-text > div span {
+    color: #1B2B4B !important;
   }
   .hero-text h1 {
     font-size: clamp(22px, 7.5vw, 30px) !important;
@@ -297,6 +312,7 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   }
   .hero-text p {
     font-size: 14px !important;
+    color: #374151 !important;
   }
 }
 

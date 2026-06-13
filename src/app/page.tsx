@@ -125,7 +125,7 @@ export default async function Home() {
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <div style={{ background: "var(--bg)", padding: "16px 0 0" }}>
         <div className="wrap">
-      <section style={{
+      <section className="hero-section-img" style={{
         position: "relative",
         width: "100%",
         minHeight: 550,
@@ -138,8 +138,8 @@ export default async function Home() {
         backgroundSize: "cover",
         backgroundPosition: "60% center",
       }}>
-        {/* Beige overlay: opaque left → transparent right */}
-        <div style={{
+        {/* Overlay — CSS mobile override changes to solid white */}
+        <div className="hero-overlay" style={{
           position: "absolute", inset: 0, pointerEvents: "none",
           background: "linear-gradient(to right, rgba(248,245,240,0.96) 0%, rgba(248,245,240,0.96) 42%, rgba(248,245,240,0.4) 62%, transparent 80%)",
         }} />
