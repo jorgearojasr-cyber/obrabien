@@ -239,8 +239,25 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   const captureBlob = async (): Promise<Blob> => {
     const node = cardRef.current!;
     const footer = node.querySelector<HTMLElement>(".botones-inferiores");
+    const imgEl = node.querySelector<HTMLImageElement>("img.foto-perfil");
+    const originalSrc = imgEl?.src ?? null;
+    let blobUrl: string | null = null;
+
     if (footer) footer.style.display = "none";
     try {
+      // Preload profile photo as local blob to avoid CORS issues on Safari/iOS
+      if (imgEl && originalSrc) {
+        try {
+          const res = await fetch(originalSrc, { mode: "cors" });
+          const photoBlob = await res.blob();
+          blobUrl = URL.createObjectURL(photoBlob);
+          imgEl.src = blobUrl;
+          await new Promise(r => setTimeout(r, 300));
+        } catch {
+          // If fetch fails, proceed with original src
+        }
+      }
+
       return await domtoimage.toBlob(node, {
         width: node.offsetWidth,
         height: node.scrollHeight,
@@ -250,6 +267,8 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
       }) as Blob;
     } finally {
       if (footer) footer.style.display = "";
+      if (imgEl && originalSrc) imgEl.src = originalSrc;
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
     }
   };
 
@@ -387,7 +406,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 >
                   {m.photoUrl
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    ? <img src={m.photoUrl} alt={m.name} crossOrigin="anonymous" className="foto-perfil" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     : m.initials}
                 </div>
                 <div style={{
