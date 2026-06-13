@@ -145,7 +145,7 @@ export default async function Home() {
         }} />
 
         {/* Content */}
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 500, padding: "60px 48px" }}>
+        <div className="hero-text">
 
           {/* Badge */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
