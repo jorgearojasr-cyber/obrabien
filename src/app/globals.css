@@ -270,54 +270,52 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   }
 }
 
-/* === Hero section === */
+/* === Hero section — two-zone layout === */
 .hero-section {
-  position: relative;
-  min-height: 600px;
-  display: flex;
-  align-items: center;
   overflow: hidden;
 }
 
-.hero-bg-img {
-  object-position: right center !important;
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 580px;
 }
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  /* Desktop: navy left 65% → transparent right, letting 40%+ of photo show */
-  background: linear-gradient(
-    to right,
-    rgba(27,43,75,0.80) 0%,
-    rgba(27,43,75,0.72) 32%,
-    rgba(27,43,75,0.22) 58%,
-    transparent 100%
-  );
+/* Left: solid navy, text centered vertically */
+.hero-left {
+  background: #1B2B4B;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px clamp(20px, 4vw, 56px);
+  overflow: hidden;
+}
+
+/* Right: image fills the column, no overlay */
+.hero-right {
+  position: relative;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
-  .hero-section {
-    min-height: 500px;
-    align-items: flex-end;
+  /* Stack vertically: image on top, navy text below */
+  .hero-grid {
+    display: flex;
+    flex-direction: column;
+    height: auto;
   }
-  .hero-bg-img {
-    object-position: center 20% !important;
+  .hero-right {
+    height: 250px;
+    flex-shrink: 0;
+    order: -1; /* image goes above the text block */
   }
-  /* Mobile: darker at bottom (where text sits), fade to transparent at top */
-  .hero-overlay {
-    background: linear-gradient(
-      to top,
-      rgba(27,43,75,0.96) 0%,
-      rgba(27,43,75,0.85) 38%,
-      rgba(27,43,75,0.30) 62%,
-      transparent 100%
-    );
+  /* Show maestro face on mobile */
+  .hero-right img {
+    object-position: center 15% !important;
   }
-  .hero-content {
-    padding-top: 32px !important;
-    padding-bottom: 36px !important;
+  .hero-left {
+    padding: 28px 20px 36px;
+    justify-content: flex-start;
   }
 }
 
