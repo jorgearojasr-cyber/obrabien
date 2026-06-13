@@ -274,18 +274,18 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
       </button>
 
       {/* Photo with availability dot */}
-      <div style={{ position: "relative", flexShrink: 0, minWidth: 80 }}>
+      <div style={{ position: "relative", flexShrink: 0, width: 80, height: 80, minWidth: 80 }}>
         <div style={{
           width: 80, height: 80, borderRadius: "50%",
           background: bg, color: fg,
           display: "grid", placeItems: "center",
           fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 24,
-          overflow: "hidden", border: "3px solid #fff",
+          overflow: "hidden",
           boxShadow: "0 0 0 2px #E2E8F0",
         }}>
           {m.photoUrl
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center center", display: "block" }} />
+            ? <img src={m.photoUrl} alt={m.name} style={{ width: 80, height: 80, objectFit: "cover", objectPosition: "center center", display: "block", borderRadius: "50%" }} />
             : m.initials}
         </div>
         {/* Availability dot */}
@@ -649,49 +649,92 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
 
       {/* ── Results ── */}
       <div className="wrap" style={{ paddingTop: 24, paddingBottom: 64 }}>
-        {/* Count + sort */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-          <span style={{ fontSize: 13, color: "#64748B", fontFamily: "var(--font-jetbrains), monospace" }}>
-            {sorted.length === allMaestros.length
-              ? `${sorted.length} maestros encontrados`
-              : `${sorted.length} resultado${sorted.length !== 1 ? "s" : ""} de ${allMaestros.length} maestros`}
-          </span>
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as SortKey)}
-            style={{ height: 36, border: "1.5px solid #E2E8F0", padding: "0 10px", fontSize: 13, background: "#fff", cursor: "pointer", borderRadius: 8 }}
-          >
-            <option value="relevantes">Más relevantes</option>
-            <option value="rating">Mejor puntuación</option>
-            <option value="experiencia">Más experiencia</option>
-            <option value="recientes">Recién agregados</option>
-          </select>
-        </div>
+        <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
 
-        {sorted.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {sorted.map((m, i) => (
-              <MasterCard
-                key={m.id} m={m} idx={i}
-                isFav={favs.has(m.id)} onToggleFav={() => toggle(m.id)}
-                isReal={realIds.has(m.id)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", padding: "64px 24px", background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12 }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-            <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 20, color: "#1B2B4B", marginBottom: 8 }}>
-              Sin resultados
+          {/* Left: results list */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Count + sort */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+              <span style={{ fontSize: 13, color: "#64748B", fontFamily: "var(--font-jetbrains), monospace" }}>
+                {sorted.length === allMaestros.length
+                  ? `${sorted.length} maestros encontrados`
+                  : `${sorted.length} resultado${sorted.length !== 1 ? "s" : ""} de ${allMaestros.length} maestros`}
+              </span>
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value as SortKey)}
+                style={{ height: 36, border: "1.5px solid #E2E8F0", padding: "0 10px", fontSize: 13, background: "#fff", cursor: "pointer", borderRadius: 8 }}
+              >
+                <option value="relevantes">Más relevantes</option>
+                <option value="rating">Mejor puntuación</option>
+                <option value="experiencia">Más experiencia</option>
+                <option value="recientes">Recién agregados</option>
+              </select>
             </div>
-            <p style={{ fontSize: 14.5, color: "#64748B", marginBottom: 24 }}>
-              No encontramos maestros con esos filtros. Intenta ampliar la búsqueda.
-            </p>
-            <button onClick={clearAll} style={{ height: 44, padding: "0 24px", background: "#F97316", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}>
-              Ver todos los maestros
-            </button>
+
+            {sorted.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {sorted.map((m, i) => (
+                  <MasterCard
+                    key={m.id} m={m} idx={i}
+                    isFav={favs.has(m.id)} onToggleFav={() => toggle(m.id)}
+                    isReal={realIds.has(m.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", padding: "64px 24px", background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12 }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+                <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 20, color: "#1B2B4B", marginBottom: 8 }}>Sin resultados</div>
+                <p style={{ fontSize: 14.5, color: "#64748B", marginBottom: 24 }}>No encontramos maestros con esos filtros. Intenta ampliar la búsqueda.</p>
+                <button onClick={clearAll} style={{ height: 44, padding: "0 24px", background: "#F97316", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}>
+                  Ver todos los maestros
+                </button>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Right: tips sidebar — hidden on mobile via CSS */}
+          <div className="buscar-tips" style={{ width: 280, flexShrink: 0, position: "sticky", top: 80 }}>
+            <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: "20px" }}>
+              <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15, color: "#1B2B4B", marginBottom: 16 }}>
+                Consejos para elegir
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {[
+                  { icon: "🛡️", title: "Elige maestros verificados", text: "Todos pasan por verificación de identidad" },
+                  { icon: "⭐", title: "Revisa las reseñas", text: "Lee opiniones de otros clientes" },
+                  { icon: "💬", title: "Comunícate antes", text: "Habla por WhatsApp antes de contratar" },
+                  { icon: "🔒", title: "Paga de forma segura", text: "Nunca pagues adelantado" },
+                ].map(tip => (
+                  <div key={tip.title} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{tip.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "#1B2B4B", marginBottom: 2 }}>{tip.title}</div>
+                      <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>{tip.text}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ borderTop: "1px solid #E2E8F0", marginTop: 20, paddingTop: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#475569", marginBottom: 10 }}>
+                  ¿No encuentras lo que buscas?
+                </div>
+                <Link href="/empleos/publicar" style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  background: "#1B2B4B", color: "#fff",
+                  padding: "10px 16px", borderRadius: 8,
+                  fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 13,
+                  textDecoration: "none",
+                }}>
+                  Publicar proyecto →
+                </Link>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
     </>

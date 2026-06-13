@@ -378,6 +378,10 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   }
 }
 
+/* === Buscar tips sidebar — hidden on mobile === */
+.buscar-tips { display: block; }
+@media (max-width: 768px) { .buscar-tips { display: none !important; } }
+
 /* === Stats bar grid — 4 col desktop / 2x2 mobile === */
 .stats-grid {
   display: grid;
