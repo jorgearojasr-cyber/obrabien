@@ -290,18 +290,18 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           <div style={{ ...sep, background: CARD_BG, padding: "16px 16px 14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
 
-              {/* LEFT — photo */}
-              <div style={{ position: "relative", flexShrink: 0 }}>
+              {/* LEFT — photo, never shrinks */}
+              <div style={{ position: "relative", flexShrink: 0, width: 120, height: 120 }}>
                 <div
                   onClick={() => m.photoUrl && setPhotoOpen(true)}
                   title={m.photoUrl ? "Ver foto" : undefined}
                   style={{
-                    width: 110, height: 110,
+                    width: 120, height: 120,
                     borderRadius: "50%",
                     background: m.photoUrl ? "transparent" : ORANGE,
                     color: "#fff",
                     display: "grid", placeItems: "center",
-                    fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 34,
+                    fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 36,
                     border: `3px solid ${ORANGE}`,
                     overflow: "hidden",
                     cursor: m.photoUrl ? "pointer" : "default",
@@ -322,14 +322,18 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 }}>✓</div>
               </div>
 
-              {/* RIGHT — name, phone, location */}
-              <div style={{ flex: 1, minWidth: 0 }}>
+              {/* RIGHT — name, phone, location — clipped so nothing overflows */}
+              <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                {/* Name: up to 2 lines, tight leading */}
                 <div style={{
                   fontFamily: "Archivo, sans-serif", fontWeight: 700,
-                  fontSize: 18, color: NAVY,
-                  letterSpacing: "-0.02em", lineHeight: 1.2,
-                  marginBottom: 6, whiteSpace: "nowrap",
-                  overflow: "hidden", textOverflow: "ellipsis",
+                  fontSize: 16, color: NAVY,
+                  letterSpacing: "-0.02em", lineHeight: 1.25,
+                  marginBottom: 6,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical" as const,
+                  overflow: "hidden",
                 }}>
                   {m.name}
                 </div>
@@ -345,22 +349,22 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                     : `+56 ${national}`;
                   return (
                     <a href={`tel:${tel}`} style={{
-                      display: "flex", alignItems: "center", gap: 5,
-                      color: NAVY, fontSize: 14, fontWeight: 600,
-                      textDecoration: "none", marginBottom: 5,
+                      display: "flex", alignItems: "center", gap: 4,
+                      color: NAVY, fontSize: 13, fontWeight: 600,
+                      textDecoration: "none", marginBottom: 4,
                     }}>
-                      <span style={{ fontSize: 14, color: "#E11D48", flexShrink: 0 }}>📞</span>
-                      <span style={{ whiteSpace: "nowrap" }}>{display}</span>
+                      <span style={{ fontSize: 13, color: "#E11D48", flexShrink: 0 }}>📞</span>
+                      <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{display}</span>
                     </a>
                   );
                 })()}
 
-                {/* Location */}
+                {/* Location — first city only */}
                 {m.city && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, color: "#64748B" }}>
-                    <span style={{ color: "#E11D48", fontSize: 13, flexShrink: 0 }}>📍</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#64748B" }}>
+                    <span style={{ color: "#E11D48", fontSize: 12, flexShrink: 0 }}>📍</span>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {m.sector || m.city}
+                      {m.city}
                     </span>
                   </div>
                 )}
