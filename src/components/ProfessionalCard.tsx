@@ -311,11 +311,11 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 : `+56 ${national}`;
               return (
                 <a href={`tel:${tel}`} style={{
-                  display: "inline-flex", alignItems: "center", gap: 5,
-                  color: NAVY, fontSize: 12, fontWeight: 500,
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  color: "#1B2B4B", fontSize: 16, fontWeight: 600,
                   textDecoration: "none",
                 }}>
-                  📞 {display}
+                  <span style={{ fontSize: 18 }}>📞</span> {display}
                 </a>
               );
             })()}
