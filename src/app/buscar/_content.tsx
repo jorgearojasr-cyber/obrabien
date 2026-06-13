@@ -274,18 +274,18 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
       </button>
 
       {/* Photo with availability dot */}
-      <div style={{ position: "relative", flexShrink: 0, width: 80, height: 80, minWidth: 80 }}>
+      <div style={{ position: "relative", flexShrink: 0, width: 96, height: 96, minWidth: 96 }}>
         <div style={{
-          width: 80, height: 80, borderRadius: "50%",
+          width: 96, height: 96, minWidth: 96, borderRadius: "50%",
           background: bg, color: fg,
           display: "grid", placeItems: "center",
-          fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 24,
+          fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 32,
           overflow: "hidden",
           boxShadow: "0 0 0 2px #E2E8F0",
         }}>
           {m.photoUrl
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={m.photoUrl} alt={m.name} style={{ width: 80, height: 80, objectFit: "cover", objectPosition: "center center", display: "block", borderRadius: "50%" }} />
+            ? <img src={m.photoUrl} alt={m.name} style={{ width: 96, height: 96, minWidth: 96, objectFit: "cover", objectPosition: "center center", display: "block", borderRadius: "50%" }} />
             : m.initials}
         </div>
         {/* Availability dot */}
