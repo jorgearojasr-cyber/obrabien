@@ -130,16 +130,16 @@ export default async function Home() {
           src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781318290/ChatGPT_Image_12_jun_2026_10_38_00_p.m._s7fqan.png"
           alt="Maestro de construcción"
           fill
-          style={{ objectFit: "cover", objectPosition: "60% center" }}
+          style={{ objectFit: "cover", objectPosition: "45% center" }}
           priority
         />
 
         {/* Cream gradient: left opaque → right transparent */}
         <div className="hero-overlay" />
 
-        {/* Text content over the left (cream) side */}
-        <div className="wrap hero-content" style={{ position: "relative", zIndex: 1, paddingTop: 56, paddingBottom: 64, width: "100%" }}>
-          <div style={{ maxWidth: 520 }}>
+        {/* Text content over the left (cream) side — no .wrap centering, flush left with padding */}
+        <div className="hero-content" style={{ position: "relative", zIndex: 1, paddingTop: 56, paddingBottom: 64, paddingLeft: "clamp(20px, 5vw, 72px)", paddingRight: 0, width: "100%" }}>
+          <div style={{ maxWidth: "45%", minWidth: 280 }}>
 
             {/* Badge */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
@@ -164,7 +164,7 @@ export default async function Home() {
             {/* Title — navy text */}
             <h1 style={{
               fontFamily: "var(--font-archivo), sans-serif",
-              fontSize: "clamp(34px, 4.5vw, 62px)", fontWeight: 900, lineHeight: 1.05,
+              fontSize: "clamp(26px, 3.2vw, 48px)", fontWeight: 900, lineHeight: 1.05,
               color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 18px",
             }}>
               Encuentra<br />
@@ -173,7 +173,7 @@ export default async function Home() {
             </h1>
 
             {/* Subtitle */}
-            <p style={{ fontSize: 16.5, color: "#475569", margin: "0 0 26px", lineHeight: 1.65 }}>
+            <p style={{ fontSize: 14.5, color: "#475569", margin: "0 0 22px", lineHeight: 1.6 }}>
               Albañiles, gasfiter, electricistas, carpinteros y más.
               Revisa perfiles, reseñas reales y contáctalos directo — sin intermediarios.
             </p>
