@@ -124,22 +124,10 @@ export default async function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="hero-section">
+        <div className="hero-grid">
 
-        {/* Full-bleed background image — maestro visible on right side */}
-        <Image
-          src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781318290/ChatGPT_Image_12_jun_2026_10_38_00_p.m._s7fqan.png"
-          alt="Maestro de construcción"
-          fill
-          style={{ objectFit: "cover", objectPosition: "55% 80%", transform: "scale(1.1)", transformOrigin: "55% 80%" }}
-          priority
-        />
-
-        {/* Cream gradient: left opaque → right transparent */}
-        <div className="hero-overlay" />
-
-        {/* Text content over the left (cream) side — no .wrap centering, flush left with padding */}
-        <div className="hero-content" style={{ position: "relative", zIndex: 1, paddingTop: 56, paddingBottom: 64, paddingLeft: "clamp(20px, 5vw, 72px)", paddingRight: 0, width: "100%" }}>
-          <div style={{ maxWidth: "45%", minWidth: 280 }}>
+          {/* LEFT — beige background, all text */}
+          <div className="hero-left">
 
             {/* Badge */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
@@ -161,10 +149,10 @@ export default async function Home() {
               </span>
             </div>
 
-            {/* Title — navy text */}
+            {/* Title */}
             <h1 style={{
               fontFamily: "var(--font-archivo), sans-serif",
-              fontSize: "clamp(32px, 4.2vw, 58px)", fontWeight: 900, lineHeight: 1.05,
+              fontSize: "clamp(30px, 3.6vw, 56px)", fontWeight: 900, lineHeight: 1.05,
               color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 18px",
             }}>
               Encuentra<br />
@@ -217,6 +205,18 @@ export default async function Home() {
               </Link>
             </div>
           </div>
+
+          {/* RIGHT — clean image, no overlay */}
+          <div className="hero-right">
+            <Image
+              src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781318290/ChatGPT_Image_12_jun_2026_10_38_00_p.m._s7fqan.png"
+              alt="Maestro de construcción"
+              fill
+              style={{ objectFit: "cover", objectPosition: "center top" }}
+              priority
+            />
+          </div>
+
         </div>
       </section>
 
