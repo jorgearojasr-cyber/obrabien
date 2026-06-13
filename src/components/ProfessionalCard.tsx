@@ -61,7 +61,7 @@ function WhatsAppIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-function InstagramIcon({ size = 40 }: { size?: number }) {
+function InstagramIcon({ size = 32 }: { size?: number }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} style={{ flexShrink: 0 }}>
       <defs>
@@ -78,7 +78,7 @@ function InstagramIcon({ size = 40 }: { size?: number }) {
   );
 }
 
-function TikTokIcon({ size = 40 }: { size?: number }) {
+function TikTokIcon({ size = 32 }: { size?: number }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" style={{ flexShrink: 0 }}>
       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.68a8.14 8.14 0 0 0 4.77 1.52V6.75a4.85 4.85 0 0 1-1-.06z" />
@@ -86,7 +86,7 @@ function TikTokIcon({ size = 40 }: { size?: number }) {
   );
 }
 
-function FacebookIcon({ size = 40 }: { size?: number }) {
+function FacebookIcon({ size = 32 }: { size?: number }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" style={{ flexShrink: 0 }}>
       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -239,14 +239,14 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
     <style>{`@keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(22,163,74,0.25)} 50%{box-shadow:0 0 0 6px rgba(22,163,74,0.10)} }`}</style>
     <div style={{
       display: "flex",
-      alignItems: "center",
+      alignItems: "flex-start",
       justifyContent: "center",
-      minHeight: "100%",
+      height: "auto",
       background: "#F1F5F9",
       borderRadius: 16,
       padding: "12px 0",
     }}>
-      <div style={{ width: 390, maxWidth: "100vw", fontFamily: "'Inter Tight', system-ui, sans-serif" }}>
+      <div style={{ width: "100%", maxWidth: 420, fontFamily: "'Inter Tight', system-ui, sans-serif" }}>
         <div style={{
           background: "#fff",
           borderRadius: 16,
@@ -287,18 +287,18 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           </div>
 
           {/* 2. Avatar + Identity */}
-          <div style={{ ...sep, background: CARD_BG, padding: "20px 16px 14px", textAlign: "center" }}>
-            <div style={{ position: "relative", display: "inline-block", marginBottom: 12 }}>
+          <div style={{ ...sep, background: CARD_BG, padding: "16px 14px 12px", textAlign: "center" }}>
+            <div style={{ position: "relative", display: "inline-block", marginBottom: 10 }}>
               <div
                 onClick={() => m.photoUrl && setPhotoOpen(true)}
                 title={m.photoUrl ? "Ver foto" : undefined}
                 style={{
-                  width: 110, height: 110,
+                  width: 90, height: 90,
                   borderRadius: "50%",
                   background: m.photoUrl ? "transparent" : ORANGE,
                   color: "#fff",
                   display: "grid", placeItems: "center",
-                  fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 34,
+                  fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 28,
                   border: `3px solid ${ORANGE}`,
                   overflow: "hidden",
                   cursor: m.photoUrl ? "pointer" : "default",
@@ -322,9 +322,9 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             {/* Name */}
             <div style={{
               fontFamily: "Archivo, sans-serif", fontWeight: 700,
-              fontSize: 22, color: NAVY,
+              fontSize: 18, color: NAVY,
               letterSpacing: "-0.02em", lineHeight: 1.15,
-              marginBottom: 8,
+              marginBottom: 6,
             }}>
               {m.name}
             </div>
@@ -340,18 +340,18 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 : `+56 ${national}`;
               return (
                 <a href={`tel:${tel}`} style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  color: NAVY, fontSize: 18, fontWeight: 600,
-                  textDecoration: "none", marginBottom: 6,
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  color: NAVY, fontSize: 14, fontWeight: 600,
+                  textDecoration: "none", marginBottom: 4,
                 }}>
-                  <span style={{ fontSize: 18, color: "#E11D48" }}>📞</span> {display}
+                  <span style={{ fontSize: 15, color: "#E11D48" }}>📞</span> {display}
                 </a>
               );
             })()}
 
             {/* Location */}
             {m.city && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 14, color: "#64748B", marginTop: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 13, color: "#64748B", marginTop: 3 }}>
                 <span style={{ color: "#E11D48", fontSize: 15 }}>📍</span>
                 <span>{m.sector || m.city}</span>
               </div>
@@ -362,7 +362,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           {mainSpecialty && (
             <div style={{ ...sep, padding: "10px 12px" }}>
               <div style={{
-                background: CARD_BG, borderRadius: 10, padding: "10px 12px",
+                background: CARD_BG, borderRadius: 10, padding: "8px 10px",
                 border: `1px solid ${BORDER}`,
                 display: "flex",
                 gap: showTwoColSpecialty ? 12 : 0,
@@ -373,7 +373,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               }}>
                 {/* Main specialty */}
                 <div style={{ flex: showTwoColSpecialty ? "0 0 50%" : undefined, display: "flex", flexDirection: "column", alignItems: showTwoColSpecialty ? "flex-start" : "center" }}>
-                  <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 6 }}>
+                  <div style={{ fontSize: 36, lineHeight: 1, marginBottom: 4 }}>
                     {specialtyEmoji}
                   </div>
                   <div style={{
@@ -384,7 +384,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                     Especialista en
                   </div>
                   <div style={{
-                    fontSize: 20,
+                    fontSize: 15,
                     fontFamily: "Archivo, sans-serif",
                     fontWeight: 800, color: NAVY, lineHeight: 1.2,
                   }}>
@@ -432,10 +432,10 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               { icon: "✅", iconColor: VER_GREEN,  value: m.verified ? "Perfil verif." : "No verif.",      sub: "OBRABIEN",     valueColor: m.verified ? VER_GREEN : "#94A3B8" },
             ]).map((stat, i) => (
               <div key={i} style={{
-                padding: "10px 4px", textAlign: "center",
+                padding: "8px 3px", textAlign: "center",
                 borderRight: i < 3 ? `1px solid ${BORDER}` : "none",
               }}>
-                <div style={{ fontSize: 28, lineHeight: 1, marginBottom: 4 }}>{stat.icon}</div>
+                <div style={{ fontSize: 20, lineHeight: 1, marginBottom: 3 }}>{stat.icon}</div>
                 <div style={{
                   fontSize: 10.5, fontWeight: 700, color: stat.valueColor,
                   lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -506,7 +506,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
                   background: WA_GREEN, color: "#fff",
-                  borderRadius: 12, height: 56,
+                  borderRadius: 12, height: 48,
                   fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 14,
                   textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.03em",
                   width: "100%",
