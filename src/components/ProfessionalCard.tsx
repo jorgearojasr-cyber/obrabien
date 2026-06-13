@@ -286,76 +286,86 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             )}
           </div>
 
-          {/* 2. Avatar + Identity */}
-          <div style={{ ...sep, background: CARD_BG, padding: "16px 14px 12px", textAlign: "center" }}>
-            <div style={{ position: "relative", display: "inline-block", marginBottom: 10 }}>
-              <div
-                onClick={() => m.photoUrl && setPhotoOpen(true)}
-                title={m.photoUrl ? "Ver foto" : undefined}
-                style={{
-                  width: 90, height: 90,
-                  borderRadius: "50%",
-                  background: m.photoUrl ? "transparent" : ORANGE,
-                  color: "#fff",
+          {/* 2. Avatar + Identity — horizontal layout */}
+          <div style={{ ...sep, background: CARD_BG, padding: "16px 16px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+
+              {/* LEFT — photo */}
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <div
+                  onClick={() => m.photoUrl && setPhotoOpen(true)}
+                  title={m.photoUrl ? "Ver foto" : undefined}
+                  style={{
+                    width: 110, height: 110,
+                    borderRadius: "50%",
+                    background: m.photoUrl ? "transparent" : ORANGE,
+                    color: "#fff",
+                    display: "grid", placeItems: "center",
+                    fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 34,
+                    border: `3px solid ${ORANGE}`,
+                    overflow: "hidden",
+                    cursor: m.photoUrl ? "pointer" : "default",
+                  }}
+                >
+                  {m.photoUrl
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    : m.initials}
+                </div>
+                <div style={{
+                  position: "absolute", bottom: 2, right: 2,
+                  width: 24, height: 24,
+                  background: VER_GREEN, borderRadius: "50%",
+                  border: "2px solid #fff",
                   display: "grid", placeItems: "center",
-                  fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 28,
-                  border: `3px solid ${ORANGE}`,
-                  overflow: "hidden",
-                  cursor: m.photoUrl ? "pointer" : "default",
-                }}
-              >
-                {m.photoUrl
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  ? <img src={m.photoUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                  : m.initials}
+                  color: "#fff", fontSize: 11, fontWeight: 800,
+                }}>✓</div>
               </div>
-              <div style={{
-                position: "absolute", bottom: 2, right: 2,
-                width: 24, height: 24,
-                background: VER_GREEN, borderRadius: "50%",
-                border: "2px solid #fff",
-                display: "grid", placeItems: "center",
-                color: "#fff", fontSize: 11, fontWeight: 800,
-              }}>✓</div>
-            </div>
 
-            {/* Name */}
-            <div style={{
-              fontFamily: "Archivo, sans-serif", fontWeight: 700,
-              fontSize: 18, color: NAVY,
-              letterSpacing: "-0.02em", lineHeight: 1.15,
-              marginBottom: 6,
-            }}>
-              {m.name}
-            </div>
-
-            {/* Phone */}
-            {(() => {
-              const raw = (m.social?.whatsapp || m.phone || "").replace(/\D/g, "");
-              if (!raw) return null;
-              const national = raw.startsWith("56") && raw.length >= 10 ? raw.slice(2) : raw;
-              const tel = `+56${national}`;
-              const display = national.startsWith("9") && national.length === 9
-                ? `+56 ${national[0]} ${national.slice(1, 5)} ${national.slice(5)}`
-                : `+56 ${national}`;
-              return (
-                <a href={`tel:${tel}`} style={{
-                  display: "inline-flex", alignItems: "center", gap: 5,
-                  color: NAVY, fontSize: 14, fontWeight: 600,
-                  textDecoration: "none", marginBottom: 4,
+              {/* RIGHT — name, phone, location */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: "Archivo, sans-serif", fontWeight: 700,
+                  fontSize: 18, color: NAVY,
+                  letterSpacing: "-0.02em", lineHeight: 1.2,
+                  marginBottom: 6, whiteSpace: "nowrap",
+                  overflow: "hidden", textOverflow: "ellipsis",
                 }}>
-                  <span style={{ fontSize: 15, color: "#E11D48" }}>📞</span> {display}
-                </a>
-              );
-            })()}
+                  {m.name}
+                </div>
 
-            {/* Location */}
-            {m.city && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 13, color: "#64748B", marginTop: 3 }}>
-                <span style={{ color: "#E11D48", fontSize: 15 }}>📍</span>
-                <span>{m.sector || m.city}</span>
+                {/* Phone */}
+                {(() => {
+                  const raw = (m.social?.whatsapp || m.phone || "").replace(/\D/g, "");
+                  if (!raw) return null;
+                  const national = raw.startsWith("56") && raw.length >= 10 ? raw.slice(2) : raw;
+                  const tel = `+56${national}`;
+                  const display = national.startsWith("9") && national.length === 9
+                    ? `+56 ${national[0]} ${national.slice(1, 5)} ${national.slice(5)}`
+                    : `+56 ${national}`;
+                  return (
+                    <a href={`tel:${tel}`} style={{
+                      display: "flex", alignItems: "center", gap: 5,
+                      color: NAVY, fontSize: 14, fontWeight: 600,
+                      textDecoration: "none", marginBottom: 5,
+                    }}>
+                      <span style={{ fontSize: 14, color: "#E11D48", flexShrink: 0 }}>📞</span>
+                      <span style={{ whiteSpace: "nowrap" }}>{display}</span>
+                    </a>
+                  );
+                })()}
+
+                {/* Location */}
+                {m.city && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, color: "#64748B" }}>
+                    <span style={{ color: "#E11D48", fontSize: 13, flexShrink: 0 }}>📍</span>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {m.sector || m.city}
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* 3. Specialty block */}
