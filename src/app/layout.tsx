@@ -50,9 +50,9 @@ const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 function Body({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${archivo.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
-      <body style={{ fontFamily: "var(--font-inter-tight), system-ui, sans-serif", display: "flex", flexDirection: "column", minHeight: "100vh", overflowX: "hidden" }}>
+      <body style={{ fontFamily: "var(--font-inter-tight), system-ui, sans-serif", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <Navbar />
-        <main style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>{children}</main>
+        <main style={{ flex: 1, minWidth: 0 }}>{children}</main>
         <Footer />
       </body>
     </html>
