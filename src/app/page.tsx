@@ -209,10 +209,10 @@ export default async function Home() {
           {/* RIGHT — clean image, no overlay */}
           <div className="hero-right">
             <Image
-              src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781318290/ChatGPT_Image_12_jun_2026_10_38_00_p.m._s7fqan.png"
+              src="https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png"
               alt="Maestro de construcción"
               fill
-              style={{ objectFit: "cover", objectPosition: "60% 30%", transform: "scale(1.2)", transformOrigin: "60% 30%" }}
+              style={{ objectFit: "cover", objectPosition: "75% center" }}
               priority
             />
           </div>
