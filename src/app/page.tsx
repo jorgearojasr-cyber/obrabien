@@ -200,27 +200,20 @@ export default async function Home() {
 
           {/* CTA Buttons */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link href="/buscar" style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-              background: "#F97316", color: "#fff",
-              padding: "14px 28px", borderRadius: 10,
-              fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15.5,
-              textDecoration: "none", letterSpacing: "-0.01em",
-              boxShadow: "0 4px 16px rgba(249,115,22,0.40)",
-            }}>
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-              Buscar maestros
-            </Link>
-            <Link href="/registro" style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-              background: "transparent", color: "#1B2B4B",
-              border: "1.5px solid #1B2B4B",
-              padding: "14px 24px", borderRadius: 10,
-              fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14.5,
-              textDecoration: "none",
-            }}>
-              ⛑ Regístrate como maestro
-            </Link>
+            {[
+              { href: "/buscar",   bg: "#F97316", label: "🔍 Buscar maestros" },
+              { href: "/registro", bg: "#1B2B4B", label: "⛑ Regístrate como maestro, gratis" },
+            ].map(({ href, bg, label }) => (
+              <Link key={href} href={href} style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                background: bg, color: "#fff",
+                height: 52, padding: "0 28px", borderRadius: 8,
+                fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
+                textDecoration: "none", letterSpacing: "-0.01em", whiteSpace: "nowrap",
+              }}>
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
