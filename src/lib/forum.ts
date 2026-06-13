@@ -335,7 +335,7 @@ El error que más veo: pintar directo sobre el muro húmedo con pintura "antihum
 
 ¿Algún colega tiene otra técnica para humedad de techo filtrado?`,
     category: "tips",
-    author: { name: "Francisco Bravo", initials: "FB", role: "maestro", specialty: "Yesero", verified: false },
+    author: { name: "Francisco Bravo", initials: "FB", role: "maestro", specialty: "Enlucidos", verified: false },
     time: "Hace 5 días",
     views: 522, useful: 78, pinned: false, solved: false,
     tags: ["pintura", "humedad", "técnica"],
@@ -369,7 +369,7 @@ Mi duda principal: trabajo solo la mayoría de las veces. Con la huincha siempre
 
 También me interesa el cálculo de áreas y volúmenes que dicen que trae. ¿Lo usan en la práctica para los presupuestos?`,
     category: "herramientas",
-    author: { name: "Diego Cáceres", initials: "DC", role: "maestro", specialty: "Soldador", verified: false },
+    author: { name: "Diego Cáceres", initials: "DC", role: "maestro", specialty: "Enfierradura y Soldadura", verified: false },
     time: "Hace 1 semana",
     views: 189, useful: 17, pinned: false, solved: true,
     tags: ["herramientas", "medición", "presupuesto"],

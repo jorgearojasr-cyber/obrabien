@@ -11,8 +11,8 @@ import PasswordSection from "@/components/PasswordSection";
 const ESPECIALIDADES = [
   "Albañilería", "Gasfitería", "Electricidad", "Carpintería", "Pintura",
   "Techumbres", "Climatización / AC", "Cerrajería", "Pisos y revestimientos",
-  "Impermeabilización", "Yesería", "Fierrería / Soldadura", "Plomería",
-  "Instalación de cocinas", "Jardín / Paisajismo", "Demolición",
+  "Impermeabilización", "Enlucidos", "Enfierradura y Soldadura",
+  "Paneles Solares", "Jardín / Paisajismo", "Demolición",
   "Instalación de ventanas", "Tabiquería / Drywall", "Fumigación",
 ];
 
@@ -68,8 +68,8 @@ const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Doming
 const URGENCIA_FIJAS = ["Gasfitería","Electricidad","Cerrajería","Techumbre","Instalación de ventanas"];
 
 const URGENCIA_OTRAS = [
-  "Albañilería","Carpintería","Pintura","Yesería","Fierrería / Soldadura",
-  "Plomería","Instalación de cocinas","Jardín / Paisajismo","Demolición",
+  "Albañilería","Carpintería","Pintura","Enlucidos","Enfierradura y Soldadura",
+  "Paneles Solares","Jardín / Paisajismo","Demolición",
   "Tabiquería / Drywall","Fumigación","Instalación de pisos","Climatización / AC",
   "Instalador de cámaras","Maestro multifunción","Impermeabilización",
 ];

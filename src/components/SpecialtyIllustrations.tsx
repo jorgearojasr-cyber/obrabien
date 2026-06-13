@@ -7,17 +7,17 @@ const SLUG: Record<string, string> = {
   "Carpintero":                        "carpintero",
   "Pintor":                            "pintor",
   "Ceramista":                         "ceramista",
-  "Soldador":                          "soldador",
+  "Enfierradura y Soldadura":          "soldador",
   "Techumbre":                         "techador",
-  "Yesero":                            "yesero",
+  "Enlucidos":                         "yesero",
   "Drywall":                           "drywall",
   "Instalación de pisos":    "instalador-pisos",
   "Instalación de ventanas": "instalador-ventanas",
   "Instalador de cámaras":             "instalador-camaras",
   "Aire acondicionado":                "aire-acondicionado",
+  "Paneles Solares":                   "paneles-solares",
   "Mantención de jardines":            "mantencion-jardines",
   "Excavaciones":                      "excavaciones",
-  "Paneles solares":                   "paneles-solares",
 };
 
 export function getIllustration(name: string) {

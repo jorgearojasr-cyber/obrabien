@@ -25,10 +25,10 @@ export const REGIONS: Region[] = [
 
 export const SPECIALTIES = [
   "Albañil", "Gasfiter", "Electricista", "Carpintero", "Pintor", "Ceramista",
-  "Soldador", "Techumbre", "Yesero", "Drywall",
+  "Enfierradura y Soldadura", "Techumbre", "Enlucidos", "Drywall",
   "Instalación de pisos", "Instalación de ventanas",
-  "Instalador de cámaras", "Aire acondicionado", "Mantención de jardines",
-  "Excavaciones", "Paneles solares", "Maestro multifunción",
+  "Instalador de cámaras", "Aire acondicionado", "Paneles Solares",
+  "Mantención de jardines", "Excavaciones", "Maestro multifunción",
 ];
 
 export function specialtySlug(name: string) {
@@ -139,7 +139,7 @@ export const SAMPLE_MASTERS: Master[] = [
   },
   {
     id: "m-007", name: "Diego Cáceres Toro", initials: "DC",
-    specialties: ["Soldador"], city: "Santiago", sector: "San Bernardo, Santiago",
+    specialties: ["Enfierradura y Soldadura"], city: "Santiago", sector: "San Bernardo, Santiago",
     phone: "+56 9 4421 5577", schedule: "Lun a Sáb · 08:00 – 18:00",
     rating: 4.7, jobs: 89, yearsExp: 12, verified: false,
     description: "Soldador calificado MIG, TIG y arco. Rejas, portones, escaleras metálicas, estructuras. Trabajo en taller y a domicilio.",
@@ -148,7 +148,7 @@ export const SAMPLE_MASTERS: Master[] = [
   },
   {
     id: "m-008", name: "Francisco Bravo Ulloa", initials: "FB",
-    specialties: ["Yesero", "Pintor"], city: "Santiago", sector: "Ñuñoa, Santiago",
+    specialties: ["Enlucidos", "Pintor"], city: "Santiago", sector: "Ñuñoa, Santiago",
     phone: "+56 9 3344 7799", schedule: "Lun a Vie · 09:00 – 18:30",
     rating: 4.9, jobs: 168, yearsExp: 16, verified: true,
     description: "Estuco de yeso, cornisas, molduras decorativas, reparación de cielos. Trabajo fino y detallado para casas y oficinas.",
@@ -166,7 +166,7 @@ export const SAMPLE_MASTERS: Master[] = [
   },
   {
     id: "m-010", name: "Ricardo Olivares Núñez", initials: "RO",
-    specialties: ["Paneles solares", "Electricista"], city: "La Serena", sector: "Coquimbo, La Serena",
+    specialties: ["Paneles Solares", "Electricista"], city: "La Serena", sector: "Coquimbo, La Serena",
     phone: "+56 9 9911 4422", schedule: "Lun a Sáb · 09:00 – 19:00",
     rating: 4.9, jobs: 78, yearsExp: 7, verified: true,
     description: "Instalación de paneles fotovoltaicos on-grid y off-grid. Certificación SEC TE4, cálculo de consumo y conexión a red.",

@@ -40,9 +40,9 @@ const SPECIALTY_EMOJI: Record<string, string> = {
   "Carpintero": "🪵",
   "Pintor": "🎨",
   "Ceramista": "🏺",
-  "Soldador": "🔥",
+  "Enfierradura y Soldadura": "⚙️",
   "Techumbre": "🏠",
-  "Yesero": "🏗️",
+  "Enlucidos": "🏗️",
   "Drywall": "🏗️",
   "Instalación de pisos": "🪟",
   "Instalación de ventanas": "🪟",
@@ -50,7 +50,7 @@ const SPECIALTY_EMOJI: Record<string, string> = {
   "Aire acondicionado": "❄️",
   "Mantención de jardines": "🌿",
   "Excavaciones": "🚜",
-  "Paneles solares": "☀️",
+  "Paneles Solares": "☀️",
   "Maestro multifunción": "🛠️",
 };
 
