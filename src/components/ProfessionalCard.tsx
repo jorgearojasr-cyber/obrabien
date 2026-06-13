@@ -235,18 +235,42 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   const captureCard = async () => {
     const el = cardRef.current;
     if (!el) return null;
-    el.scrollIntoView({ block: "start", behavior: "instant" });
-    await new Promise(r => setTimeout(r, 80));
+
+    // Clone into a hidden off-screen container so scroll position / viewport clipping never affects capture
+    const wrapper = document.createElement("div");
+    wrapper.style.cssText = "position:fixed;left:-9999px;top:0;width:390px;height:auto;overflow:visible;z-index:-1;";
+    const clone = el.cloneNode(true) as HTMLElement;
+    clone.style.cssText = "width:390px;height:auto;overflow:visible;";
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+
+    // Let the browser lay out the clone and load images
+    await new Promise(r => setTimeout(r, 500));
+
     const { default: html2canvas } = await import("html2canvas");
-    return html2canvas(el, {
-      scale: 3,
-      useCORS: true,
-      allowTaint: true,
-      scrollY: -window.scrollY,
-      width: el.scrollWidth,
-      height: el.scrollHeight,
-      windowWidth: el.scrollWidth,
-    });
+    let canvas: HTMLCanvasElement | null = null;
+    try {
+      canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: 390,
+        height: clone.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (_doc: Document, cloned: HTMLElement) => {
+          // Wait for all images inside the cloned doc to finish loading
+          const imgs = Array.from(cloned.querySelectorAll("img"));
+          return Promise.all(imgs.map(img =>
+            img.complete ? Promise.resolve() : new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res(); })
+          ));
+        },
+      });
+    } finally {
+      document.body.removeChild(wrapper);
+    }
+    return canvas;
   };
 
   const slug = m.name.toLowerCase().replace(/\s+/g, "-");
