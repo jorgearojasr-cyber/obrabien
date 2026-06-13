@@ -283,7 +283,7 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   position: relative;
   z-index: 1;
   max-width: 500px;
-  padding: 60px 48px;
+  padding: 60px 48px 60px 0;
 }
 
 @media (max-width: 768px) {
