@@ -421,25 +421,28 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           {/* 5. Availability banner */}
           {(() => {
             const isAvail = (m.disponibilidad ?? "disponible") !== "no_disponible";
-            const text = !isAvail
-              ? "⚪ Consultar disponibilidad"
-              : m.atiendeUrgencias
-              ? "🟢 Disponible esta semana · 🚨 Atiende urgencias"
-              : "🟢 Disponible esta semana";
+            const showUrgencias = isAvail && m.atiendeUrgencias;
+            const cellStyle: React.CSSProperties = {
+              padding: "9px 10px", textAlign: "center",
+              fontSize: 11.5, fontWeight: 600, lineHeight: 1.3,
+              color: isAvail ? VER_GREEN : "#64748B",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            };
             return (
               <div style={{
                 ...sep,
-                padding: "8px 14px",
                 background: isAvail ? "#F0FDF4" : CARD_BG,
-                display: "flex", alignItems: "center",
+                display: "grid",
+                gridTemplateColumns: showUrgencias ? "1fr 1fr" : "1fr",
               }}>
-                <span style={{
-                  fontSize: 11.5, fontWeight: 600,
-                  color: isAvail ? VER_GREEN : "#64748B",
-                  lineHeight: 1.3,
-                }}>
-                  {text}
-                </span>
+                <div style={cellStyle}>
+                  {isAvail ? "🟢 Disponible esta semana" : "⚪ Consultar disponibilidad"}
+                </div>
+                {showUrgencias && (
+                  <div style={{ ...cellStyle, borderLeft: "1px solid rgba(0,0,0,0.1)", color: "#DC2626" }}>
+                    🚨 Atiende urgencias
+                  </div>
+                )}
               </div>
             );
           })()}
