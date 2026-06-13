@@ -148,22 +148,10 @@ export default async function Home() {
         <div className="hero-text">
 
           {/* Badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#1B2B4B", color: "#fff",
-              padding: "5px 13px", borderRadius: 999,
-              fontFamily: "var(--font-jetbrains), monospace", fontSize: 9.5,
-              letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700,
-            }}>
+          <div style={{ marginBottom: 22 }}>
+            <span className="hero-badge">
               <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
               ObraBien · Plataforma chilena
-            </span>
-            <span style={{
-              fontFamily: "var(--font-jetbrains), monospace", fontSize: 10,
-              color: "#6B7C8F", textTransform: "uppercase", letterSpacing: "0.07em",
-            }}>
-              {displayMaestros} maestros · {displayCiudades} ciudades
             </span>
           </div>
 
