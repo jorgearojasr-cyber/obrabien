@@ -419,23 +419,30 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           </div>
 
           {/* 5. Availability banner */}
-          <div style={{
-            ...sep,
-            padding: "8px 14px",
-            background: m.atiendeUrgencias ? "#F0FDF4" : CARD_BG,
-            display: "flex", alignItems: "center", gap: 8,
-          }}>
-            <span style={{ fontSize: 16, flexShrink: 0 }}>{m.atiendeUrgencias ? "🕐" : "📅"}</span>
-            <span style={{
-              fontSize: 11.5, fontWeight: 600,
-              color: m.atiendeUrgencias ? VER_GREEN : "#64748B",
-              lineHeight: 1.3,
-            }}>
-              {m.atiendeUrgencias
-                ? "Disponible esta semana · Responde en menos de 1 hora"
-                : "Consultar disponibilidad"}
-            </span>
-          </div>
+          {(() => {
+            const isAvail = (m.disponibilidad ?? "disponible") !== "no_disponible";
+            const text = !isAvail
+              ? "⚪ Consultar disponibilidad"
+              : m.atiendeUrgencias
+              ? "🟢 Disponible esta semana · 🚨 Atiende urgencias"
+              : "🟢 Disponible esta semana";
+            return (
+              <div style={{
+                ...sep,
+                padding: "8px 14px",
+                background: isAvail ? "#F0FDF4" : CARD_BG,
+                display: "flex", alignItems: "center",
+              }}>
+                <span style={{
+                  fontSize: 11.5, fontWeight: 600,
+                  color: isAvail ? VER_GREEN : "#64748B",
+                  lineHeight: 1.3,
+                }}>
+                  {text}
+                </span>
+              </div>
+            );
+          })()}
 
           {/* 6. WhatsApp CTA */}
           {whatsappUrl && (
