@@ -103,10 +103,10 @@ function AuthDropdown() {
 
 const NAV_LINKS = [
   { href: "/buscar",      label: "Buscar maestros", match: (p: string) => p.startsWith("/buscar") },
-  { href: "/comunidad",   label: "Comunidad",        match: (p: string) => p.startsWith("/comunidad") },
+  // { href: "/comunidad",   label: "Comunidad",        match: (p: string) => p.startsWith("/comunidad") },
   { href: "/recursos",    label: "Aprende",          match: (p: string) => p.startsWith("/recursos") },
   { href: "/empleos",     label: "Empleos",          match: (p: string) => p.startsWith("/empleos") },
-  { href: "/marketplace", label: "Marketplace",      match: (p: string) => p.startsWith("/marketplace") },
+  // { href: "/marketplace", label: "Marketplace",      match: (p: string) => p.startsWith("/marketplace") },
 ];
 
 export default function Navbar() {
