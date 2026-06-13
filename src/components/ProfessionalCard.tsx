@@ -380,7 +380,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           }}>
             {([
               { icon: "📍", value: m.city || "Chile",                                                       sub: "Ubicación",   valueColor: "#475569" },
-              { icon: "🪖", value: yearsOnPlatform > 0 ? `${yearsOnPlatform} años` : "Nuevo",              sub: "Experiencia", valueColor: "#475569" },
+              { icon: "🪖", value: m.yearsExp > 0 ? `${m.yearsExp} años` : "—",                           sub: "Experiencia", valueColor: "#475569" },
               { icon: "⭐", value: m.rating > 0 ? m.rating.toFixed(1) : "—",                               sub: m.jobs > 0 ? `${m.jobs} reseña${m.jobs !== 1 ? "s" : ""}` : "Sin reseñas", valueColor: "#475569" },
               { icon: "✅", value: m.verified ? "Verificado" : "No verif.",                                 sub: "OBRABIEN",    valueColor: m.verified ? VER_GREEN : "#94A3B8" },
             ]).map((stat, i) => (
