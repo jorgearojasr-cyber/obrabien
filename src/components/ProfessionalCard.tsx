@@ -171,8 +171,8 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   const mainSpecialty = m.specialties[0] ?? "";
   const otherSpecialties = m.specialties.slice(1);
   const specialtyEmoji = SPECIALTY_EMOJI[mainSpecialty] ?? "🛠️";
-  // Two-column specialty layout only when there are 2+ additional specialties
-  const showTwoColSpecialty = otherSpecialties.length >= 2;
+  // Two-column specialty layout when there is 1+ additional specialty
+  const showTwoColSpecialty = otherSpecialties.length >= 1;
 
   const whatsappUrl = m.social?.whatsapp
     ? `https://wa.me/${m.social.whatsapp.replace(/\D/g, "")}`
@@ -324,9 +324,9 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 flexDirection: showTwoColSpecialty ? "row" : "column",
                 textAlign: showTwoColSpecialty ? "left" : "center",
               }}>
-                {/* Main specialty */}
-                <div style={{ flex: showTwoColSpecialty ? "0 0 auto" : undefined }}>
-                  <div style={{ fontSize: showTwoColSpecialty ? 30 : 34, lineHeight: 1, marginBottom: 4 }}>
+                {/* Main specialty — 50% when two-col, full width when solo */}
+                <div style={{ flex: showTwoColSpecialty ? "0 0 50%" : undefined }}>
+                  <div style={{ fontSize: showTwoColSpecialty ? 28 : 34, lineHeight: 1, marginBottom: 4 }}>
                     {specialtyEmoji}
                   </div>
                   <div style={{
@@ -337,7 +337,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                     Especialista en
                   </div>
                   <div style={{
-                    fontSize: showTwoColSpecialty ? 14 : 19,
+                    fontSize: showTwoColSpecialty ? 13 : 19,
                     fontFamily: "Archivo, sans-serif",
                     fontWeight: 800, color: NAVY, lineHeight: 1.2,
                   }}>
@@ -345,22 +345,22 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                   </div>
                 </div>
 
-                {/* Other specialties — only shown when 2+ */}
+                {/* Other specialties — right 50% column */}
                 {showTwoColSpecialty && (
                   <div style={{
-                    flex: 1, borderLeft: `1px solid ${BORDER}`,
+                    flex: "0 0 50%", borderLeft: `1px solid ${BORDER}`,
                     paddingLeft: 12, minWidth: 0,
                   }}>
                     <div style={{
-                      fontSize: 9, color: "#94A3B8", fontWeight: 600,
-                      marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em",
+                      fontSize: 8, color: "#94A3B8", fontWeight: 700,
+                      marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em",
                     }}>
                       También realiza:
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       {otherSpecialties.map(sp => (
-                        <div key={sp} style={{ fontSize: 11.5, color: "#475569", display: "flex", alignItems: "center", gap: 5 }}>
-                          <span style={{ color: ORANGE, fontWeight: 800, lineHeight: 1 }}>·</span>
+                        <div key={sp} style={{ fontSize: 11, color: "#475569", display: "flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ color: ORANGE, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>·</span>
                           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sp}</span>
                         </div>
                       ))}
@@ -379,22 +379,30 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             background: "#fff",
           }}>
             {([
-              { icon: "📍", label: m.city || "Chile" },
-              { icon: "💼", label: m.jobs > 0 ? `${m.jobs} trab.` : "Nuevo" },
-              { icon: "⭐", label: m.rating > 0 ? `${m.rating.toFixed(1)} cal.` : "—" },
-              { icon: "📅", label: yearsOnPlatform > 0 ? `${yearsOnPlatform} años` : "Nuevo" },
-            ] as const).map((stat, i) => (
+              { icon: "📍", value: m.city || "Chile",                                                       sub: "Ubicación",   valueColor: "#475569" },
+              { icon: "🪖", value: yearsOnPlatform > 0 ? `${yearsOnPlatform} años` : "Nuevo",              sub: "Experiencia", valueColor: "#475569" },
+              { icon: "⭐", value: m.rating > 0 ? m.rating.toFixed(1) : "—",                               sub: m.jobs > 0 ? `${m.jobs} reseña${m.jobs !== 1 ? "s" : ""}` : "Sin reseñas", valueColor: "#475569" },
+              { icon: "✅", value: m.verified ? "Verificado" : "No verif.",                                 sub: "OBRABIEN",    valueColor: m.verified ? VER_GREEN : "#94A3B8" },
+            ]).map((stat, i) => (
               <div key={i} style={{
                 padding: "8px 3px", textAlign: "center",
                 borderRight: i < 3 ? `1px solid ${BORDER}` : "none",
               }}>
-                <div style={{ fontSize: 15, lineHeight: 1, marginBottom: 4 }}>{stat.icon}</div>
+                <div style={{ fontSize: 14, lineHeight: 1, marginBottom: 3 }}>{stat.icon}</div>
                 <div style={{
-                  fontSize: 10, color: "#475569", fontWeight: 500,
+                  fontSize: 10, fontWeight: 700, color: stat.valueColor,
                   lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  paddingInline: 2, marginBottom: 1,
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontSize: 9, color: "#94A3B8", fontWeight: 500,
+                  textTransform: "uppercase", letterSpacing: "0.04em",
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   paddingInline: 2,
                 }}>
-                  {stat.label}
+                  {stat.sub}
                 </div>
               </div>
             ))}
