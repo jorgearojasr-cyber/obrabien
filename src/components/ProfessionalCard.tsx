@@ -234,73 +234,194 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
 
   const slug = m.name.toLowerCase().replace(/\s+/g, "-");
 
-  const captureCard = async (): Promise<HTMLCanvasElement | null> => {
-    const el = cardRef.current;
-    if (!el) return null;
-
-    const wrapper = document.createElement("div");
-    wrapper.style.cssText = "position:fixed;left:-9999px;top:0;width:390px;overflow:visible;z-index:-1;";
-    const clone = el.cloneNode(true) as HTMLElement;
-    clone.style.cssText = "width:390px;height:auto;overflow:visible;";
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-
-    await new Promise(r => setTimeout(r, 800));
-
-    const { default: html2canvas } = await import("html2canvas");
-    let canvas: HTMLCanvasElement | null = null;
-    try {
-      canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        width: 390,
-        height: clone.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        backgroundColor: "#ffffff",
-        onclone: (_doc: Document, cloned: HTMLElement) => {
-          // White background on root and all elements, remove filters
-          cloned.style.backgroundColor = "white";
-          cloned.style.background = "white";
-          cloned.querySelectorAll<HTMLElement>("*").forEach(node => {
-            node.style.overflow = "visible";
-            node.style.textOverflow = "unset";
-            node.style.whiteSpace = "normal";
-            node.style.backdropFilter = "none";
-            node.style.filter = "none";
-            if (node.tagName === "DIV") {
-              node.style.height = "auto";
-              node.style.maxHeight = "none";
-            }
-            if (!node.style.backgroundColor) {
-              node.style.backgroundColor = "white";
-            }
-          });
-          // Ensure images load cross-origin
-          cloned.querySelectorAll<HTMLImageElement>("img").forEach(img => {
-            img.crossOrigin = "anonymous";
-          });
-          // Wait for images
-          const imgs = Array.from(cloned.querySelectorAll<HTMLImageElement>("img"));
-          return Promise.all(imgs.map(img =>
-            img.complete
-              ? Promise.resolve()
-              : new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res(); })
-          ));
-        },
-      });
-    } finally {
-      document.body.removeChild(wrapper);
-    }
-    return canvas;
-  };
-
   const downloadPNG = async () => {
     setShareOpen(false);
-    const canvas = await captureCard();
-    if (!canvas) return;
+
+    const W = 390;
+    const H = 780;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d")!;
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+    function rr(x: number, y: number, w: number, h: number, r: number) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h);
+      ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+      ctx.fill();
+    }
+    function line(y: number) {
+      ctx.strokeStyle = "#E2E8F0"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(W - 20, y); ctx.stroke();
+    }
+
+    const NAVY   = "#1B2B4B";
+    const ORANGE = "#E86C1C";
+    const GREEN  = "#25D366";
+    const GBORDER= "#22C55E";
+
+    // ── background ────────────────────────────────────────────────────────────
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, H);
+
+    // ── header ────────────────────────────────────────────────────────────────
+    ctx.fillStyle = NAVY;
+    ctx.fillRect(0, 0, W, 60);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 17px Arial";
+    ctx.fillText("OBRA", 50, 36);
+    ctx.fillStyle = ORANGE;
+    ctx.fillText("BIEN", 50 + ctx.measureText("OBRA").width, 36);
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.font = "8px Arial";
+    ctx.fillText("MAESTROS CONFIABLES", 50, 50);
+
+    if (m.verified) {
+      ctx.fillStyle = ORANGE;
+      rr(270, 16, 102, 28, 6);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 10px Arial";
+      ctx.fillText("VERIFICADO", 280, 34);
+    }
+
+    // ── profile photo ─────────────────────────────────────────────────────────
+    const CX = 75, CY = 130, CR = 50;
+    if (m.photoUrl) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      await new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res(); img.src = m.photoUrl!; });
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(CX, CY, CR, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, CX - CR, CY - CR, CR * 2, CR * 2);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = "#E2E8F0";
+      ctx.beginPath(); ctx.arc(CX, CY, CR, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = NAVY;
+      ctx.font = "bold 22px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(m.initials, CX, CY + 8);
+      ctx.textAlign = "left";
+    }
+    ctx.strokeStyle = ORANGE; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(CX, CY, CR + 2, 0, Math.PI * 2); ctx.stroke();
+
+    // ── identity ──────────────────────────────────────────────────────────────
+    const TX = 145;
+    ctx.fillStyle = NAVY;
+    ctx.font = "bold 18px Arial";
+    ctx.fillText(m.name, TX, 95);
+
+    ctx.fillStyle = ORANGE;
+    ctx.font = "bold 11px Arial";
+    ctx.fillText(m.specialties[0] ?? "", TX, 113);
+
+    ctx.fillStyle = "#334155";
+    ctx.font = "13px Arial";
+    ctx.fillText("Tel: " + m.phone, TX, 134);
+    ctx.fillText("Lugar: " + m.city, TX, 153);
+    if (m.schedule) { ctx.fillStyle = "#64748B"; ctx.font = "11px Arial"; ctx.fillText(m.schedule, TX, 170); }
+
+    line(188);
+
+    // ── specialty block ───────────────────────────────────────────────────────
+    ctx.fillStyle = ORANGE; ctx.font = "bold 9px Arial";
+    ctx.fillText("ESPECIALISTA EN", 20, 208);
+    ctx.fillStyle = NAVY; ctx.font = "bold 16px Arial";
+    ctx.fillText(m.specialties[0] ?? "", 20, 226);
+
+    if (m.specialties.length > 1) {
+      ctx.fillStyle = "#64748B"; ctx.font = "bold 9px Arial";
+      ctx.fillText("TAMBIEN REALIZA:", 210, 206);
+      m.specialties.slice(1, 4).forEach((s, i) => {
+        ctx.fillStyle = "#334155"; ctx.font = "12px Arial";
+        ctx.fillText("• " + s, 210, 220 + i * 17);
+      });
+    }
+
+    // ── stats row ─────────────────────────────────────────────────────────────
+    ctx.strokeStyle = "#E2E8F0"; ctx.lineWidth = 1;
+    ctx.strokeRect(20, 255, W - 40, 60);
+    const stats = [
+      { label: "UBICACION",   value: m.city },
+      { label: "EXPERIENCIA", value: m.yearsExp ? `${m.yearsExp} anos` : "-" },
+      { label: "RESENAS",     value: m.rating ? `${m.rating.toFixed(1)} / 5` : "Sin" },
+      { label: "ESTADO",      value: m.verified ? "Verificado" : "No verif." },
+    ];
+    stats.forEach((s, i) => {
+      const x = 20 + i * 87 + 43;
+      ctx.fillStyle = NAVY; ctx.font = "bold 11px Arial"; ctx.textAlign = "center";
+      ctx.fillText(s.value, x, 278);
+      ctx.fillStyle = "#94A3B8"; ctx.font = "7px Arial";
+      ctx.fillText(s.label, x, 292);
+    });
+    ctx.textAlign = "left";
+
+    // ── availability ──────────────────────────────────────────────────────────
+    const isAvail = (m.disponibilidad ?? "disponible") !== "no_disponible";
+    if (isAvail) {
+      ctx.fillStyle = "#F0FDF4"; ctx.fillRect(20, 328, 173, 30);
+      ctx.fillStyle = "#16A34A"; ctx.beginPath(); ctx.arc(35, 343, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.font = "bold 10px Arial"; ctx.fillText("Disponible esta semana", 44, 347);
+    }
+    if (m.atiendeUrgencias) {
+      ctx.fillStyle = "#FFF5F5"; ctx.fillRect(200, 328, 170, 30);
+      ctx.fillStyle = "#DC2626"; ctx.font = "bold 10px Arial";
+      ctx.fillText("Atiende urgencias", 210, 347);
+    }
+
+    // ── WhatsApp button ───────────────────────────────────────────────────────
+    ctx.fillStyle = GREEN;
+    rr(20, 372, W - 40, 46, 10);
+    ctx.fillStyle = "#ffffff"; ctx.font = "bold 13px Arial"; ctx.textAlign = "center";
+    ctx.fillText("CONTACTAR POR WHATSAPP", W / 2, 400);
+    ctx.textAlign = "left";
+
+    // ── social links ──────────────────────────────────────────────────────────
+    ctx.font = "12px Arial"; ctx.fillStyle = "#334155"; ctx.textAlign = "center";
+    const socials = [
+      m.social?.instagram ? "Instagram" : null,
+      m.social?.facebook  ? "Facebook"  : null,
+      m.social?.tiktok    ? "TikTok"    : null,
+    ].filter(Boolean) as string[];
+    if (socials.length) {
+      const step = (W - 40) / socials.length;
+      socials.forEach((s, i) => ctx.fillText(s, 20 + step * i + step / 2, 440));
+    }
+    ctx.textAlign = "left";
+
+    // ── QR section ────────────────────────────────────────────────────────────
+    line(458);
+    ctx.fillStyle = "#334155"; ctx.font = "bold 12px Arial";
+    ctx.fillText("Ver perfil completo en ObraBien", 20, 476);
+    ctx.fillStyle = "#94A3B8"; ctx.font = "9px Arial";
+    ctx.fillText(`obrabien.cl/maestro/${m.id ?? maestroId}`, 20, 490);
+
+    // ── footer buttons ────────────────────────────────────────────────────────
+    line(508);
+    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(20, 516, 165, 38);
+    ctx.fillStyle = "#475569"; ctx.font = "12px Arial"; ctx.textAlign = "center";
+    ctx.fillText("Guardar contacto", 102, 540);
+
+    ctx.strokeStyle = GBORDER; ctx.lineWidth = 2;
+    ctx.strokeRect(200, 516, 170, 38);
+    ctx.fillStyle = "#22C55E"; ctx.font = "bold 12px Arial";
+    ctx.fillText("Compartir perfil", 285, 540);
+    ctx.textAlign = "left";
+
+    // ── download ──────────────────────────────────────────────────────────────
     const a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
     a.download = `tarjeta-${slug}-obrabien.png`;
