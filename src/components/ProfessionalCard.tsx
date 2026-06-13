@@ -43,8 +43,17 @@ function WhatsAppIcon({ size = 20 }: { size?: number }) {
 
 function InstagramIcon({ size = 40 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" style={{ flexShrink: 0 }}>
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ flexShrink: 0 }}>
+      <defs>
+        <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#f09433" />
+          <stop offset="40%" stopColor="#e6683c" />
+          <stop offset="65%" stopColor="#dc2743" />
+          <stop offset="85%" stopColor="#cc2366" />
+          <stop offset="100%" stopColor="#bc1888" />
+        </linearGradient>
+      </defs>
+      <path fill="url(#ig-grad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
     </svg>
   );
 }
@@ -207,6 +216,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   const sep: React.CSSProperties = { borderBottom: `1px solid ${BORDER}` };
 
   return (<>
+    <style>{`@keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(22,163,74,0.25)} 50%{box-shadow:0 0 0 6px rgba(22,163,74,0.10)} }`}</style>
     <div style={{
       display: "flex",
       alignItems: "center",
@@ -257,19 +267,19 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           </div>
 
           {/* 2. Avatar + Identity */}
-          <div style={{ ...sep, background: CARD_BG, padding: "16px 16px 12px", textAlign: "center" }}>
-            <div style={{ position: "relative", display: "inline-block", marginBottom: 10 }}>
+          <div style={{ ...sep, background: CARD_BG, padding: "20px 16px 14px", textAlign: "center" }}>
+            <div style={{ position: "relative", display: "inline-block", marginBottom: 12 }}>
               <div
                 onClick={() => m.photoUrl && setPhotoOpen(true)}
                 title={m.photoUrl ? "Ver foto" : undefined}
                 style={{
-                  width: 80, height: 80,
+                  width: 110, height: 110,
                   borderRadius: "50%",
                   background: m.photoUrl ? "transparent" : ORANGE,
                   color: "#fff",
                   display: "grid", placeItems: "center",
-                  fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 26,
-                  border: `4px solid ${ORANGE}`,
+                  fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 34,
+                  border: `3px solid ${ORANGE}`,
                   overflow: "hidden",
                   cursor: m.photoUrl ? "pointer" : "default",
                 }}
@@ -280,40 +290,26 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                   : m.initials}
               </div>
               <div style={{
-                position: "absolute", bottom: 1, right: 1,
-                width: 22, height: 22,
+                position: "absolute", bottom: 2, right: 2,
+                width: 24, height: 24,
                 background: VER_GREEN, borderRadius: "50%",
                 border: "2px solid #fff",
                 display: "grid", placeItems: "center",
-                color: "#fff", fontSize: 10, fontWeight: 800,
+                color: "#fff", fontSize: 11, fontWeight: 800,
               }}>✓</div>
             </div>
 
+            {/* Name */}
             <div style={{
-              fontFamily: "Archivo, sans-serif", fontWeight: 800,
-              fontSize: 18, color: NAVY,
+              fontFamily: "Archivo, sans-serif", fontWeight: 700,
+              fontSize: 22, color: NAVY,
               letterSpacing: "-0.02em", lineHeight: 1.15,
-              marginBottom: 6,
+              marginBottom: 8,
             }}>
               {m.name}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginBottom: 6 }}>
-              <span style={{ display: "flex", gap: 1, color: "#F59E0B" }}>
-                {[1,2,3,4,5].map(i => i <= Math.round(m.rating)
-                  ? <StarFilled key={i} size={12} />
-                  : <StarEmpty key={i} size={12} />
-                )}
-              </span>
-              {m.rating > 0 ? (
-                <span style={{ fontSize: 11, color: "#64748B", fontFamily: "JetBrains Mono, monospace" }}>
-                  {m.rating.toFixed(1)} · {m.jobs} reseña{m.jobs !== 1 ? "s" : ""}
-                </span>
-              ) : (
-                <span style={{ fontSize: 11, color: "#94A3B8" }}>Sin reseñas aún</span>
-              )}
-            </div>
-
+            {/* Phone */}
             {(() => {
               const raw = (m.social?.whatsapp || m.phone || "").replace(/\D/g, "");
               if (!raw) return null;
@@ -325,13 +321,21 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
               return (
                 <a href={`tel:${tel}`} style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
-                  color: "#1B2B4B", fontSize: 16, fontWeight: 600,
-                  textDecoration: "none",
+                  color: NAVY, fontSize: 18, fontWeight: 600,
+                  textDecoration: "none", marginBottom: 6,
                 }}>
-                  <span style={{ fontSize: 18 }}>📞</span> {display}
+                  <span style={{ fontSize: 18, color: "#E11D48" }}>📞</span> {display}
                 </a>
               );
             })()}
+
+            {/* Location */}
+            {m.city && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 14, color: "#64748B", marginTop: 4 }}>
+                <span style={{ color: "#E11D48", fontSize: 15 }}>📍</span>
+                <span>{m.sector || m.city}</span>
+              </div>
+            )}
           </div>
 
           {/* 3. Specialty block */}
@@ -347,20 +351,20 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 flexDirection: showTwoColSpecialty ? "row" : "column",
                 textAlign: showTwoColSpecialty ? "left" : "center",
               }}>
-                {/* Main specialty — 50% when two-col, full width when solo */}
-                <div style={{ flex: showTwoColSpecialty ? "0 0 50%" : undefined }}>
-                  <div style={{ fontSize: showTwoColSpecialty ? 28 : 34, lineHeight: 1, marginBottom: 4 }}>
+                {/* Main specialty */}
+                <div style={{ flex: showTwoColSpecialty ? "0 0 50%" : undefined, display: "flex", flexDirection: "column", alignItems: showTwoColSpecialty ? "flex-start" : "center" }}>
+                  <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 6 }}>
                     {specialtyEmoji}
                   </div>
                   <div style={{
                     fontSize: 8, fontFamily: "JetBrains Mono, monospace",
                     textTransform: "uppercase", letterSpacing: "0.1em",
-                    color: ORANGE, fontWeight: 700, marginBottom: 2,
+                    color: ORANGE, fontWeight: 700, marginBottom: 3,
                   }}>
                     Especialista en
                   </div>
                   <div style={{
-                    fontSize: showTwoColSpecialty ? 13 : 19,
+                    fontSize: 20,
                     fontFamily: "Archivo, sans-serif",
                     fontWeight: 800, color: NAVY, lineHeight: 1.2,
                   }}>
@@ -368,7 +372,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                   </div>
                 </div>
 
-                {/* Other specialties — right 50% column */}
+                {/* Other specialties with emoji per specialty */}
                 {showTwoColSpecialty && (
                   <div style={{
                     flex: "0 0 50%", borderLeft: `1px solid ${BORDER}`,
@@ -376,14 +380,14 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                   }}>
                     <div style={{
                       fontSize: 8, color: "#94A3B8", fontWeight: 700,
-                      marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em",
+                      marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em",
                     }}>
                       También realiza:
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       {otherSpecialties.map(sp => (
-                        <div key={sp} style={{ fontSize: 11, color: "#475569", display: "flex", alignItems: "center", gap: 5 }}>
-                          <span style={{ color: ORANGE, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>·</span>
+                        <div key={sp} style={{ fontSize: 11.5, color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 16, flexShrink: 0 }}>{SPECIALTY_EMOJI[sp] ?? "🛠️"}</span>
                           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sp}</span>
                         </div>
                       ))}
@@ -402,26 +406,26 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             background: "#fff",
           }}>
             {([
-              { icon: "📍", value: m.city || "Chile",                                                       sub: "Ubicación",   valueColor: "#475569" },
-              { icon: "🪖", value: m.yearsExp > 0 ? `${m.yearsExp} años` : "—",                           sub: "Experiencia", valueColor: "#475569" },
-              { icon: "⭐", value: m.rating > 0 ? m.rating.toFixed(1) : "—",                               sub: m.jobs > 0 ? `${m.jobs} reseña${m.jobs !== 1 ? "s" : ""}` : "Sin reseñas", valueColor: "#475569" },
-              { icon: "✅", value: m.verified ? "Verificado" : "No verif.",                                 sub: "OBRABIEN",    valueColor: m.verified ? VER_GREEN : "#94A3B8" },
+              { icon: "📍", iconColor: "#E11D48", value: m.city || "Chile",                                sub: "UBICACIÓN",    valueColor: "#475569" },
+              { icon: "🕐", iconColor: "#3B82F6", value: m.yearsExp > 0 ? `${m.yearsExp} años` : "—",    sub: "EXPERIENCIA",  valueColor: "#475569" },
+              { icon: "⭐", iconColor: "#F59E0B", value: m.rating > 0 ? m.rating.toFixed(1) : "—",        sub: m.jobs > 0 ? `${m.jobs} reseña${m.jobs !== 1 ? "s" : ""}` : "Sin reseñas", valueColor: "#475569" },
+              { icon: "✅", iconColor: VER_GREEN,  value: m.verified ? "Perfil verif." : "No verif.",      sub: "OBRABIEN",     valueColor: m.verified ? VER_GREEN : "#94A3B8" },
             ]).map((stat, i) => (
               <div key={i} style={{
-                padding: "8px 3px", textAlign: "center",
+                padding: "10px 4px", textAlign: "center",
                 borderRight: i < 3 ? `1px solid ${BORDER}` : "none",
               }}>
-                <div style={{ fontSize: 14, lineHeight: 1, marginBottom: 3 }}>{stat.icon}</div>
+                <div style={{ fontSize: 28, lineHeight: 1, marginBottom: 4 }}>{stat.icon}</div>
                 <div style={{
-                  fontSize: 10, fontWeight: 700, color: stat.valueColor,
+                  fontSize: 10.5, fontWeight: 700, color: stat.valueColor,
                   lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  paddingInline: 2, marginBottom: 1,
+                  paddingInline: 2, marginBottom: 2,
                 }}>
                   {stat.value}
                 </div>
                 <div style={{
-                  fontSize: 9, color: "#94A3B8", fontWeight: 500,
-                  textTransform: "uppercase", letterSpacing: "0.04em",
+                  fontSize: 8.5, color: "#94A3B8", fontWeight: 600,
+                  textTransform: "uppercase", letterSpacing: "0.05em",
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   paddingInline: 2,
                 }}>
@@ -449,11 +453,22 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 gridTemplateColumns: showUrgencias ? "1fr 1fr" : "1fr",
               }}>
                 <div style={cellStyle}>
-                  {isAvail ? "🟢 Disponible esta semana" : "⚪ Consultar disponibilidad"}
+                  {isAvail ? (
+                    <>
+                      <span style={{
+                        width: 9, height: 9, borderRadius: "50%",
+                        background: VER_GREEN, flexShrink: 0,
+                        boxShadow: `0 0 0 3px rgba(22,163,74,0.25)`,
+                        animation: "pulse 2s infinite",
+                        display: "inline-block",
+                      }} />
+                      {" "}Disponible esta semana
+                    </>
+                  ) : "⚪ Consultar disponibilidad"}
                 </div>
                 {showUrgencias && (
-                  <div style={{ ...cellStyle, borderLeft: "1px solid rgba(0,0,0,0.1)", color: "#DC2626" }}>
-                    🚨 Atiende urgencias
+                  <div style={{ ...cellStyle, borderLeft: "1px solid rgba(0,0,0,0.1)", color: "#DC2626", gap: 5 }}>
+                    <span style={{ fontSize: 15 }}>🚨</span> Atiende urgencias
                   </div>
                 )}
               </div>
@@ -471,7 +486,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
                   background: WA_GREEN, color: "#fff",
-                  borderRadius: 12, height: 48,
+                  borderRadius: 12, height: 56,
                   fontFamily: "Archivo, sans-serif", fontWeight: 800, fontSize: 14,
                   textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.03em",
                   width: "100%",
@@ -487,7 +502,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
           {otherSocials.length > 0 && (
             <div style={{
               ...sep,
-              padding: "10px 16px",
+              padding: "12px 16px",
               display: "flex", justifyContent: "space-evenly", alignItems: "center",
             }}>
               {otherSocials.map(s => (
@@ -497,13 +512,11 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-                    textDecoration: "none", color: s.color, flex: 1,
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                    textDecoration: "none", flex: 1,
                   }}
                 >
-                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40 }}>
-                    {s.icon}
-                  </span>
+                  {s.icon}
                   <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B" }}>{s.label}</span>
                 </a>
               ))}
