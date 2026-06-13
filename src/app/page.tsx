@@ -123,12 +123,15 @@ export default async function Home() {
       <HomeSearch />
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      <div style={{ background: "var(--bg)", padding: "16px 0 0" }}>
+        <div className="wrap">
       <section style={{
         position: "relative",
         width: "100%",
         minHeight: 550,
         margin: 0,
         overflow: "hidden",
+        borderRadius: 12,
         display: "flex",
         alignItems: "center",
         backgroundImage: "url(https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png)",
@@ -221,6 +224,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+        </div>{/* /.wrap */}
+      </div>{/* /hero wrapper */}
 
       {/* ── STATS BAR ────────────────────────────────────────────────────────── */}
       <section style={{ background: "#fff", boxShadow: "0 4px 24px rgba(27,43,75,0.10)", position: "relative", zIndex: 10 }}>
