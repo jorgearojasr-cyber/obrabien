@@ -293,7 +293,7 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
   }
   /* Overlay sólido blanco para garantizar legibilidad del texto */
   .hero-overlay {
-    background: rgba(255,255,255,0.88) !important;
+    background: rgba(255,255,255,0.65) !important;
   }
   .hero-text {
     padding: 28px 16px 36px;
