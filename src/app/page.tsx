@@ -112,7 +112,7 @@ export default async function Home() {
           </p>
 
           {/* Trust items */}
-          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
+          <div className="hero-trust" style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
             {[
               { Icon: ShieldCheck, label: "Maestros verificados" },
               { Icon: Star,        label: "Calificaciones reales" },
@@ -126,7 +126,7 @@ export default async function Home() {
           </div>
 
           {/* CTA Buttons */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="hero-cta-buttons" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {[
               { href: "/buscar",   bg: "#F97316", label: "Busca tu Maestro" },
               { href: "/registro", bg: "#1B2B4B", label: "Regístrate como Maestro" },

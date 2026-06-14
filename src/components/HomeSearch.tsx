@@ -64,6 +64,7 @@ function UbicacionPicker({
           tabIndex={0}
           onClick={() => setOpen(o => !o)}
           onKeyDown={e => e.key === "Enter" && setOpen(o => !o)}
+          className="home-search-input"
           style={{
             display: "flex", alignItems: "center", gap: 8,
             border: "1.5px solid var(--ink)", background: "#fff",
@@ -263,7 +264,7 @@ export function HomeSearch() {
       <div className="wrap">
 
         {/* Search panel */}
-        <div style={{
+        <div className="home-search-panel" style={{
           background: "#fff",
           border: "1px solid var(--line)",
           boxShadow: "0 8px 28px rgba(14,39,66,0.09)",
@@ -272,10 +273,10 @@ export function HomeSearch() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end" }}>
 
             {/* Especialidad */}
-            <div className="field" style={{ flex: "1 1 190px" }}>
+            <div className="field home-search-field" style={{ flex: "1 1 190px" }}>
               <label>Especialidad</label>
               <select
-                className="ob-select"
+                className="ob-select home-search-input"
                 value={specialty}
                 onChange={e => setSpecialty(e.target.value)}
               >
@@ -285,7 +286,7 @@ export function HomeSearch() {
             </div>
 
             {/* Ubicación picker + Geo button */}
-            <div style={{ flex: "1 1 260px", display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <div className="home-search-field" style={{ flex: "1 1 260px", display: "flex", gap: 8, alignItems: "flex-end" }}>
               <UbicacionPicker
                 region={region}
                 city={city}
@@ -297,6 +298,7 @@ export function HomeSearch() {
                 onClick={handleGeolocate}
                 disabled={geoLoading}
                 title="Detectar mi ubicación"
+                className="home-geo-btn"
                 style={{
                   width: 48, height: 48, flexShrink: 0,
                   background: "#fff", border: "1.5px solid var(--navy)",
@@ -325,10 +327,11 @@ export function HomeSearch() {
             </div>
 
             {/* Search button */}
-            <div className="field" style={{ flex: "1 1 170px" }}>
+            <div className="field home-search-field" style={{ flex: "1 1 170px" }}>
               <label>&nbsp;</label>
               <button
                 onClick={handleSearch}
+                className="home-search-btn"
                 style={{
                   height: 48, background: "var(--orange)", border: "none",
                   color: "#fff", fontWeight: 700, fontSize: 15, width: "100%",
@@ -352,14 +355,14 @@ export function HomeSearch() {
         </div>
 
         {/* Popular chips */}
-        <div className="row center gap-8 wrap-flex" style={{ marginTop: 14, justifyContent: "center" }}>
-          <span className="label hide-mobile">Búsquedas populares:</span>
+        <div className="home-chips no-scrollbar" style={{ marginTop: 10 }}>
+          <span className="label home-chips-label">Populares:</span>
           {POPULAR.map(s => (
             <button
               key={s}
               onClick={() => setSpecialty(specialty === s ? "" : s)}
               style={{
-                display: "inline-flex", alignItems: "center",
+                display: "inline-flex", alignItems: "center", flexShrink: 0,
                 border: `1px solid ${specialty === s ? "var(--orange)" : "var(--navy)"}`,
                 background: specialty === s ? "var(--orange)" : "#fff",
                 color: specialty === s ? "#fff" : "var(--navy)",
