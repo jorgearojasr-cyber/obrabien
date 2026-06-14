@@ -190,15 +190,22 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   }, [m.id, qrOpen]);
 
   const downloadVCard = () => {
+    const spaceIdx = m.name.indexOf(" ");
+    const firstName = spaceIdx >= 0 ? m.name.slice(0, spaceIdx) : m.name;
+    const lastName  = spaceIdx >= 0 ? m.name.slice(spaceIdx + 1) : "";
+    const tel = m.phone.replace(/\D/g, "");
+    const telFormatted = tel.startsWith("56") ? `+${tel}` : tel.startsWith("9") ? `+56${tel}` : `+56${tel}`;
     const lines = [
       "BEGIN:VCARD",
       "VERSION:3.0",
       `FN:${m.name}`,
-      `TEL;TYPE=CELL:${m.phone}`,
+      `N:${lastName};${firstName};;;`,
+      `TEL;TYPE=CELL:${telFormatted}`,
       `TITLE:${m.specialties.join(", ")}`,
+      `ORG:ObraBien`,
       `NOTE:${m.description}`,
-      `ADR;TYPE=WORK:;;${m.sector};;;;CL`,
-      `URL:${window.location.href}`,
+      `ADR;TYPE=WORK:;;${m.city};;;;CL`,
+      `URL:${window.location.origin}/maestro/${m.id}`,
       "END:VCARD",
     ];
     const blob = new Blob([lines.join("\r\n")], { type: "text/vcard;charset=utf-8" });
