@@ -70,7 +70,7 @@ export default function HowSection() {
             <div key={step.n} className="how-simple-step-wrap">
               <div className="how-simple-step">
                 {/* Number circle */}
-                <div style={{
+                <div className="how-step-num" style={{
                   width: 44, height: 44, borderRadius: "50%",
                   background: "var(--orange)", color: "#fff",
                   display: "grid", placeItems: "center", flexShrink: 0,
@@ -96,7 +96,7 @@ export default function HowSection() {
                 </p>
 
                 {/* Icon */}
-                <div style={{ color: "var(--navy)", opacity: 0.55 }}>
+                <div className="how-step-icon" style={{ color: "var(--navy)", opacity: 0.55 }}>
                   {step.icon}
                 </div>
               </div>

@@ -985,21 +985,29 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
 }
 @media (max-width: 640px) {
   .how-simple-grid {
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
   .how-simple-step-wrap {
-    flex-direction: column;
-    align-items: center;
+    display: contents;
   }
   .how-simple-step {
-    padding: 20px 0 4px;
+    padding: 14px 12px;
+    background: #F6F6F4;
+    border-radius: 12px;
+    align-items: center;
+    text-align: center;
   }
+  .how-simple-step .how-step-icon,
   .how-simple-arrow {
-    transform: rotate(90deg);
-    padding-top: 0;
-    font-size: 18px;
-    opacity: 0.4;
+    display: none;
+  }
+  .how-simple-step .how-step-num {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+    margin-bottom: 10px;
   }
 }
 
