@@ -2,7 +2,6 @@ import Link from "next/link";
 import { HomeSearch } from "@/components/HomeSearch";
 import FadeIn from "./_home/FadeIn";
 import HowSection from "./_home/HowSection";
-import StatsBanner from "./_home/StatsBanner";
 import BannerMaestros from "./_home/BannerMaestros";
 import Especialidades from "./_home/Especialidades";
 import MaestrosDestacados, { type MaestroCard } from "./_home/MaestrosDestacados";
@@ -11,30 +10,6 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { ShieldCheck, Gift, Star } from "lucide-react";
 
 export default async function Home() {
-  // ── Hero stats ───────────────────────────────────────────────────────────────
-  let heroStats = { maestros: 0, resenas: 0, calificacion: 0 };
-  try {
-    const [
-      { count: maestrosCount },
-      { count: resenasCount },
-      { data: resenasCalData },
-    ] = await Promise.all([
-      getSupabaseAdmin().from("maestros").select("*", { count: "exact", head: true }).eq("activo", true),
-      getSupabaseAdmin().from("resenas").select("*", { count: "exact", head: true }),
-      getSupabaseAdmin().from("resenas").select("calificacion"),
-    ]);
-
-    heroStats.maestros = maestrosCount ?? 0;
-    heroStats.resenas  = resenasCount  ?? 0;
-
-    if (resenasCalData && resenasCalData.length > 0) {
-      heroStats.calificacion = Math.round(
-        (resenasCalData as { calificacion: number }[])
-          .reduce((sum, r) => sum + r.calificacion, 0) / resenasCalData.length * 10
-      ) / 10;
-    }
-  } catch { /* fallback */ }
-
   // ── Maestros destacados ──────────────────────────────────────────────────────
   let featuredMaestros: MaestroCard[] = [];
   try {
@@ -84,13 +59,6 @@ export default async function Home() {
     <main>
       {/* ── BUSCADOR ──────────────────────────────────────────────────────────── */}
       <HomeSearch />
-
-      {/* ── STATS BAR ─────────────────────────────────────────────────────────── */}
-      <StatsBanner
-        maestros={heroStats.maestros}
-        resenas={heroStats.resenas}
-        calificacion={heroStats.calificacion}
-      />
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
       <div style={{ background: "var(--bg)", padding: "8px 0 0" }}>
