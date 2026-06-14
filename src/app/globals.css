@@ -847,31 +847,36 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
 .banner-maestros-inner {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  gap: 56px;
   align-items: center;
 }
-.banner-maestros-steps {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  justify-content: space-between;
+.banner-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
-.banner-step-arrow {
-  display: block;
-  position: absolute;
-  right: -14px;
-  top: 14px;
+/* last item spans full width when odd */
+.banner-features-grid > *:last-child:nth-child(odd) {
+  grid-column: span 2;
 }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .banner-maestros-inner {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 40px;
   }
-  .banner-step-arrow { display: none; }
-  .banner-maestros-steps {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
+  .banner-features-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .banner-features-grid > *:last-child:nth-child(odd) {
+    grid-column: span 1;
+  }
+}
+@media (max-width: 560px) {
+  .banner-features-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .banner-features-grid > *:last-child:nth-child(odd) {
+    grid-column: span 2;
   }
 }
 
