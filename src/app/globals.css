@@ -884,14 +884,20 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   padding-bottom: 6px;
 }
 .esp-card {
-  width: 148px;
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  height: 160px;
   flex-shrink: 0;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 18px 14px 16px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
   scroll-snap-align: start;
   transition: border-color .15s, box-shadow .15s;
 }

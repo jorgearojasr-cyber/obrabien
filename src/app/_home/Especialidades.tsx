@@ -131,15 +131,24 @@ export default function Especialidades() {
           {SPECS.map(({ slug, desc, icon }) => (
             <Link key={slug} href={`/buscar?esp=${encodeURIComponent(slug)}`} style={{ textDecoration: "none", flexShrink: 0 }}>
               <div className="esp-card">
-                <div style={{ color: "var(--orange)", marginBottom: 12 }}>{icon}</div>
+                <div style={{ color: "var(--orange)", marginBottom: 10, flexShrink: 0, lineHeight: 0 }}>
+                  {/* icon is already 28px SVG — render at 32px via wrapper */}
+                  <span style={{ display: "inline-block", width: 32, height: 32 }}>{icon}</span>
+                </div>
                 <div style={{
                   fontFamily: "var(--font-archivo), sans-serif",
-                  fontWeight: 700, fontSize: 14, color: "var(--navy)",
-                  marginBottom: 5, letterSpacing: "-0.01em",
+                  fontWeight: 700, fontSize: 13.5, color: "var(--navy)",
+                  marginBottom: 4, letterSpacing: "-0.01em",
+                  overflow: "hidden", display: "-webkit-box",
+                  WebkitLineClamp: 1, WebkitBoxOrient: "vertical",
                 }}>
                   {slug}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--mute)", lineHeight: 1.5 }}>
+                <div style={{
+                  fontSize: 11.5, color: "var(--mute)", lineHeight: 1.45,
+                  overflow: "hidden", display: "-webkit-box",
+                  WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                }}>
                   {desc}
                 </div>
               </div>
