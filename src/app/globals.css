@@ -327,12 +327,12 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 @media (max-width: 768px) {
   /* Background position: maestro a la derecha, texto visible a la izquierda */
   .hero-section-img {
-    background-position: 70% 15% !important;
+    background-position: 50% 5% !important;
     min-height: auto !important;
   }
-  /* Overlay sólido blanco para garantizar legibilidad del texto */
+  /* Overlay semitransparente para que se vea la imagen */
   .hero-overlay {
-    background: rgba(248,245,240,0.88) !important;
+    background: linear-gradient(to bottom, rgba(248,245,240,0.55) 0%, rgba(248,245,240,0.72) 100%) !important;
   }
   .hero-text {
     padding: 20px 16px 24px;
@@ -356,12 +356,14 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
     font-size: clamp(20px, 6.5vw, 28px) !important;
     line-height: 1.1 !important;
     margin-bottom: 8px !important;
+    text-shadow: 0 1px 4px rgba(255,255,255,0.6);
   }
   .hero-text p {
     font-size: 13px !important;
-    color: #374151 !important;
+    color: #1B2B4B !important;
     margin-bottom: 10px !important;
     line-height: 1.5 !important;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.5);
   }
   /* Ocultar trust items en mobile para ahorrar espacio */
   .hero-trust {
