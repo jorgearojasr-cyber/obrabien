@@ -62,12 +62,12 @@ export default async function Home() {
       <HomeSearch />
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <div style={{ background: "var(--bg)", padding: "16px 0 0" }}>
+      <div style={{ background: "var(--bg)", padding: "8px 0 0" }}>
         <div className="wrap">
       <section className="hero-section-img" style={{
         position: "relative",
         width: "100%",
-        minHeight: 550,
+        minHeight: 400,
         margin: 0,
         overflow: "hidden",
         borderRadius: 12,
@@ -87,7 +87,7 @@ export default async function Home() {
         <div className="hero-text">
 
           {/* Badge */}
-          <div style={{ marginBottom: 22 }}>
+          <div style={{ marginBottom: 14 }}>
             <span className="hero-badge" style={{ color: "#FFFFFF", backgroundColor: "#1B2B4B" }}>
               <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
               ObraBien · Plataforma chilena
@@ -97,8 +97,8 @@ export default async function Home() {
           {/* Title */}
           <h1 style={{
             fontFamily: "var(--font-archivo), sans-serif",
-            fontSize: "clamp(30px, 3.6vw, 56px)", fontWeight: 900, lineHeight: 1.05,
-            color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 18px",
+            fontSize: "clamp(26px, 2.8vw, 44px)", fontWeight: 900, lineHeight: 1.05,
+            color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 12px",
           }}>
             Encuentra<br />
             <span style={{ color: "#F97316" }}>maestros confiables</span><br />
@@ -106,13 +106,13 @@ export default async function Home() {
           </h1>
 
           {/* Subtitle */}
-          <p style={{ fontSize: 15.5, color: "#475569", margin: "0 0 24px", lineHeight: 1.65 }}>
+          <p style={{ fontSize: 14.5, color: "#475569", margin: "0 0 16px", lineHeight: 1.6 }}>
             Albañiles, gasfiter, electricistas, carpinteros y más.
             Revisa perfiles, reseñas reales y contáctalos directo — sin intermediarios.
           </p>
 
           {/* Trust items */}
-          <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 30 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
             {[
               { Icon: ShieldCheck, label: "Maestros verificados" },
               { Icon: Star,        label: "Calificaciones reales" },

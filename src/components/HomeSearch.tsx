@@ -259,7 +259,7 @@ export function HomeSearch() {
   }
 
   return (
-    <section style={{ background: "var(--bg)", paddingTop: 26, paddingBottom: 8 }}>
+    <section style={{ background: "var(--bg)", paddingTop: 16, paddingBottom: 8 }}>
       <div className="wrap">
 
         {/* Search panel */}
