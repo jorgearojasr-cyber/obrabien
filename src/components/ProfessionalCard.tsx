@@ -252,16 +252,17 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
 
     if (footer) footer.style.display = "none";
     try {
-      // Preload profile photo as local blob to avoid CORS issues on Safari/iOS
+      // Route the photo through our server proxy so iOS/Safari never hits Cloudinary CORS
       if (imgEl && originalSrc) {
         try {
-          const res = await fetch(originalSrc, { mode: "cors" });
+          const proxyUrl = `/api/imagen-proxy?url=${encodeURIComponent(originalSrc)}`;
+          const res = await fetch(proxyUrl);
           const photoBlob = await res.blob();
           blobUrl = URL.createObjectURL(photoBlob);
           imgEl.src = blobUrl;
-          await new Promise(r => setTimeout(r, 300));
+          await new Promise(r => setTimeout(r, 800));
         } catch {
-          // If fetch fails, proceed with original src
+          // Fall back to original src if proxy fails
         }
       }
 
