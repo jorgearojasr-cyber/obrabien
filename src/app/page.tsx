@@ -75,7 +75,7 @@ export default async function Home() {
         alignItems: "center",
         backgroundImage: "url(https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png)",
         backgroundSize: "cover",
-        backgroundPosition: "60% center",
+        backgroundPosition: "60% 15%",
       }}>
         {/* Overlay — CSS mobile override changes to solid white */}
         <div className="hero-overlay" style={{
