@@ -18,7 +18,7 @@ export default async function Home() {
       .select("id, nombre, foto_url, especialidades, ciudades, descripcion, verificado, verificacion_estado")
       .eq("activo", true)
       .order("verificado", { ascending: false })
-      .limit(6);
+      .limit(10);
 
     if (rows && rows.length > 0) {
       // Fetch ratings

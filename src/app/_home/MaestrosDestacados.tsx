@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { BadgeCheck, MapPin, Star } from "lucide-react";
+import { useRef } from "react";
+import { MapPin, Star } from "lucide-react";
 
 export interface MaestroCard {
   id: string;
@@ -15,22 +18,26 @@ export interface MaestroCard {
   description: string;
 }
 
-function Avatar({ m }: { m: MaestroCard }) {
+function PhotoOrInitials({ m }: { m: MaestroCard }) {
   if (m.photoUrl) {
     return (
-      <div style={{ width: 72, height: 72, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "2.5px solid var(--line)" }}>
-        <Image src={m.photoUrl} alt={m.name} width={72} height={72} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
-      </div>
+      <Image
+        src={m.photoUrl}
+        alt={m.name}
+        fill
+        sizes="220px"
+        style={{ objectFit: "cover" }}
+      />
     );
   }
   return (
     <div style={{
-      width: 72, height: 72, borderRadius: "50%", flexShrink: 0,
-      background: "var(--navy)", color: "#fff",
+      width: "100%", height: "100%",
+      background: "var(--navy)",
       display: "grid", placeItems: "center",
       fontFamily: "var(--font-archivo), sans-serif",
-      fontWeight: 900, fontSize: 22, letterSpacing: "-0.02em",
-      border: "2.5px solid var(--line)",
+      fontWeight: 900, fontSize: 36, color: "#fff",
+      letterSpacing: "-0.02em",
     }}>
       {m.initials}
     </div>
@@ -38,107 +45,114 @@ function Avatar({ m }: { m: MaestroCard }) {
 }
 
 export default function MaestrosDestacados({ maestros }: { maestros: MaestroCard[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   if (maestros.length === 0) return null;
 
+  function scroll(dir: "left" | "right") {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: dir === "right" ? 440 : -440, behavior: "smooth" });
+  }
+
   return (
-    <section style={{ background: "#fff", padding: "72px 0 64px" }}>
+    <section style={{ background: "#fff", padding: "56px 0 52px" }}>
       <div className="wrap">
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 40, flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <span style={{
-              display: "inline-block", fontFamily: "var(--font-jetbrains), monospace",
-              textTransform: "uppercase", fontSize: 11, letterSpacing: "0.15em",
-              fontWeight: 700, color: "var(--orange)", marginBottom: 10,
-            }}>
-              // MAESTROS REALES
-            </span>
-            <h2 style={{
-              fontFamily: "var(--font-archivo), sans-serif",
-              fontSize: "clamp(26px, 3.5vw, 40px)", fontWeight: 900,
-              color: "var(--navy)", letterSpacing: "-0.025em", lineHeight: 1.1, margin: 0,
-            }}>
-              Maestros destacados
-            </h2>
-          </div>
-          <Link href="/buscar" style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            fontFamily: "var(--font-jetbrains), monospace", fontWeight: 700,
-            fontSize: 12.5, color: "var(--orange)", textDecoration: "none",
-            textTransform: "uppercase", letterSpacing: "0.08em",
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
+          <h2 style={{
+            fontFamily: "var(--font-archivo), sans-serif",
+            fontWeight: 800, fontSize: "clamp(18px, 2.5vw, 24px)",
+            color: "var(--navy)", letterSpacing: "-0.02em", margin: 0,
           }}>
-            Ver todos →
-          </Link>
+            Maestros destacados
+          </h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link href="/buscar" style={{
+              fontFamily: "var(--font-jetbrains), monospace",
+              fontSize: 12, fontWeight: 700, color: "var(--orange)",
+              textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.06em",
+              whiteSpace: "nowrap",
+            }}>
+              Ver todos →
+            </Link>
+            <div className="esp-arrows">
+              {(["left", "right"] as const).map(dir => (
+                <button key={dir} onClick={() => scroll(dir)} aria-label={dir === "left" ? "Anterior" : "Siguiente"} style={{
+                  width: 34, height: 34, borderRadius: "50%",
+                  border: "1.5px solid var(--line)", background: "#fff",
+                  display: "grid", placeItems: "center", cursor: "pointer",
+                  color: "var(--navy)", flexShrink: 0,
+                  transition: "border-color .15s, background .15s",
+                }}>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    {dir === "left" ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Cards grid */}
-        <div className="maestros-dest-grid">
+        {/* Carousel */}
+        <div ref={scrollRef} className="maestros-carousel no-scrollbar">
           {maestros.map(m => (
-            <Link key={m.id} href={`/maestro/${m.id}`} style={{ textDecoration: "none", display: "flex" }}>
-              <div className="maestro-dest-card">
-                {/* Top: avatar + name + badge */}
-                <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
-                  <Avatar m={m} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 3 }}>
-                      <span style={{
-                        fontFamily: "var(--font-archivo), sans-serif",
-                        fontWeight: 800, fontSize: 16, color: "var(--navy)",
-                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                      }}>
-                        {m.name}
-                      </span>
-                      {m.verified && (
-                        <BadgeCheck size={15} color="var(--orange)" strokeWidth={2} style={{ flexShrink: 0 }} />
-                      )}
+            <Link key={m.id} href={`/maestro/${m.id}`} style={{ textDecoration: "none", flexShrink: 0 }}>
+              <div className="maestro-carousel-card">
+                {/* Photo */}
+                <div style={{ position: "relative", width: "100%", height: 200, flexShrink: 0, borderRadius: "12px 12px 0 0", overflow: "hidden", background: "var(--bg-2)" }}>
+                  <PhotoOrInitials m={m} />
+                  {m.verified && (
+                    <div style={{
+                      position: "absolute", top: 10, right: 10,
+                      background: "#16a34a", color: "#fff",
+                      fontFamily: "var(--font-jetbrains), monospace",
+                      fontSize: 9, fontWeight: 700, letterSpacing: "0.08em",
+                      padding: "3px 8px", borderRadius: 4, textTransform: "uppercase",
+                    }}>
+                      ✓ Verificado
                     </div>
-                    {m.specialties.length > 0 && (
-                      <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 4 }}>
-                        {m.specialties.slice(0, 2).join(" · ")}
-                      </div>
-                    )}
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <MapPin size={12} color="var(--mute)" strokeWidth={2} />
-                      <span style={{ fontSize: 12.5, color: "var(--mute)" }}>{m.city}</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
-                {/* Description */}
-                {m.description && (
-                  <p style={{
-                    fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.55, margin: "0 0 14px",
-                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
+                {/* Info */}
+                <div style={{ padding: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 5 }}>
+                  <div style={{
+                    fontFamily: "var(--font-archivo), sans-serif",
+                    fontWeight: 700, fontSize: 14.5, color: "var(--navy)",
+                    overflow: "hidden", display: "-webkit-box",
+                    WebkitLineClamp: 1, WebkitBoxOrient: "vertical",
                   }}>
-                    {m.description}
-                  </p>
-                )}
+                    {m.name}
+                  </div>
 
-                {/* Footer: rating */}
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: "auto", paddingTop: 12, borderTop: "1px solid var(--line)" }}>
-                  {m.rating > 0 ? (
-                    <>
-                      <Star size={13} color="var(--orange)" fill="var(--orange)" />
-                      <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14, color: "var(--navy)" }}>
+                  {m.specialties.length > 0 && (
+                    <div style={{
+                      fontSize: 12, color: "var(--mute)",
+                      overflow: "hidden", display: "-webkit-box",
+                      WebkitLineClamp: 1, WebkitBoxOrient: "vertical",
+                    }}>
+                      {m.specialties.slice(0, 2).join(" · ")}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <MapPin size={11} color="var(--mute)" strokeWidth={2} />
+                    <span style={{ fontSize: 12, color: "var(--mute)" }}>{m.city}</span>
+                  </div>
+
+                  {m.rating > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                      <Star size={12} color="var(--orange)" fill="var(--orange)" />
+                      <span style={{
+                        fontFamily: "var(--font-archivo), sans-serif",
+                        fontWeight: 700, fontSize: 13, color: "var(--navy)",
+                      }}>
                         {m.rating.toFixed(1)}
                       </span>
-                      <span style={{ fontSize: 12, color: "var(--mute)" }}>
-                        ({m.jobs} {m.jobs === 1 ? "reseña" : "reseñas"})
+                      <span style={{ fontSize: 11.5, color: "var(--mute)" }}>
+                        ({m.jobs})
                       </span>
-                    </>
-                  ) : (
-                    <span style={{ fontSize: 12, color: "var(--mute)" }}>Sin reseñas aún</span>
-                  )}
-                  {m.verified && (
-                    <span style={{
-                      marginLeft: "auto", background: "var(--navy)", color: "var(--orange)",
-                      fontFamily: "var(--font-jetbrains), monospace", fontSize: 9,
-                      fontWeight: 700, letterSpacing: "0.1em", padding: "2px 7px",
-                      textTransform: "uppercase",
-                    }}>
-                      VERIFICADO
-                    </span>
+                    </div>
                   )}
                 </div>
               </div>

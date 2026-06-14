@@ -913,30 +913,30 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   .esp-arrows { display: none; }
 }
 
-/* === Maestros destacados grid === */
-.maestros-dest-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+/* === Maestros destacados carousel === */
+.maestros-carousel {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
 }
-.maestro-dest-card {
+.maestro-carousel-card {
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
   background: #fff;
   border: 1px solid var(--line);
-  padding: 20px;
+  border-radius: 12px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  transition: border-color .15s ease, box-shadow .15s ease;
+  scroll-snap-align: start;
+  transition: box-shadow .15s, border-color .15s;
 }
-.maestro-dest-card:hover {
+.maestro-carousel-card:hover {
+  box-shadow: 0 6px 20px rgba(14,39,66,0.1);
   border-color: var(--navy);
-  box-shadow: 0 4px 18px rgba(14,39,66,0.1);
-}
-@media (max-width: 900px) {
-  .maestros-dest-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 560px) {
-  .maestros-dest-grid { grid-template-columns: 1fr; }
 }
 
 /* === Testimonios grid === */
