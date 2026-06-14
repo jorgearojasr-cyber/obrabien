@@ -844,39 +844,38 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
 }
 
 /* === Banner Maestros === */
-.banner-maestros-inner {
+.bm-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
+  grid-template-columns: 40% 1fr;
+  gap: 48px;
   align-items: center;
 }
-.banner-features-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.bm-left {
+  display: flex;
+  flex-direction: column;
 }
-/* last item spans full width when odd */
-.banner-features-grid > *:last-child:nth-child(odd) {
-  grid-column: span 2;
+.bm-features-row {
+  display: flex;
+  align-items: flex-start;
 }
 @media (max-width: 900px) {
-  .banner-maestros-inner {
+  .bm-layout {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 36px;
   }
-  .banner-features-grid {
-    grid-template-columns: 1fr 1fr 1fr;
+  .bm-features-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
   }
-  .banner-features-grid > *:last-child:nth-child(odd) {
-    grid-column: span 1;
+  /* hide separators in grid mode */
+  .bm-features-row > div > div:first-child[style*="width: 1px"] {
+    display: none;
   }
 }
 @media (max-width: 560px) {
-  .banner-features-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .banner-features-grid > *:last-child:nth-child(odd) {
-    grid-column: span 2;
+  .bm-features-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
