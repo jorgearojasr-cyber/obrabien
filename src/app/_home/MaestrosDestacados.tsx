@@ -99,59 +99,55 @@ export default function MaestrosDestacados({ maestros }: { maestros: MaestroCard
             <Link key={m.id} href={`/maestro/${m.id}`} style={{ textDecoration: "none", flexShrink: 0 }}>
               <div className="maestro-carousel-card">
                 {/* Photo */}
-                <div style={{ position: "relative", width: "100%", height: 200, flexShrink: 0, borderRadius: "12px 12px 0 0", overflow: "hidden", background: "var(--bg-2)" }}>
+                <div style={{ position: "relative", width: "100%", height: 180, flexShrink: 0, borderRadius: "12px 12px 0 0", overflow: "hidden", background: "var(--bg-2)" }}>
                   <PhotoOrInitials m={m} />
-                  {m.verified && (
-                    <div style={{
-                      position: "absolute", top: 10, right: 10,
-                      background: "#16a34a", color: "#fff",
-                      fontFamily: "var(--font-jetbrains), monospace",
-                      fontSize: 9, fontWeight: 700, letterSpacing: "0.08em",
-                      padding: "3px 8px", borderRadius: 4, textTransform: "uppercase",
-                    }}>
-                      ✓ Verificado
-                    </div>
-                  )}
                 </div>
 
                 {/* Info */}
-                <div style={{ padding: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 5 }}>
+                <div style={{ padding: "12px 12px 14px", display: "flex", flexDirection: "column", gap: 4 }}>
                   <div style={{
                     fontFamily: "var(--font-archivo), sans-serif",
-                    fontWeight: 700, fontSize: 14.5, color: "var(--navy)",
-                    overflow: "hidden", display: "-webkit-box",
-                    WebkitLineClamp: 1, WebkitBoxOrient: "vertical",
+                    fontWeight: 700, fontSize: 13.5, color: "var(--navy)", lineHeight: 1.3,
                   }}>
                     {m.name}
                   </div>
 
                   {m.specialties.length > 0 && (
                     <div style={{
-                      fontSize: 12, color: "var(--mute)",
+                      fontSize: 11.5, color: "var(--mute)", fontWeight: 500,
                       overflow: "hidden", display: "-webkit-box",
                       WebkitLineClamp: 1, WebkitBoxOrient: "vertical",
                     }}>
-                      {m.specialties.slice(0, 2).join(" · ")}
+                      {m.specialties[0]}
                     </div>
                   )}
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <MapPin size={11} color="var(--mute)" strokeWidth={2} />
-                    <span style={{ fontSize: 12, color: "var(--mute)" }}>{m.city}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                    <MapPin size={10} color="var(--mute)" strokeWidth={2} />
+                    <span style={{ fontSize: 11.5, color: "var(--mute)" }}>{m.city}</span>
                   </div>
 
                   {m.rating > 0 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
-                      <Star size={12} color="var(--orange)" fill="var(--orange)" />
-                      <span style={{
-                        fontFamily: "var(--font-archivo), sans-serif",
-                        fontWeight: 700, fontSize: 13, color: "var(--navy)",
-                      }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 1 }}>
+                      <Star size={11} color="#f59e0b" fill="#f59e0b" />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--navy)" }}>
                         {m.rating.toFixed(1)}
                       </span>
-                      <span style={{ fontSize: 11.5, color: "var(--mute)" }}>
-                        ({m.jobs})
+                      <span style={{ fontSize: 11, color: "var(--mute)" }}>
+                        ({m.jobs} {m.jobs === 1 ? "reseña" : "reseñas"})
                       </span>
+                    </div>
+                  )}
+
+                  {m.verified && (
+                    <div style={{
+                      marginTop: 5,
+                      display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start",
+                      background: "#dcfce7", color: "#15803d",
+                      fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em",
+                      padding: "3px 8px", borderRadius: 999,
+                    }}>
+                      ✓ Verificado
                     </div>
                   )}
                 </div>
