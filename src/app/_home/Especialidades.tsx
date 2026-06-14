@@ -68,7 +68,7 @@ const SPECS = [
     ),
   },
   {
-    slug: "Soldadura",
+    slug: "Enfierradura y Soldadura",
     desc: "Metal, rejas y estructuras metálicas",
     icon: (
       <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
