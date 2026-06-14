@@ -950,6 +950,53 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   .cta-final-grid { grid-template-columns: 1fr; }
 }
 
+/* === How section simple === */
+.how-simple-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+.how-simple-step-wrap {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+.how-simple-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 16px;
+}
+.how-simple-arrow {
+  font-size: 22px;
+  color: var(--orange);
+  opacity: 0.5;
+  padding-top: 12px;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .how-simple-grid {
+    flex-direction: column;
+    gap: 0;
+  }
+  .how-simple-step-wrap {
+    flex-direction: column;
+    align-items: center;
+  }
+  .how-simple-step {
+    padding: 20px 0 4px;
+  }
+  .how-simple-arrow {
+    transform: rotate(90deg);
+    padding-top: 0;
+    font-size: 18px;
+    opacity: 0.4;
+  }
+}
+
 /* === Brand === */
 .brand { display: flex; align-items: center; gap: 12px; line-height: 1; }
 .brand .wordmark { display: flex; flex-direction: column; gap: 2px; }
