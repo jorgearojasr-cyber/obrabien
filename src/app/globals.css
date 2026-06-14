@@ -825,6 +825,131 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   }
 }
 
+/* === Stats banner (below search) === */
+.stats-banner-row {
+  display: flex;
+  align-items: stretch;
+}
+.stats-banner-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  padding: 14px 20px;
+}
+@media (max-width: 560px) {
+  .stats-banner-row { flex-direction: column; }
+  .stats-banner-item { border-right: none !important; border-bottom: 1px solid var(--line); }
+  .stats-banner-item:last-child { border-bottom: none; }
+}
+
+/* === Banner Maestros === */
+.banner-maestros-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.banner-maestros-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  justify-content: space-between;
+}
+.banner-step-arrow {
+  display: block;
+  position: absolute;
+  right: -14px;
+  top: 14px;
+}
+@media (max-width: 768px) {
+  .banner-maestros-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .banner-step-arrow { display: none; }
+  .banner-maestros-steps {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+}
+
+/* === Especialidades grid === */
+.esp-home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.esp-home-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  height: 100%;
+}
+.esp-home-card:hover {
+  border-color: var(--orange);
+  box-shadow: 0 4px 18px rgba(232,108,28,0.12);
+}
+@media (max-width: 768px) {
+  .esp-home-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+@media (max-width: 440px) {
+  .esp-home-grid { grid-template-columns: 1fr; }
+}
+
+/* === Maestros destacados grid === */
+.maestros-dest-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.maestro-dest-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.maestro-dest-card:hover {
+  border-color: var(--navy);
+  box-shadow: 0 4px 18px rgba(14,39,66,0.1);
+}
+@media (max-width: 900px) {
+  .maestros-dest-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .maestros-dest-grid { grid-template-columns: 1fr; }
+}
+
+/* === Testimonios grid === */
+.testimonios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .testimonios-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .testimonios-grid { grid-template-columns: 1fr; }
+}
+
+/* === CTA Final grid === */
+.cta-final-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 640px) {
+  .cta-final-grid { grid-template-columns: 1fr; }
+}
+
 /* === Brand === */
 .brand { display: flex; align-items: center; gap: 12px; line-height: 1; }
 .brand .wordmark { display: flex; flex-direction: column; gap: 2px; }
