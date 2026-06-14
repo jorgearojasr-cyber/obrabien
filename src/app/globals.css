@@ -875,30 +875,36 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   }
 }
 
-/* === Especialidades grid === */
-.esp-home-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+/* === Especialidades carousel === */
+.esp-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
 }
-.esp-home-card {
+.esp-card {
+  width: 148px;
+  flex-shrink: 0;
   background: #fff;
   border: 1px solid var(--line);
-  padding: 24px 20px;
+  border-radius: 12px;
+  padding: 18px 14px 16px;
   display: flex;
   flex-direction: column;
-  transition: border-color .15s ease, box-shadow .15s ease;
-  height: 100%;
+  scroll-snap-align: start;
+  transition: border-color .15s, box-shadow .15s;
 }
-.esp-home-card:hover {
+.esp-card:hover {
   border-color: var(--orange);
-  box-shadow: 0 4px 18px rgba(232,108,28,0.12);
+  box-shadow: 0 4px 14px rgba(232,108,28,0.12);
 }
-@media (max-width: 768px) {
-  .esp-home-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.esp-arrows {
+  display: flex;
+  gap: 6px;
 }
-@media (max-width: 440px) {
-  .esp-home-grid { grid-template-columns: 1fr; }
+@media (max-width: 640px) {
+  .esp-arrows { display: none; }
 }
 
 /* === Maestros destacados grid === */
