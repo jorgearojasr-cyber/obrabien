@@ -253,6 +253,7 @@ export default function HeroCarousel() {
   const [visible, setVisible] = useState(true);
   const paused = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartX = useRef(0);
 
   function goTo(idx: number) {
     if (idx === active) return;
@@ -337,7 +338,16 @@ export default function HeroCarousel() {
       </div>
 
       {/* ── MOBILE layout ──────────────────────────────────────────────────── */}
-      <div className="hero-mobile-layout" style={{ borderRadius: 12, overflow: "hidden" }}>
+      <div
+        className="hero-mobile-layout"
+        style={{ borderRadius: 12, overflow: "hidden" }}
+        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          const diff = touchStartX.current - e.changedTouches[0].clientX;
+          if (diff > 50) next();
+          if (diff < -50) prev();
+        }}
+      >
         {/* Image strip */}
         <div className="hero-mobile-img-strip">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -353,6 +363,27 @@ export default function HeroCarousel() {
             background: "linear-gradient(to bottom, transparent, #0A1E3C)",
             pointerEvents: "none",
           }} />
+          {/* Flechas móviles */}
+          {([["prev", "M15 18l-6-6 6-6", 12], ["next", "M9 18l6-6-6-6", undefined]] as const).map(([dir, path, left]) => (
+            <button
+              key={dir}
+              onClick={dir === "prev" ? prev : next}
+              aria-label={dir === "prev" ? "Anterior" : "Siguiente"}
+              style={{
+                position: "absolute", top: "50%", transform: "translateY(-50%)",
+                left: dir === "prev" ? 12 : undefined,
+                right: dir === "next" ? 12 : undefined,
+                zIndex: 2,
+                width: 32, height: 32, borderRadius: "50%", border: "none",
+                background: "rgba(0,0,0,0.4)", color: "#fff",
+                display: "grid", placeItems: "center", cursor: "pointer",
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d={path} />
+              </svg>
+            </button>
+          ))}
         </div>
         {/* Text area */}
         <div
