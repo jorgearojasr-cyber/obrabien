@@ -41,6 +41,9 @@ export const metadata: Metadata = {
     description: "Encuentra al especialista que necesitas.",
     images: ["https://res.cloudinary.com/dur4ffxqw/image/upload/v1781482132/ChatGPT_Image_14_jun_2026_08_08_35_p.m._kdvkdy.png"],
   },
+  other: {
+    "fb:app_id": "0",
+  },
 };
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
