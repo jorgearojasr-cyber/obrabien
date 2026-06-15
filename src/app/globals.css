@@ -1023,6 +1023,47 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   }
 }
 
+/* === Hero carousel arrows === */
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(27,43,75,0.2);
+  background: rgba(255,255,255,0.85);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--navy);
+  transition: background .15s, border-color .15s;
+}
+.hero-arrow:hover {
+  background: #fff;
+  border-color: var(--navy);
+}
+.hero-arrow-left  { left: 14px; }
+.hero-arrow-right { right: 14px; }
+
+/* Slide 2: text aligned to the right */
+.hero-text-right {
+  margin-left: auto;
+  margin-right: 0;
+  padding: 32px 0 32px 48px !important;
+}
+
+@media (max-width: 768px) {
+  .hero-arrow { width: 30px; height: 30px; }
+  .hero-arrow-left  { left: 8px; }
+  .hero-arrow-right { right: 8px; }
+  .hero-text-right {
+    padding: 20px 16px 24px !important;
+    margin-left: 0;
+  }
+}
+
 /* === Brand === */
 .brand { display: flex; align-items: center; gap: 12px; line-height: 1; }
 .brand .wordmark { display: flex; flex-direction: column; gap: 2px; }

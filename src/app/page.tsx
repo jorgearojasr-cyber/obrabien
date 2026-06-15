@@ -6,8 +6,8 @@ import BannerMaestros from "./_home/BannerMaestros";
 import Especialidades from "./_home/Especialidades";
 import MaestrosDestacados, { type MaestroCard } from "./_home/MaestrosDestacados";
 import Testimonios from "./_home/Testimonios";
+import HeroCarousel from "./_home/HeroCarousel";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { ShieldCheck, Gift, Star } from "lucide-react";
 
 export default async function Home() {
   // ── Maestros destacados ──────────────────────────────────────────────────────
@@ -60,81 +60,10 @@ export default async function Home() {
       {/* ── BUSCADOR ──────────────────────────────────────────────────────────── */}
       <HomeSearch />
 
-      {/* ── HERO ──────────────────────────────────────────────────────────────── */}
+      {/* ── HERO CAROUSEL ─────────────────────────────────────────────────────── */}
       <div style={{ background: "var(--bg)", padding: "8px 0 0" }}>
         <div className="wrap">
-          <section className="hero-section-img" style={{
-            position: "relative",
-            width: "100%",
-            minHeight: 400,
-            margin: 0,
-            overflow: "hidden",
-            borderRadius: 12,
-            display: "flex",
-            alignItems: "center",
-            backgroundImage: "url(https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png)",
-            backgroundSize: "cover",
-            backgroundPosition: "60% 15%",
-          }}>
-            <div className="hero-overlay" style={{
-              position: "absolute", inset: 0, pointerEvents: "none",
-              background: "linear-gradient(to right, rgba(248,245,240,0.96) 0%, rgba(248,245,240,0.96) 42%, rgba(248,245,240,0.4) 62%, transparent 80%)",
-            }} />
-
-            <div className="hero-text">
-              <div style={{ marginBottom: 14 }}>
-                <span className="hero-badge" style={{ color: "#FFFFFF", backgroundColor: "#1B2B4B" }}>
-                  <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
-                  ObraBien · Plataforma chilena
-                </span>
-              </div>
-
-              <h1 style={{
-                fontFamily: "var(--font-archivo), sans-serif",
-                fontSize: "clamp(26px, 2.8vw, 44px)", fontWeight: 900, lineHeight: 1.05,
-                color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 12px",
-              }}>
-                Encuentra<br />
-                <span style={{ color: "#F97316" }}>maestros confiables</span><br />
-                para tu proyecto.
-              </h1>
-
-              <p style={{ fontSize: 14.5, color: "#475569", margin: "0 0 16px", lineHeight: 1.6 }}>
-                Albañiles, gasfiter, electricistas, carpinteros y más.
-                Revisa perfiles, reseñas reales y contáctalos directo — sin intermediarios.
-              </p>
-
-              <div className="hero-trust" style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
-                {[
-                  { Icon: ShieldCheck, label: "Maestros verificados" },
-                  { Icon: Star,        label: "Calificaciones reales" },
-                  { Icon: Gift,        label: "100% gratis" },
-                ].map(({ Icon, label }) => (
-                  <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, color: "#1B2B4B", fontSize: 13, fontWeight: 600 }}>
-                    <Icon size={15} color="#F97316" strokeWidth={2.2} />
-                    {label}
-                  </span>
-                ))}
-              </div>
-
-              <div className="hero-cta-buttons" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {[
-                  { href: "/buscar",   bg: "#F97316", label: "Busca tu Maestro" },
-                  { href: "/registro", bg: "#1B2B4B", label: "Regístrate como Maestro" },
-                ].map(({ href, bg, label }) => (
-                  <Link key={href} href={href} style={{
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    background: bg, color: "#fff",
-                    width: 280, height: 52, borderRadius: 8,
-                    fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
-                    textDecoration: "none", letterSpacing: "-0.01em", whiteSpace: "nowrap",
-                  }}>
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
+          <HeroCarousel />
         </div>
       </div>
 
