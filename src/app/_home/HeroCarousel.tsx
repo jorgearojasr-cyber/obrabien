@@ -15,10 +15,10 @@ const SLIDES = [
   },
   {
     key: "maestro",
-    bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781490810/ChatGPT_Image_14_jun_2026_10_32_45_p.m._kmbeuf.png",
+    bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781491567/ChatGPT_Image_14_jun_2026_10_45_58_p.m._hmnxpf.png",
     bgPosition: "left center",
-    overlayDesktop: "linear-gradient(to left, rgba(248,245,240,0.96) 0%, rgba(248,245,240,0.96) 42%, rgba(248,245,240,0.4) 62%, transparent 80%)",
-    overlayMobile: "linear-gradient(to bottom, rgba(248,245,240,0.55) 0%, rgba(248,245,240,0.72) 100%)",
+    overlayDesktop: "linear-gradient(to right, transparent 0%, rgba(10,30,60,0.3) 45%, rgba(10,30,60,0.85) 100%)",
+    overlayMobile: "rgba(10,30,60,0.72)",
     textSide: "right" as const,
   },
 ];
@@ -78,47 +78,69 @@ function SlideCliente() {
 }
 
 function SlideMaestro() {
-  const checks = ["Muestra tu trabajo", "Recibe consultas", "Más visibilidad", "100% Gratis"];
+  const checks = [
+    "Muestra tu trabajo", "Recibe consultas",
+    "Más visibilidad",    "100% Gratis",
+  ];
   return (
-    <div className="hero-text hero-text-right">
+    <div className="slide-maestro-card">
+      {/* Badge */}
       <div style={{ marginBottom: 14 }}>
-        <span className="hero-badge" style={{ color: "#FFFFFF", backgroundColor: "#1B2B4B" }}>
-          <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%", flexShrink: 0 }} />
-          Para Maestros
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontFamily: "var(--font-jetbrains), monospace",
+          fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+          textTransform: "uppercase", color: "#F97316",
+        }}>
+          <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%" }} />
+          PARA MAESTROS
         </span>
       </div>
-      <h1 style={{
-        fontFamily: "var(--font-archivo), sans-serif",
-        fontSize: "clamp(26px, 2.8vw, 44px)", fontWeight: 900, lineHeight: 1.05,
-        color: "#1B2B4B", letterSpacing: "-0.025em", margin: "0 0 12px",
-      }}>
-        ¿Eres maestro?<br />
-        Regístrate<br />
-        ahora <span style={{ color: "#F97316" }}>gratis.</span>
-      </h1>
-      <p style={{ fontSize: 14.5, color: "#475569", margin: "0 0 16px", lineHeight: 1.6 }}>
+
+      {/* Title */}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{
+          fontFamily: "var(--font-archivo), sans-serif",
+          fontSize: "clamp(24px, 2.6vw, 42px)", fontWeight: 900,
+          lineHeight: 1.05, letterSpacing: "-0.03em", color: "#fff",
+        }}>
+          ¿Eres maestro?
+        </div>
+        <div style={{
+          fontFamily: "var(--font-archivo), sans-serif",
+          fontSize: "clamp(24px, 2.6vw, 42px)", fontWeight: 900,
+          lineHeight: 1.05, letterSpacing: "-0.03em", color: "#F97316",
+        }}>
+          Regístrate gratis.
+        </div>
+      </div>
+
+      {/* Subtitle */}
+      <p style={{ fontSize: 15, color: "rgba(255,255,255,0.8)", margin: "0 0 18px", lineHeight: 1.6 }}>
         Crea tu tarjeta digital profesional y recibe más clientes.
-        Sin costos, sin intermediarios.
       </p>
-      <div className="hero-trust" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
+
+      {/* Checks 2x2 grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px", marginBottom: 22 }}>
         {checks.map(label => (
-          <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, color: "#1B2B4B", fontSize: 12.5, fontWeight: 600 }}>
-            <CheckCircle2 size={14} color="#F97316" strokeWidth={2.2} />
+          <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, color: "#fff", fontSize: 13, fontWeight: 500 }}>
+            <CheckCircle2 size={13} color="#F97316" strokeWidth={2.2} style={{ flexShrink: 0 }} />
             {label}
           </span>
         ))}
       </div>
-      <div className="hero-cta-buttons" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Link href="/registro?tab=maestro" style={{
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          background: "#F97316", color: "#fff",
-          width: 280, height: 52, borderRadius: 8,
-          fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
-          textDecoration: "none", letterSpacing: "-0.01em", whiteSpace: "nowrap",
-        }}>
-          Regístrate como Maestro →
-        </Link>
-      </div>
+
+      {/* CTA */}
+      <Link href="/registro?tab=maestro" style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        background: "#F97316", color: "#fff",
+        fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 14.5,
+        padding: "13px 24px", borderRadius: 8,
+        textDecoration: "none", letterSpacing: "-0.01em", whiteSpace: "nowrap",
+        alignSelf: "flex-start",
+      }}>
+        Regístrate como Maestro →
+      </Link>
     </div>
   );
 }
@@ -186,8 +208,12 @@ export default function HeroCarousel() {
         opacity: visible ? 1 : 0,
         transition: "opacity 0.4s ease",
         width: "100%",
+        position: slide.textSide === "right" ? "absolute" : "relative",
+        inset: slide.textSide === "right" ? 0 : undefined,
         display: "flex",
+        alignItems: slide.textSide === "right" ? "center" : undefined,
         justifyContent: slide.textSide === "right" ? "flex-end" : "flex-start",
+        zIndex: 2,
       }}>
         {SLIDE_CONTENT[active]}
       </div>
