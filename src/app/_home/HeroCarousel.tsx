@@ -10,6 +10,7 @@ const SLIDES = [
     bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png",
     bgPosition: "60% 15%",
     mobileBgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781493910/ChatGPT_Image_14_jun_2026_11_17_07_p.m._pni4za.png",
+    mobilePosition: "center top",
     overlayDesktop: "linear-gradient(to right, rgba(248,245,240,0.96) 0%, rgba(248,245,240,0.96) 42%, rgba(248,245,240,0.4) 62%, transparent 80%)",
     textSide: "left" as const,
   },
@@ -18,6 +19,7 @@ const SLIDES = [
     bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781491567/ChatGPT_Image_14_jun_2026_10_45_58_p.m._hmnxpf.png",
     bgPosition: "center top",
     mobileBgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781493903/ChatGPT_Image_14_jun_2026_11_21_25_p.m._bjikej.png",
+    mobilePosition: "center 60%",
     overlayDesktop: "linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(10,30,60,0.15) 40%, rgba(10,30,60,0.70) 65%, rgba(10,30,60,0.80) 100%)",
     textSide: "right" as const,
   },
@@ -342,7 +344,7 @@ export default function HeroCarousel() {
           <img
             src={slide.mobileBgUrl}
             alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: slide.mobilePosition }}
           />
           {/* Fade hacia el fondo del texto */}
           <div style={{
