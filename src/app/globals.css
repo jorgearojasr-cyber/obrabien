@@ -1047,17 +1047,14 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
 .hero-arrow-left  { left: 14px; }
 .hero-arrow-right { right: 14px; }
 
-/* Slide 2: dark card positioned right */
+/* Slide 2: text block positioned right, no bg (overlay handles darkness) */
 .slide-maestro-card {
   position: absolute;
   right: 5%;
   top: 50%;
   transform: translateY(-50%);
-  max-width: 380px;
+  max-width: 400px;
   width: calc(100% - 80px);
-  background: rgba(10, 30, 60, 0.78);
-  border-radius: 16px;
-  padding: 32px;
   display: flex;
   flex-direction: column;
   z-index: 3;
@@ -1071,9 +1068,8 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
     right: 50%;
     transform: translate(50%, -50%);
     max-width: calc(100% - 40px);
-    padding: 22px 18px;
   }
-  .slide-maestro-card h1,
+  .slide-maestro-card div[style*="44px"],
   .slide-maestro-card div[style*="42px"] {
     font-size: clamp(20px, 6vw, 28px) !important;
   }

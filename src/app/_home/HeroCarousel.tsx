@@ -17,8 +17,8 @@ const SLIDES = [
     key: "maestro",
     bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781491567/ChatGPT_Image_14_jun_2026_10_45_58_p.m._hmnxpf.png",
     bgPosition: "left center",
-    overlayDesktop: "linear-gradient(to right, transparent 0%, rgba(10,30,60,0.3) 45%, rgba(10,30,60,0.85) 100%)",
-    overlayMobile: "rgba(10,30,60,0.72)",
+    overlayDesktop: "linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(10,30,60,0.75) 60%)",
+    overlayMobile: "linear-gradient(to bottom, rgba(10,30,60,0.55) 0%, rgba(10,30,60,0.80) 100%)",
     textSide: "right" as const,
   },
 ];
