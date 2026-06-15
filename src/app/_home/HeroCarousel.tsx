@@ -19,7 +19,7 @@ const SLIDES = [
     bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781491567/ChatGPT_Image_14_jun_2026_10_45_58_p.m._hmnxpf.png",
     bgPosition: "center top",
     mobileBgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781495654/ChatGPT_Image_14_jun_2026_11_54_00_p.m._ge3pka.png",
-    mobilePosition: "center 40%",
+    mobilePosition: "center 55%",
     overlayDesktop: "linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(10,30,60,0.15) 40%, rgba(10,30,60,0.70) 65%, rgba(10,30,60,0.80) 100%)",
     textSide: "right" as const,
   },
