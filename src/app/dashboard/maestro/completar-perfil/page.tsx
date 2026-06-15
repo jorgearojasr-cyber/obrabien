@@ -879,13 +879,13 @@ export default function CompletarPerfilPage() {
               <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
                 <span style={{fontSize:20,width:28,textAlign:"center",flexShrink:0,paddingTop:28}}>📸</span>
                 <div style={{flex:1}}>
-                  <span style={{...SL,display:"inline-block",marginBottom:4}}>Instagram</span>
+                  <span style={{...SL,display:"inline-block",marginBottom:4}}>Instagram (solo tu usuario)</span>
                   <div style={{display:"flex"}}>
                     <span style={{height:48,display:"flex",alignItems:"center",padding:"0 12px",border:"1.5px solid var(--line)",borderRight:"none",background:"var(--bg-2)",fontSize:15,color:"var(--mute)",flexShrink:0,boxSizing:"border-box"}}>@</span>
-                    <input style={{...SI,borderLeft:"none",flex:1,width:"auto"}} value={form.instagram} placeholder="tu_usuario"
-                      onChange={e=>upd({instagram:e.target.value.replace(/^@+/,"")})}/>
+                    <input style={{...SI,borderLeft:"none",flex:1,width:"auto"}} value={form.instagram} placeholder="Ej: juanpintor_talca"
+                      onChange={e=>upd({instagram:e.target.value.replace(/^@+/,"").replace(/^https?:\/\/(www\.)?instagram\.com\//,"").replace(/\/$/,"")})}/>
                   </div>
-                  <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Solo escribe tu usuario, ej: gotitamagistral</p>
+                  <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Sin @ ni www. Solo el nombre de usuario</p>
                 </div>
               </div>
 
@@ -893,10 +893,10 @@ export default function CompletarPerfilPage() {
               <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
                 <span style={{fontSize:20,width:28,textAlign:"center",flexShrink:0,paddingTop:28}}>📘</span>
                 <div style={{flex:1}}>
-                  <span style={{...SL,display:"inline-block",marginBottom:4}}>Facebook</span>
-                  <input style={SI} value={form.facebook} placeholder="tu_usuario_o_pagina"
-                    onChange={e=>upd({facebook:e.target.value})}/>
-                  <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Solo escribe tu usuario o nombre de página</p>
+                  <span style={{...SL,display:"inline-block",marginBottom:4}}>Facebook (usuario o link completo)</span>
+                  <input style={SI} value={form.facebook} placeholder="Ej: juan.pintor o https://facebook.com/juan.pintor"
+                    onChange={e=>upd({facebook:e.target.value.trim()})}/>
+                  <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Puedes poner tu usuario o el link completo</p>
                 </div>
               </div>
 
@@ -904,13 +904,13 @@ export default function CompletarPerfilPage() {
               <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
                 <span style={{fontSize:20,width:28,textAlign:"center",flexShrink:0,paddingTop:28}}>🎵</span>
                 <div style={{flex:1}}>
-                  <span style={{...SL,display:"inline-block",marginBottom:4}}>TikTok</span>
+                  <span style={{...SL,display:"inline-block",marginBottom:4}}>TikTok (solo tu usuario)</span>
                   <div style={{display:"flex"}}>
                     <span style={{height:48,display:"flex",alignItems:"center",padding:"0 12px",border:"1.5px solid var(--line)",borderRight:"none",background:"var(--bg-2)",fontSize:15,color:"var(--mute)",flexShrink:0,boxSizing:"border-box"}}>@</span>
-                    <input style={{...SI,borderLeft:"none",flex:1,width:"auto"}} value={form.tiktok} placeholder="tu_usuario"
-                      onChange={e=>upd({tiktok:e.target.value.replace(/^@+/,"")})}/>
+                    <input style={{...SI,borderLeft:"none",flex:1,width:"auto"}} value={form.tiktok} placeholder="Ej: juanpintor"
+                      onChange={e=>upd({tiktok:e.target.value.replace(/^@+/,"").replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/,"").replace(/\/$/,"")})}/>
                   </div>
-                  <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Solo escribe tu usuario, ej: gotitamagistral</p>
+                  <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Sin @ ni www. Solo el nombre de usuario</p>
                 </div>
               </div>
             </div>
