@@ -68,7 +68,7 @@ function UbicacionPicker({
           style={{
             display: "flex", alignItems: "center", gap: 8,
             border: "1.5px solid var(--ink)", background: "#fff",
-            height: 48, padding: "0 10px 0 14px", cursor: "pointer",
+            height: 40, padding: "0 10px 0 14px", cursor: "pointer",
             outline: open ? "3px solid var(--orange)" : "none",
             outlineOffset: 2,
           }}
@@ -260,7 +260,7 @@ export function HomeSearch() {
   }
 
   return (
-    <section style={{ background: "var(--bg)", paddingTop: 16, paddingBottom: 8 }}>
+    <section style={{ background: "var(--bg)", paddingTop: 10, paddingBottom: 6 }}>
       <div className="wrap">
 
         {/* Search panel */}
@@ -268,7 +268,7 @@ export function HomeSearch() {
           background: "#fff",
           border: "1px solid var(--line)",
           boxShadow: "0 8px 28px rgba(14,39,66,0.09)",
-          padding: "20px 20px 18px",
+          padding: "14px 20px 12px",
         }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end" }}>
 
@@ -300,7 +300,7 @@ export function HomeSearch() {
                 title="Detectar mi ubicación"
                 className="home-geo-btn"
                 style={{
-                  width: 48, height: 48, flexShrink: 0,
+                  width: 40, height: 40, flexShrink: 0,
                   background: "#fff", border: "1.5px solid var(--navy)",
                   cursor: geoLoading ? "wait" : "pointer",
                   display: "grid", placeItems: "center",
@@ -333,7 +333,7 @@ export function HomeSearch() {
                 onClick={handleSearch}
                 className="home-search-btn"
                 style={{
-                  height: 48, background: "var(--orange)", border: "none",
+                  height: 40, background: "var(--orange)", border: "none",
                   color: "#fff", fontWeight: 700, fontSize: 15, width: "100%",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   cursor: "pointer",
