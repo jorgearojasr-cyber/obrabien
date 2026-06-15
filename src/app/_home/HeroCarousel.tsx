@@ -58,20 +58,15 @@ function SlideCliente() {
         ))}
       </div>
       <div className="hero-cta-buttons" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        {[
-          { href: "/buscar",   bg: "#F97316", label: "Busca tu Maestro" },
-          { href: "/registro", bg: "#1B2B4B", label: "Regístrate como Maestro" },
-        ].map(({ href, bg, label }) => (
-          <Link key={href} href={href} style={{
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            background: bg, color: "#fff",
-            width: 280, height: 52, borderRadius: 8,
-            fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
-            textDecoration: "none", letterSpacing: "-0.01em", whiteSpace: "nowrap",
-          }}>
-            {label}
-          </Link>
-        ))}
+        <Link href="/buscar" style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          background: "#F97316", color: "#fff",
+          width: 280, height: 52, borderRadius: 8,
+          fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
+          textDecoration: "none", letterSpacing: "-0.01em", whiteSpace: "nowrap",
+        }}>
+          Busca tu Maestro
+        </Link>
       </div>
     </div>
   );

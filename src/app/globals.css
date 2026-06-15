@@ -1031,16 +1031,17 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   overflow: hidden;
 }
 
-/* Desktop layout: viewport-relative height */
+/* Desktop layout: fixed height */
 .hero-desktop-layout {
   position: relative;
   width: 100%;
-  height: calc(100vh - 160px);
-  min-height: 420px;
-  max-height: 620px;
+  height: 480px;
   display: flex;
   align-items: center;
   overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .hero-desktop-layout { height: 520px; }
 }
 
 /* Mobile layout: hidden on desktop */
