@@ -344,6 +344,13 @@ export default function HeroCarousel() {
             alt=""
             style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
           />
+          {/* Fade hacia el fondo del texto */}
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, right: 0,
+            height: "40%", zIndex: 1,
+            background: "linear-gradient(to bottom, transparent, #0A1E3C)",
+            pointerEvents: "none",
+          }} />
         </div>
         {/* Text area */}
         <div
