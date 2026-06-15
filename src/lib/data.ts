@@ -29,6 +29,7 @@ export const SPECIALTIES = [
   "Instalación de pisos", "Instalación de ventanas",
   "Instalador de cámaras", "Aire acondicionado", "Paneles Solares",
   "Mantención de jardines", "Excavaciones", "Maestro multifunción",
+  "Retiro de escombros",
 ];
 
 export function specialtySlug(name: string) {

@@ -68,6 +68,15 @@ const SPECS = [
     ),
   },
   {
+    slug: "Retiro de escombros",
+    desc: "Limpieza y retiro de materiales de obra",
+    icon: (
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 3h15l-1.5 9H2.5z"/><path d="M16 3h2l3 9h-4"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/><path d="M8 18.5h7"/>
+      </svg>
+    ),
+  },
+  {
     slug: "Enfierradura y Soldadura",
     desc: "Metal, rejas y estructuras metálicas",
     icon: (
