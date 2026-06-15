@@ -1059,6 +1059,7 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   display: flex;
   align-items: center;
   overflow: hidden;
+  background: #000;
 }
 
 /* Mobile layout: hidden on desktop */
