@@ -10,7 +10,6 @@ const SLIDES = [
     bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781320539/ChatGPT_Image_12_jun_2026_11_14_35_p.m._ehnqce.png",
     bgPosition: "60% 15%",
     overlayDesktop: "linear-gradient(to right, rgba(248,245,240,0.96) 0%, rgba(248,245,240,0.96) 42%, rgba(248,245,240,0.4) 62%, transparent 80%)",
-    overlayMobile: "linear-gradient(to bottom, rgba(248,245,240,0.55) 0%, rgba(248,245,240,0.72) 100%)",
     textSide: "left" as const,
   },
   {
@@ -18,10 +17,11 @@ const SLIDES = [
     bgUrl: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781491567/ChatGPT_Image_14_jun_2026_10_45_58_p.m._hmnxpf.png",
     bgPosition: "left center",
     overlayDesktop: "linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(10,30,60,0.15) 40%, rgba(10,30,60,0.70) 65%, rgba(10,30,60,0.80) 100%)",
-    overlayMobile: "linear-gradient(to bottom, rgba(10,30,60,0.55) 0%, rgba(10,30,60,0.80) 100%)",
     textSide: "right" as const,
   },
 ];
+
+/* ── Desktop slide content ─────────────────────────────────────────────────── */
 
 function SlideCliente() {
   return (
@@ -84,7 +84,6 @@ function SlideMaestro() {
   ];
   return (
     <div className="slide-maestro-card">
-      {/* Badge */}
       <div style={{ marginBottom: 14 }}>
         <span style={{
           display: "inline-flex", alignItems: "center", gap: 6,
@@ -96,8 +95,6 @@ function SlideMaestro() {
           PARA MAESTROS
         </span>
       </div>
-
-      {/* Title */}
       <div style={{ marginBottom: 14 }}>
         <div style={{
           fontFamily: "var(--font-archivo), sans-serif",
@@ -114,13 +111,9 @@ function SlideMaestro() {
           Regístrate gratis.
         </div>
       </div>
-
-      {/* Subtitle */}
       <p style={{ fontSize: 15, color: "rgba(255,255,255,0.8)", margin: "0 0 18px", lineHeight: 1.6 }}>
         Crea tu tarjeta digital profesional y recibe más clientes.
       </p>
-
-      {/* Checks 2x2 grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px", marginBottom: 22 }}>
         {checks.map(label => (
           <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, color: "#fff", fontSize: 13, fontWeight: 500 }}>
@@ -129,8 +122,6 @@ function SlideMaestro() {
           </span>
         ))}
       </div>
-
-      {/* CTA */}
       <Link href="/registro?tab=maestro" style={{
         display: "inline-flex", alignItems: "center", justifyContent: "center",
         background: "#F97316", color: "#fff",
@@ -145,7 +136,113 @@ function SlideMaestro() {
   );
 }
 
-const SLIDE_CONTENT = [<SlideCliente key="cliente" />, <SlideMaestro key="maestro" />];
+/* ── Mobile slide content ──────────────────────────────────────────────────── */
+
+function MobileCliente() {
+  return (
+    <>
+      <div style={{ marginBottom: 8 }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontFamily: "var(--font-jetbrains), monospace",
+          fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
+          textTransform: "uppercase", color: "#F97316",
+        }}>
+          <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%" }} />
+          ObraBien · Plataforma Chilena
+        </span>
+      </div>
+      <div style={{
+        fontFamily: "var(--font-archivo), sans-serif",
+        fontSize: 26, fontWeight: 900, lineHeight: 1.1,
+        letterSpacing: "-0.025em", color: "#fff", marginBottom: 8,
+      }}>
+        Encuentra maestros confiables.
+      </div>
+      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, marginBottom: 18 }}>
+        Albañiles, gasfiter, electricistas y más.
+      </div>
+      <Link href="/buscar" style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "#F97316", color: "#fff",
+        fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
+        height: 48, borderRadius: 8, textDecoration: "none",
+        letterSpacing: "-0.01em",
+      }}>
+        Busca tu Maestro
+      </Link>
+    </>
+  );
+}
+
+function MobileMaestro() {
+  return (
+    <>
+      <div style={{ marginBottom: 8 }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontFamily: "var(--font-jetbrains), monospace",
+          fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
+          textTransform: "uppercase", color: "#F97316",
+        }}>
+          <span style={{ width: 5, height: 5, background: "#F97316", borderRadius: "50%" }} />
+          Para Maestros
+        </span>
+      </div>
+      <div style={{
+        fontFamily: "var(--font-archivo), sans-serif",
+        fontSize: 26, fontWeight: 900, lineHeight: 1.1,
+        letterSpacing: "-0.025em", color: "#fff", marginBottom: 2,
+      }}>
+        ¿Eres maestro?
+      </div>
+      <div style={{
+        fontFamily: "var(--font-archivo), sans-serif",
+        fontSize: 26, fontWeight: 900, lineHeight: 1.1,
+        letterSpacing: "-0.025em", color: "#F97316", marginBottom: 8,
+      }}>
+        Regístrate gratis.
+      </div>
+      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, marginBottom: 18 }}>
+        Crea tu tarjeta digital y recibe más clientes.
+      </div>
+      <Link href="/registro?tab=maestro" style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "#F97316", color: "#fff",
+        fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 15,
+        height: 48, borderRadius: 8, textDecoration: "none",
+        letterSpacing: "-0.01em",
+      }}>
+        Regístrate como Maestro →
+      </Link>
+    </>
+  );
+}
+
+/* ── Dots ──────────────────────────────────────────────────────────────────── */
+
+function Dots({ active, total, goTo }: { active: number; total: number; goTo: (i: number) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+      {Array.from({ length: total }).map((_, i) => (
+        <button
+          key={i}
+          onClick={() => goTo(i)}
+          aria-label={`Ir a slide ${i + 1}`}
+          style={{
+            width: i === active ? 22 : 8,
+            height: 8, borderRadius: 4, border: "none",
+            background: i === active ? "#F97316" : "rgba(255,255,255,0.55)",
+            cursor: "pointer", padding: 0,
+            transition: "width 0.3s, background 0.3s",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ── Main carousel ─────────────────────────────────────────────────────────── */
 
 export default function HeroCarousel() {
   const [active, setActive] = useState(0);
@@ -178,79 +275,89 @@ export default function HeroCarousel() {
   const slide = SLIDES[active];
 
   return (
-    <section
-      className="hero-section-img hero-carousel"
+    <div
+      className="hero-carousel"
       onMouseEnter={() => { paused.current = true; }}
       onMouseLeave={() => { paused.current = false; }}
-      style={{
-        position: "relative",
-        width: "100%",
-        margin: 0,
-        overflow: "hidden",
-        borderRadius: 12,
-        display: "flex",
-        alignItems: "center",
-        backgroundImage: `url(${slide.bgUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: slide.bgPosition,
-        transition: "background-image 0s",
-      }}
     >
-      {/* Overlay desktop */}
-      <div className="hero-overlay" style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        background: slide.overlayDesktop,
-      }} />
-
-      {/* Content — fade transition */}
-      <div style={{
-        opacity: visible ? 1 : 0,
-        transition: "opacity 0.4s ease",
-        width: "100%",
-        position: slide.textSide === "right" ? "absolute" : "relative",
-        inset: slide.textSide === "right" ? 0 : undefined,
-        display: "flex",
-        alignItems: slide.textSide === "right" ? "center" : undefined,
-        justifyContent: slide.textSide === "right" ? "flex-end" : "flex-start",
-        zIndex: 2,
-      }}>
-        {SLIDE_CONTENT[active]}
+      {/* ── DESKTOP layout ─────────────────────────────────────────────────── */}
+      <div className="hero-desktop-layout hero-section-img" style={{ borderRadius: 12 }}>
+        {/* Background image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={slide.bgUrl}
+          alt=""
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", objectPosition: slide.bgPosition,
+            pointerEvents: "none",
+          }}
+        />
+        {/* Overlay */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: slide.overlayDesktop,
+        }} />
+        {/* Content */}
+        <div style={{
+          opacity: visible ? 1 : 0,
+          transition: "opacity 0.4s ease",
+          width: "100%",
+          position: slide.textSide === "right" ? "absolute" : "relative",
+          inset: slide.textSide === "right" ? 0 : undefined,
+          display: "flex",
+          alignItems: slide.textSide === "right" ? "center" : undefined,
+          justifyContent: slide.textSide === "right" ? "flex-end" : "flex-start",
+          zIndex: 2,
+        }}>
+          {active === 0 ? <SlideCliente /> : <SlideMaestro />}
+        </div>
+        {/* Arrows */}
+        <button onClick={prev} aria-label="Anterior" className="hero-arrow hero-arrow-left">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+        <button onClick={next} aria-label="Siguiente" className="hero-arrow hero-arrow-right">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        {/* Dots */}
+        <div style={{
+          position: "absolute", bottom: 14, left: "50%", transform: "translateX(-50%)",
+          zIndex: 10,
+        }}>
+          <Dots active={active} total={SLIDES.length} goTo={goTo} />
+        </div>
       </div>
 
-      {/* Arrow: prev */}
-      <button onClick={prev} aria-label="Anterior" className="hero-arrow hero-arrow-left">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </button>
-
-      {/* Arrow: next */}
-      <button onClick={next} aria-label="Siguiente" className="hero-arrow hero-arrow-right">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9 18l6-6-6-6" />
-        </svg>
-      </button>
-
-      {/* Dots */}
-      <div style={{
-        position: "absolute", bottom: 14, left: "50%", transform: "translateX(-50%)",
-        display: "flex", gap: 8, zIndex: 10,
-      }}>
-        {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            aria-label={`Ir a slide ${i + 1}`}
-            style={{
-              width: i === active ? 22 : 8,
-              height: 8, borderRadius: 4, border: "none",
-              background: i === active ? "#F97316" : "rgba(255,255,255,0.55)",
-              cursor: "pointer", padding: 0,
-              transition: "width 0.3s, background 0.3s",
-            }}
+      {/* ── MOBILE layout ──────────────────────────────────────────────────── */}
+      <div className="hero-mobile-layout" style={{ borderRadius: 12, overflow: "hidden" }}>
+        {/* Image strip */}
+        <div className="hero-mobile-img-strip">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={slide.bgUrl}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
           />
-        ))}
+        </div>
+        {/* Text area */}
+        <div
+          className="hero-mobile-text"
+          style={{
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.4s ease",
+          }}
+        >
+          {active === 0 ? <MobileCliente /> : <MobileMaestro />}
+          {/* Dots */}
+          <div style={{ marginTop: 20 }}>
+            <Dots active={active} total={SLIDES.length} goTo={goTo} />
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
