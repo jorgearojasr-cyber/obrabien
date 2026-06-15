@@ -127,6 +127,63 @@ function validateRUT(rut: string): boolean {
 
 // ── Phone helpers ─────────────────────────────────────────────────────────────
 
+/* ── Social preview helper ───────────────────────────────────────────────── */
+const PREVIEW_STYLE: React.CSSProperties = {
+  marginTop: 6, padding: "7px 12px", borderRadius: 8,
+  background: "#F0FFF4", border: "1px solid #22C55E",
+  display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+};
+const PREVIEW_TEXT: React.CSSProperties = { fontSize: 12.5, color: "#374151", flex: 1 };
+const PREVIEW_LINK: React.CSSProperties = { fontSize: 12, color: "#2563EB", textDecoration: "underline", whiteSpace: "nowrap" };
+
+function SocialPreview({ platform, value }: { platform: "instagram" | "facebook" | "tiktok" | "whatsapp"; value: string }) {
+  const v = value.trim();
+  if (!v) return null;
+
+  const clean = v.replace(/^@+/, "").replace(/^https?:\/\/(www\.)?(instagram|facebook|tiktok)\.com\/@?/, "").replace(/\/$/, "");
+
+  if (platform === "instagram") {
+    const url = `https://instagram.com/${clean}`;
+    return (
+      <div style={PREVIEW_STYLE}>
+        <span style={{ fontSize: 14, lineHeight: 1 }}>📸</span>
+        <span style={PREVIEW_TEXT}>✓ Tu perfil: instagram.com/<strong>{clean}</strong></span>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={PREVIEW_LINK}>Ver perfil →</a>
+      </div>
+    );
+  }
+  if (platform === "tiktok") {
+    const url = `https://tiktok.com/@${clean}`;
+    return (
+      <div style={PREVIEW_STYLE}>
+        <span style={{ fontSize: 14, lineHeight: 1 }}>🎵</span>
+        <span style={PREVIEW_TEXT}>✓ Tu perfil: tiktok.com/@<strong>{clean}</strong></span>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={PREVIEW_LINK}>Ver perfil →</a>
+      </div>
+    );
+  }
+  if (platform === "facebook") {
+    const isUrl = v.startsWith("http");
+    const url = isUrl ? v : `https://facebook.com/${clean}`;
+    return (
+      <div style={PREVIEW_STYLE}>
+        <span style={{ fontSize: 14, lineHeight: 1 }}>📘</span>
+        <span style={PREVIEW_TEXT}>✓ Tu página: <strong>{isUrl ? v : `facebook.com/${clean}`}</strong></span>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={PREVIEW_LINK}>Ver página →</a>
+      </div>
+    );
+  }
+  if (platform === "whatsapp") {
+    return (
+      <div style={PREVIEW_STYLE}>
+        <span style={{ fontSize: 14, lineHeight: 1 }}>💬</span>
+        <span style={PREVIEW_TEXT}>✓ Los clientes te contactarán al: <strong>{v}</strong></span>
+      </div>
+    );
+  }
+  return null;
+}
+
 function formatPhone(raw: string): string {
   if (!raw.startsWith(PHONE_PREFIX)) return PHONE_PREFIX;
   const digits = raw.slice(PHONE_PREFIX.length).replace(/\D/g, "").slice(0, 8);
@@ -872,6 +929,7 @@ export default function CompletarPerfilPage() {
                       ✓ Copiado del teléfono
                     </p>
                   )}
+                  <SocialPreview platform="whatsapp" value={form.whatsapp} />
                 </div>
               </div>
 
@@ -886,6 +944,7 @@ export default function CompletarPerfilPage() {
                       onChange={e=>upd({instagram:e.target.value.replace(/^@+/,"").replace(/^https?:\/\/(www\.)?instagram\.com\//,"").replace(/\/$/,"")})}/>
                   </div>
                   <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Sin @ ni www. Solo el nombre de usuario</p>
+                  <SocialPreview platform="instagram" value={form.instagram} />
                 </div>
               </div>
 
@@ -897,6 +956,7 @@ export default function CompletarPerfilPage() {
                   <input style={SI} value={form.facebook} placeholder="Ej: juan.pintor o https://facebook.com/juan.pintor"
                     onChange={e=>upd({facebook:e.target.value.trim()})}/>
                   <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Puedes poner tu usuario o el link completo</p>
+                  <SocialPreview platform="facebook" value={form.facebook} />
                 </div>
               </div>
 
@@ -911,6 +971,7 @@ export default function CompletarPerfilPage() {
                       onChange={e=>upd({tiktok:e.target.value.replace(/^@+/,"").replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/,"").replace(/\/$/,"")})}/>
                   </div>
                   <p style={{margin:"4px 0 0",fontSize:11.5,color:"var(--mute)"}}>Sin @ ni www. Solo el nombre de usuario</p>
+                  <SocialPreview platform="tiktok" value={form.tiktok} />
                 </div>
               </div>
             </div>
