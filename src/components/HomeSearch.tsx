@@ -279,6 +279,7 @@ export function HomeSearch() {
                 className="ob-select home-search-input"
                 value={specialty}
                 onChange={e => setSpecialty(e.target.value)}
+                style={{ color: specialty ? "var(--ink)" : "var(--mute)" }}
               >
                 <option value="">Todas las especialidades</option>
                 {SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}

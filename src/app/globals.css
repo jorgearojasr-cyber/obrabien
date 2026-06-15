@@ -309,7 +309,17 @@ input, select, textarea { font-family: inherit; font-size: 15px; color: var(--in
 .home-search-field .ob-select,
 .home-search-field > div > div[role="button"] {
   height: 40px !important;
-  font-size: 14px;
+  font-size: 13.5px;
+}
+.home-search-field .ob-select {
+  padding: 0 36px 0 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.home-search-field .ob-select option:first-child {
+  color: var(--mute);
 }
 .home-search-field > label {
   font-size: 10px;
