@@ -12,26 +12,24 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.obrabien.cl"),
-  title: "ObraBien — Encuentra Maestros Confiables",
-  description: "Conectamos clientes con maestros de la construcción verificados en Chile. Busca albañiles, gasfiter, electricistas, carpinteros y más.",
+  title: "ObraBien - Encuentra Maestros Confiables en Chile",
+  description: "Conectamos maestros de construcción verificados con clientes. Albañiles, gasfiteres, electricistas y más. Contacto directo, sin intermediarios.",
   keywords: "maestros chile, construcción, albañil, gasfiter, electricista, carpintero, pintor, ObraBien",
   icons: {
     icon: "/favicon.png",
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "ObraBien — Encuentra Maestros Confiables",
-    description: "Conectamos clientes con maestros de la construcción verificados en Chile.",
+    title: "ObraBien - Maestros Confiables en Chile",
+    description: "Encuentra al especialista que necesitas. Perfiles verificados, fotos de trabajos y contacto directo por WhatsApp.",
     url: "https://www.obrabien.cl",
     siteName: "ObraBien",
     images: [
       {
-        url: "https://www.obrabien.cl/og-image.png",
-        secureUrl: "https://www.obrabien.cl/og-image.png",
+        url: "https://res.cloudinary.com/dur4ffxqw/image/upload/v1781482132/ChatGPT_Image_14_jun_2026_08_08_35_p.m._kdvkdy.png",
         width: 1200,
         height: 630,
-        alt: "ObraBien — Encuentra Maestros Confiables",
-        type: "image/png",
+        alt: "ObraBien - Maestros Confiables en Chile",
       },
     ],
     locale: "es_CL",
@@ -39,9 +37,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ObraBien — Encuentra Maestros Confiables",
-    description: "Conectamos clientes con maestros de la construcción verificados en Chile.",
-    images: ["https://www.obrabien.cl/og-image.png"],
+    title: "ObraBien - Maestros Confiables en Chile",
+    description: "Encuentra al especialista que necesitas.",
+    images: ["https://res.cloudinary.com/dur4ffxqw/image/upload/v1781482132/ChatGPT_Image_14_jun_2026_08_08_35_p.m._kdvkdy.png"],
   },
 };
 
