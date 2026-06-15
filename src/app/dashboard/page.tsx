@@ -1,16 +1,34 @@
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-function maestroNeedsOnboarding(metadata: Record<string, unknown>): boolean {
+function metadataProfileComplete(metadata: Record<string, unknown>): boolean {
   const profile = metadata.profile as Record<string, unknown> | null | undefined;
-  if (!profile) return true;
+  if (!profile) return false;
   const especialidades = profile.especialidades;
-  return !(
+  return !!(
     profile.nombre &&
     profile.rut &&
     profile.telefono &&
     Array.isArray(especialidades) && especialidades.length > 0
   );
+}
+
+async function supabaseMaestroComplete(userId: string): Promise<boolean> {
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("maestros")
+      .select("nombre, especialidades")
+      .eq("clerk_user_id", userId)
+      .single();
+    if (!data) return false;
+    return !!(
+      data.nombre &&
+      Array.isArray(data.especialidades) && data.especialidades.length > 0
+    );
+  } catch {
+    return false;
+  }
 }
 
 export default async function DashboardPage({
@@ -22,10 +40,7 @@ export default async function DashboardPage({
   if (!userId) redirect("/login");
 
   // ── Admin bypass ─────────────────────────────────────────────────────────────
-  // This MUST come before any role/metadata check and outside any try/catch.
-  // Next.js redirect() throws NEXT_REDIRECT internally — a catch block swallows
-  // it and execution falls through. Check email first so admin always wins even
-  // if Clerk publicMetadata still contains a stale role value.
+  // Must come before any role/metadata check and outside any try/catch.
   const user = await currentUser();
   const userEmail = (user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses[0]?.emailAddress ?? "").toLowerCase().trim();
   const adminEmail = (process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "jorge.arojasr@gmail.com").toLowerCase().trim();
@@ -59,10 +74,14 @@ export default async function DashboardPage({
   }
 
   if (role === "maestro") {
-    redirect(maestroNeedsOnboarding(metadata)
-      ? "/dashboard/maestro/completar-perfil"
-      : "/dashboard/maestro");
+    // Check Clerk metadata first (fast), then verify against Supabase
+    const clerkOk = metadataProfileComplete(metadata);
+    const profileComplete = clerkOk ? await supabaseMaestroComplete(userId) : false;
+    redirect(profileComplete
+      ? "/dashboard/maestro"
+      : "/dashboard/maestro/completar-perfil");
   }
+
   if (role === "cliente") redirect("/dashboard/cliente");
 
   redirect("/onboarding");
