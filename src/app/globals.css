@@ -1023,6 +1023,14 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   }
 }
 
+/* === Hero carousel height === */
+.hero-carousel {
+  height: 480px;
+}
+@media (min-width: 768px) {
+  .hero-carousel { height: 560px; }
+}
+
 /* === Hero carousel arrows === */
 .hero-arrow {
   position: absolute;
@@ -1038,7 +1046,11 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
   place-items: center;
   cursor: pointer;
   color: var(--navy);
-  transition: background .15s, border-color .15s;
+  opacity: 0;
+  transition: opacity .3s, background .15s, border-color .15s;
+}
+.hero-carousel:hover .hero-arrow {
+  opacity: 1;
 }
 .hero-arrow:hover {
   background: #fff;
@@ -1061,9 +1073,7 @@ nav.site a.active, nav.site a:hover { color: var(--ink); }
 }
 
 @media (max-width: 768px) {
-  .hero-arrow { width: 30px; height: 30px; }
-  .hero-arrow-left  { left: 8px; }
-  .hero-arrow-right { right: 8px; }
+  .hero-arrow { display: none; }
   .slide-maestro-card {
     right: 50%;
     transform: translate(50%, -50%);

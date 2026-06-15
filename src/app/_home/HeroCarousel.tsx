@@ -179,13 +179,12 @@ export default function HeroCarousel() {
 
   return (
     <section
-      className="hero-section-img"
+      className="hero-section-img hero-carousel"
       onMouseEnter={() => { paused.current = true; }}
       onMouseLeave={() => { paused.current = false; }}
       style={{
         position: "relative",
         width: "100%",
-        minHeight: 400,
         margin: 0,
         overflow: "hidden",
         borderRadius: 12,
