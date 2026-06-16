@@ -349,18 +349,21 @@ export default function HeroCarousel() {
         }}
       >
         {/* Image strip */}
-        <div className="hero-mobile-img-strip">
+        <div className="hero-mobile-img-strip" style={{ background: "#0A1E3C" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={slide.mobileBgUrl}
             alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: slide.mobilePosition }}
+            style={{
+              width: "100%", height: "100%", objectFit: "cover", objectPosition: slide.mobilePosition,
+              opacity: visible ? 1 : 0, transition: "opacity 0.4s ease-in-out",
+            }}
           />
           {/* Fade hacia el fondo del texto */}
           <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0,
-            height: "40%", zIndex: 1,
-            background: "linear-gradient(to bottom, transparent, #0A1E3C)",
+            position: "absolute", inset: 0,
+            zIndex: 1,
+            background: "linear-gradient(to bottom, transparent 0%, transparent 30%, rgba(10,30,60,0.3) 50%, rgba(10,30,60,0.7) 70%, #0A1E3C 90%, #0A1E3C 100%)",
             pointerEvents: "none",
           }} />
           {/* Flechas móviles */}
