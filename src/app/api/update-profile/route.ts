@@ -13,6 +13,9 @@ function buildCorePayload(userId: string, body: Record<string, unknown>) {
     // Every full-wizard save (new basic registration or an edit of an already
     // 'completo' profile) sends the maestro back to review — see completar-perfil/page.tsx.
     perfil_estado:          "pendiente_revision",
+    // Clear any prior rejection reason on every resend — otherwise it lingers on the row
+    // after perfil_estado moves back to pendiente_revision (audit finding).
+    rechazo_motivo:         null,
     nombre:                 (body.nombre         as string)   ?? null,
     rut:                    (body.rut            as string)   ?? null,
     telefono:               (body.telefono        as string)   ?? null,
