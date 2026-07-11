@@ -422,6 +422,8 @@ export default function CompletarPerfilPage() {
   const [referidoNombre,   setReferidoNombre]   = useState<string | null>(null);
   const [referidoError,    setReferidoError]    = useState("");
 
+  const [rutChecking, setRutChecking] = useState(false);
+
   const [formasPago,     setFormasPago]     = useState<string[]>([]);
   const [modalidadCobro, setModalidadCobro] = useState<string[]>([]);
   const [urgenciaOpen,   setUrgenciaOpen]   = useState(false);
@@ -508,6 +510,28 @@ export default function CompletarPerfilPage() {
   }, [urgenciaOpen]);
 
   const upd = (patch: Partial<FormState>) => setForm(p => ({...p,...patch}));
+
+  // Real-time hint only — the definitive duplicate check still runs server-side
+  // on save (see /api/update-profile), this just gives faster feedback.
+  async function checkRutDisponible() {
+    if (!validateRUT(form.rut)) return;
+    setRutChecking(true);
+    try {
+      const res = await fetch("/api/check-rut", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rut: form.rut }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.disponible === false) {
+        upd({ rutError: data.mensaje || "Ese RUT ya está registrado por otro maestro." });
+      }
+    } catch {
+      // silent — non-blocking hint, backend still validates on save
+    } finally {
+      setRutChecking(false);
+    }
+  }
 
   function toggleArr(key: "especialidades"|"comunas"|"formasPago"|"horarioDias"|"modalidades"|"especialidadesUrgencia", val: string) {
     const arr = form[key] as string[];
@@ -860,7 +884,14 @@ export default function CompletarPerfilPage() {
                   onChange={e=>upd({nombre:e.target.value})}/>
               </div>
               <div>
-                <label style={SL}>RUT *</label>
+                <label style={{...SL, display:"flex", alignItems:"center", gap:6}}>
+                  RUT *
+                  {rutChecking && (
+                    <svg viewBox="0 0 24 24" width="11" height="11" style={{animation:"spin 0.7s linear infinite", flexShrink:0}}>
+                      <circle cx="12" cy="12" r="9" fill="none" stroke="var(--mute)" strokeWidth="3" strokeDasharray="42 14" strokeLinecap="round" />
+                    </svg>
+                  )}
+                </label>
                 <input
                   style={{...SI, borderColor: form.rutError ? "#DC2626" : "var(--line)"}}
                   value={form.rut}
@@ -873,6 +904,7 @@ export default function CompletarPerfilPage() {
                       ? "RUT inválido" : "";
                     upd({ rut: formatted, rutError: err });
                   }}
+                  onBlur={checkRutDisponible}
                 />
                 {form.rutError && (
                   <p style={{margin:"4px 0 0",fontSize:12,color:"#DC2626"}}>{form.rutError}</p>
