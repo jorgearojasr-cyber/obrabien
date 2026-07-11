@@ -1,6 +1,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { mensajeDuplicado } from "@/lib/maestro-shared";
 
 // Columns that were in the original schema and are safe to always upsert.
 // Extended columns are tried first; if Supabase rejects with a missing-column error,
@@ -90,6 +91,20 @@ export async function POST(req: NextRequest) {
 
   console.log("[update-profile] normalized fotos:", normalizedFotos.length);
 
+  // Reject a rut/telefono that already belongs to a different maestro (normalized
+  // comparison — see migration 020) before attempting the write, so the user gets
+  // a clear message instead of a raw database error.
+  const rutBody      = (body.rut      as string) ?? null;
+  const telefonoBody = (body.telefono as string) ?? null;
+  const { data: duplicados, error: dupError } = await getSupabaseAdmin()
+    .rpc("check_maestro_duplicado", { p_clerk_user_id: userId, p_rut: rutBody, p_telefono: telefonoBody });
+
+  if (dupError) {
+    console.error("[update-profile] duplicate check failed:", dupError.message);
+  } else if (duplicados && duplicados.length > 0) {
+    return NextResponse.json({ error: mensajeDuplicado(duplicados) }, { status: 409 });
+  }
+
   // 1. Upsert maestro row — try extended payload first, fall back to core if column error
   const extendedPayload = buildExtendedPayload(userId, body);
   console.log("[update-profile] attempting extended upsert, keys:", Object.keys(extendedPayload).join(", "));
@@ -113,6 +128,9 @@ export async function POST(req: NextRequest) {
 
     if (coreError) {
       console.error("[update-profile] core upsert also failed — code:", coreError.code, "message:", coreError.message, "details:", coreError.details);
+      if (coreError.code === "23505") {
+        return NextResponse.json({ error: "Ese RUT o teléfono ya está registrado por otro maestro." }, { status: 409 });
+      }
       return NextResponse.json(
         { error: "Error al guardar en Supabase", supabaseError: { code: coreError.code, message: coreError.message } },
         { status: 500 }
@@ -137,6 +155,9 @@ export async function POST(req: NextRequest) {
     }
   } else if (upsertError) {
     console.error("[update-profile] upsert failed — code:", upsertError.code, "message:", upsertError.message, "details:", upsertError.details, "hint:", upsertError.hint);
+    if (upsertError.code === "23505") {
+      return NextResponse.json({ error: "Ese RUT o teléfono ya está registrado por otro maestro." }, { status: 409 });
+    }
     return NextResponse.json(
       { error: "Error al guardar en Supabase", supabaseError: { code: upsertError.code, message: upsertError.message } },
       { status: 500 }
