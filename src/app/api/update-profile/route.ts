@@ -9,7 +9,11 @@ function buildCorePayload(userId: string, body: Record<string, unknown>) {
   return {
     clerk_user_id:          userId,
     activo:                 true,
+    // Every full-wizard save (new basic registration or an edit of an already
+    // 'completo' profile) sends the maestro back to review — see completar-perfil/page.tsx.
+    perfil_estado:          "pendiente_revision",
     nombre:                 (body.nombre         as string)   ?? null,
+    rut:                    (body.rut            as string)   ?? null,
     telefono:               (body.telefono        as string)   ?? null,
     whatsapp:               (body.esWhatsapp      as boolean)  ?? true,
     descripcion:            (body.descripcion     as string)   ?? null,

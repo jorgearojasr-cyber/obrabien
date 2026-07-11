@@ -21,33 +21,34 @@ export default async function MaestroDashboard() {
   const role = user.publicMetadata?.role as string | undefined;
   if (role && role !== "maestro") redirect("/dashboard/cliente");
 
-  const profile = user.publicMetadata?.profile as Record<string, unknown> | null | undefined;
-  if (!profile || !profile.nombre || !profile.rut || !profile.telefono ||
-      !Array.isArray(profile.especialidades) || (profile.especialidades as unknown[]).length === 0) {
+  const supabase = getSupabaseAdmin();
+
+  // ── Core maestro data ──────────────────────────────────────────────────────
+  // Fetched once by clerk_user_id and reused both for the completeness gate below
+  // and for the status banners further down. Supabase is the source of truth here —
+  // Clerk's publicMetadata.profile mirror (written in registro-basico/update-profile)
+  // is best-effort/non-fatal on write and must not gate access on its own.
+  const { data: maestroData, error: maestroFetchError } = await supabase
+    .from("maestros").select("*").eq("clerk_user_id", user.id).maybeSingle();
+  if (maestroFetchError) console.error("[maestro-dashboard] maestro fetch error:", maestroFetchError.message);
+  const row = maestroData as Record<string, unknown> | null;
+
+  const especialidadesRow = (row?.especialidades as unknown[] | null) ?? [];
+  if (!row || !row.nombre || !row.rut || !row.telefono ||
+      !Array.isArray(especialidadesRow) || especialidadesRow.length === 0) {
     redirect("/dashboard/maestro/completar-perfil");
   }
 
-  const maestroId       = profile.maestroId as string | null | undefined;
-  const publicProfileUrl = maestroId ? `/maestro/${maestroId}` : null;
-  const supabase         = getSupabaseAdmin();
+  const maestroId        = row.id as string;
+  const publicProfileUrl = `/maestro/${maestroId}`;
 
-  // ── Core maestro data ──────────────────────────────────────────────────────
-  let disponibilidad     = "disponible";
-  let atiendeUrgencias   = false;
-  let verificacionEstado = "sin_enviar";
-  let nombreSB: string | null  = null;
-  let fotoUrlSB: string | null = null;
-  if (maestroId) {
-    const { data, error: dispError } = await supabase
-      .from("maestros").select("*").eq("id", maestroId).single();
-    if (dispError) console.error("[maestro-dashboard] maestro fetch error:", dispError.message);
-    const row          = data as Record<string, unknown> | null;
-    disponibilidad     = (row?.disponibilidad      as string)  ?? "disponible";
-    atiendeUrgencias   = !!(row?.atiende_urgencias  as boolean);
-    verificacionEstado = (row?.verificacion_estado as string)  ?? "sin_enviar";
-    nombreSB           = (row?.nombre              as string)  || null;
-    fotoUrlSB          = (row?.foto_url            as string)  || null;
-  }
+  const disponibilidad     = (row.disponibilidad      as string)  ?? "disponible";
+  const atiendeUrgencias   = !!(row.atiende_urgencias  as boolean);
+  const verificacionEstado = (row.verificacion_estado as string)  ?? "sin_enviar";
+  const nombreSB            = (row.nombre              as string)  || null;
+  const fotoUrlSB           = (row.foto_url            as string)  || null;
+  const perfilEstado        = (row.perfil_estado       as string)  || null;
+  const rechazoMotivo       = (row.rechazo_motivo      as string)  || null;
 
   const displayName  = nombreSB || firstName;
   const displayPhoto = fotoUrlSB || user.imageUrl || null;
@@ -188,6 +189,49 @@ export default async function MaestroDashboard() {
             <SignOutBtn />
           </div>
         </div>
+
+        {/* ── Profile-status banners ── */}
+        {perfilEstado === "basico" && (
+          <div style={{ background: "rgba(232,108,28,0.08)", border: "1.5px solid var(--orange)", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>📝</span>
+              <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14, color: "var(--navy)" }}>
+                Completa tu perfil para que los clientes vean tus fotos y más información.
+              </div>
+            </div>
+            <Link href="/dashboard/maestro/completar-perfil" style={{ background: "var(--orange)", color: "#fff", padding: "9px 18px", fontWeight: 700, fontSize: 13, textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>
+              Completar perfil →
+            </Link>
+          </div>
+        )}
+        {perfilEstado === "pendiente_revision" && (
+          <div style={{ background: "rgba(245,158,11,0.08)", border: "1.5px solid #F59E0B", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>🕐</span>
+            <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14, color: "#92400e" }}>
+              Tu perfil está en revisión — el equipo de ObraBien lo aprobará dentro de 24 horas.
+            </div>
+          </div>
+        )}
+        {perfilEstado === "rechazado" && (
+          <div style={{ background: "rgba(239,68,68,0.07)", border: "1.5px solid #EF4444", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>❌</span>
+              <div>
+                <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14, color: "#b91c1c", marginBottom: 2 }}>
+                  Tu perfil fue rechazado.
+                </div>
+                {rechazoMotivo && (
+                  <div style={{ fontSize: 12.5, color: "#b91c1c", opacity: 0.8 }}>
+                    {rechazoMotivo}
+                  </div>
+                )}
+              </div>
+            </div>
+            <Link href="/dashboard/maestro/completar-perfil" style={{ background: "#EF4444", color: "#fff", padding: "9px 18px", fontWeight: 700, fontSize: 13, textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>
+              Volver a completar →
+            </Link>
+          </div>
+        )}
 
         {/* ── Availability ── */}
         {/* ── Verification banners ── */}
