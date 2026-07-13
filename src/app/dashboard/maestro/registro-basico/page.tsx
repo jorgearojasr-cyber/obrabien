@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ESPECIALIDADES, PHONE_PREFIX, formatPhone, phoneComplete, formatRUT, validateRUT } from "@/lib/maestro-shared";
 
 const SL: React.CSSProperties = {
@@ -24,6 +25,7 @@ export default function RegistroBasicoPage() {
   const [rutChecking, setRutChecking] = useState(false);
   const [telefono, setTelefono] = useState(PHONE_PREFIX);
   const [especialidad, setEspecialidad] = useState("");
+  const [terminos, setTerminos] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -34,6 +36,7 @@ export default function RegistroBasicoPage() {
     else if (!validateRUT(rut)) e.push("El RUT ingresado no es válido.");
     if (!phoneComplete(telefono)) e.push("Ingresa los 8 dígitos del teléfono.");
     if (!especialidad) e.push("Selecciona tu especialidad principal.");
+    if (!terminos) e.push("Debes aceptar los Términos y Condiciones para registrarte.");
     return e;
   }
 
@@ -69,7 +72,7 @@ export default function RegistroBasicoPage() {
       const res = await fetch("/api/registro-basico", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, rut, telefono, especialidad }),
+        body: JSON.stringify({ nombre, rut, telefono, especialidad, terminosAceptados: terminos }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -163,6 +166,22 @@ export default function RegistroBasicoPage() {
               {ESPECIALIDADES.map(esp => <option key={esp} value={esp}>{esp}</option>)}
             </select>
           </div>
+
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", marginBottom: 20 }}>
+            <input
+              type="checkbox"
+              checked={terminos}
+              onChange={e => setTerminos(e.target.checked)}
+              style={{ width: 18, height: 18, accentColor: "var(--navy)", marginTop: 1, cursor: "pointer", flexShrink: 0 }}
+            />
+            <span style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.55 }}>
+              He leído y acepto los{" "}
+              <Link href="/terminos" target="_blank" style={{ color: "var(--navy)", fontWeight: 700 }}>
+                Términos y Condiciones
+              </Link>
+              {" "}de ObraBien *
+            </span>
+          </label>
 
           <button type="submit" disabled={saving} style={{
             width: "100%", height: 48, border: "none", boxSizing: "border-box",

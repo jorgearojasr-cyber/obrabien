@@ -17,6 +17,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
   }
 
+  // Backend backstop for the T&C checkbox — the form blocks submission client-side,
+  // but a direct API call must not be able to skip acceptance.
+  if (body.terminosAceptados !== true) {
+    return NextResponse.json(
+      { error: "Debes aceptar los Términos y Condiciones para registrarte." },
+      { status: 400 }
+    );
+  }
+
   // Canonical format for storage and comparison — same normalization as the
   // unique indexes in migration 020.
   const rutNormalizado = normalizeRut(rut);
@@ -43,6 +52,8 @@ export async function POST(req: NextRequest) {
       especialidades: [especialidad],
       perfil_estado: "basico",
       activo: true,
+      terminos_aceptados: true,
+      terminos_aceptados_at: new Date().toISOString(),
     }, { onConflict: "clerk_user_id" })
     .select("id")
     .single();

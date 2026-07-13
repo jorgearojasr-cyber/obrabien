@@ -36,8 +36,11 @@ export default function TerminosPage() {
           <h1 style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900, fontSize: "clamp(26px,4vw,36px)", color: "var(--navy)", margin: "0 0 12px", lineHeight: 1.1 }}>
             Términos y Condiciones de Uso
           </h1>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--mute)" }}>
+          <p style={{ margin: "0 0 14px", fontSize: 14, color: "var(--mute)" }}>
             Última actualización: Mayo 2026
+          </p>
+          <p style={{ margin: 0, fontSize: 13.5, fontStyle: "italic", color: "var(--mute)", background: "var(--bg-2)", border: "1px solid var(--line)", padding: "10px 14px" }}>
+            Este es un documento preliminar y puede ser actualizado.
           </p>
         </div>
 
@@ -83,11 +86,21 @@ export default function TerminosPage() {
             <p>Las ofertas de trabajo y postulaciones publicadas en la sección Empleos son responsabilidad exclusiva de quienes las publican. ObraBien no verifica la veracidad de las ofertas ni interviene en los procesos de contratación.</p>
           </Section>
 
-          <Section n="8" title="Modificaciones">
+          <Section n="8" title="Reseñas y denuncias">
+            <p>Las reseñas publicadas en la plataforma reflejan la opinión de quien las escribe y no la de ObraBien. Al publicar una reseña, el usuario se compromete a que sea veraz y basada en una experiencia real con el Maestro.</p>
+            <ul style={{ margin: "4px 0", paddingLeft: 20, display: "flex", flexDirection: "column", gap: 4 }}>
+              <li>ObraBien puede eliminar reseñas ofensivas, falsas o que infrinjan la ley, sin previo aviso</li>
+              <li>Cualquier usuario puede denunciar un perfil, publicación o reseña a través de los mecanismos de la plataforma</li>
+              <li>Las denuncias son revisadas por el equipo de ObraBien, que puede suspender o eliminar cuentas que incumplan estos términos</li>
+              <li>El uso malicioso del sistema de denuncias (denuncias falsas o reiteradas sin fundamento) también constituye un incumplimiento</li>
+            </ul>
+          </Section>
+
+          <Section n="9" title="Modificaciones">
             <p>ObraBien se reserva el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados mediante la plataforma.</p>
           </Section>
 
-          <Section n="9" title="Contacto">
+          <Section n="10" title="Contacto">
             <p>Para consultas: <a href="mailto:obrabiencl@gmail.com" style={{ color: "var(--navy)", fontWeight: 600 }}>obrabiencl@gmail.com</a></p>
           </Section>
 
