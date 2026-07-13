@@ -55,6 +55,17 @@ export default async function Home() {
     }
   } catch { /* fallback */ }
 
+  // ── Contador público de maestros ─────────────────────────────────────────────
+  // Social proof for the maestros banner. null on failure → the line is hidden.
+  let maestrosCount: number | null = null;
+  try {
+    const { count } = await getSupabaseAdmin()
+      .from("maestros")
+      .select("id", { count: "exact", head: true })
+      .in("perfil_estado", ["basico", "pendiente_revision", "completo"]);
+    maestrosCount = count ?? null;
+  } catch { /* hide counter */ }
+
   return (
     <main>
       {/* ── BUSCADOR ──────────────────────────────────────────────────────────── */}
@@ -69,7 +80,7 @@ export default async function Home() {
 
       {/* ── BANNER MAESTROS ───────────────────────────────────────────────────── */}
       <FadeIn>
-        <BannerMaestros />
+        <BannerMaestros maestrosCount={maestrosCount} />
       </FadeIn>
 
       {/* ── CÓMO FUNCIONA ─────────────────────────────────────────────────────── */}

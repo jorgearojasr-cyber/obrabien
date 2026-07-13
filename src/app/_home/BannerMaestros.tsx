@@ -30,7 +30,14 @@ const FEATURES = [
 
 const CHECKS = ["Sin pagos mensuales", "Sin contratos", "Sin intermediarios"];
 
-export default function BannerMaestros() {
+export default function BannerMaestros({ maestrosCount }: { maestrosCount?: number | null }) {
+  // Below ~10 maestros a raw count looks empty — use a "founding members" pitch instead.
+  const socialProof = typeof maestrosCount === "number" && maestrosCount > 0
+    ? (maestrosCount >= 10
+        ? `+${maestrosCount} maestros ya confían en ObraBien`
+        : "Únete a los primeros maestros de ObraBien")
+    : null;
+
   return (
     <section style={{ background: "#14375F", padding: "52px 0", position: "relative", overflow: "hidden" }}>
       {/* Subtle diagonal pattern */}
@@ -74,9 +81,20 @@ export default function BannerMaestros() {
             </h2>
 
             {/* Subtitle */}
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 22px", maxWidth: 360 }}>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: socialProof ? "0 0 12px" : "0 0 22px", maxWidth: 360 }}>
               Crea tu perfil gratis y recibe contactos directos de personas que buscan tus servicios.
             </p>
+
+            {/* Social proof counter */}
+            {socialProof && (
+              <p style={{
+                fontFamily: "var(--font-jetbrains), monospace",
+                fontSize: 12, fontWeight: 700, letterSpacing: "0.05em",
+                color: "#F97316", margin: "0 0 20px",
+              }}>
+                {socialProof}
+              </p>
+            )}
 
             {/* CTA */}
             <Link href="/registro?tab=maestro" style={{
