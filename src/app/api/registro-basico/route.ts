@@ -1,7 +1,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { mensajeDuplicado } from "@/lib/maestro-shared";
+import { mensajeDuplicado, mensajeDesde23505, normalizeRut } from "@/lib/maestro-shared";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -17,11 +17,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
   }
 
+  // Canonical format for storage and comparison — same normalization as the
+  // unique indexes in migration 020.
+  const rutNormalizado = normalizeRut(rut);
+
   // Reject a rut/telefono that already belongs to a different maestro (normalized
   // comparison — see migration 020) before attempting the write, so the user gets
   // a clear message instead of a raw database error.
   const { data: duplicados, error: dupError } = await getSupabaseAdmin()
-    .rpc("check_maestro_duplicado", { p_clerk_user_id: userId, p_rut: rut, p_telefono: telefono });
+    .rpc("check_maestro_duplicado", { p_clerk_user_id: userId, p_rut: rutNormalizado, p_telefono: telefono });
 
   if (dupError) {
     console.error("[registro-basico] duplicate check failed:", dupError.message);
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest) {
     .upsert({
       clerk_user_id: userId,
       nombre,
-      rut,
+      rut: rutNormalizado,
       telefono,
       especialidades: [especialidad],
       perfil_estado: "basico",
@@ -46,7 +50,7 @@ export async function POST(req: NextRequest) {
   if (error) {
     console.error("[registro-basico] upsert failed:", error.code, error.message);
     if (error.code === "23505") {
-      return NextResponse.json({ error: "Ese RUT o teléfono ya está registrado por otro maestro." }, { status: 409 });
+      return NextResponse.json({ error: mensajeDesde23505(error.message) }, { status: 409 });
     }
     return NextResponse.json(
       { error: "Error al guardar en Supabase", supabaseError: { code: error.code, message: error.message } },
@@ -70,7 +74,7 @@ export async function POST(req: NextRequest) {
         profile: {
           ...existingProfile,
           nombre,
-          rut,
+          rut: rutNormalizado,
           telefono,
           especialidades: [especialidad],
           maestroId: maestroRow.id,

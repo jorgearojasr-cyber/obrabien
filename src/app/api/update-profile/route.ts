@@ -1,7 +1,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { mensajeDuplicado } from "@/lib/maestro-shared";
+import { mensajeDuplicado, mensajeDesde23505, normalizeRut } from "@/lib/maestro-shared";
 
 // Columns that were in the original schema and are safe to always upsert.
 // Extended columns are tried first; if Supabase rejects with a missing-column error,
@@ -17,7 +17,7 @@ function buildCorePayload(userId: string, body: Record<string, unknown>) {
     // after perfil_estado moves back to pendiente_revision (audit finding).
     rechazo_motivo:         null,
     nombre:                 (body.nombre         as string)   ?? null,
-    rut:                    (body.rut            as string)   ?? null,
+    rut:                    (body.rut as string) ? normalizeRut(body.rut as string) : null,
     telefono:               (body.telefono        as string)   ?? null,
     whatsapp:               (body.esWhatsapp      as boolean)  ?? true,
     descripcion:            (body.descripcion     as string)   ?? null,
@@ -43,7 +43,6 @@ function buildCorePayload(userId: string, body: Record<string, unknown>) {
 function buildExtendedPayload(userId: string, body: Record<string, unknown>) {
   return {
     ...buildCorePayload(userId, body),
-    rut:              (body.rut            as string)   ?? null,
     dias_disponibles: (body.diasDisponibles as string[]) ?? (body.horario as Record<string, unknown> | null)?.dias ?? [],
     formas_pago:      (body.formasPago     as string[]) ?? [],
     modalidad_cobro:  (body.modalidades    as string[]) ?? ((body.modalidad as string) ? [body.modalidad as string] : []),
@@ -97,7 +96,7 @@ export async function POST(req: NextRequest) {
   // Reject a rut/telefono that already belongs to a different maestro (normalized
   // comparison — see migration 020) before attempting the write, so the user gets
   // a clear message instead of a raw database error.
-  const rutBody      = (body.rut      as string) ?? null;
+  const rutBody      = (body.rut as string) ? normalizeRut(body.rut as string) : null;
   const telefonoBody = (body.telefono as string) ?? null;
   const { data: duplicados, error: dupError } = await getSupabaseAdmin()
     .rpc("check_maestro_duplicado", { p_clerk_user_id: userId, p_rut: rutBody, p_telefono: telefonoBody });
@@ -132,7 +131,7 @@ export async function POST(req: NextRequest) {
     if (coreError) {
       console.error("[update-profile] core upsert also failed — code:", coreError.code, "message:", coreError.message, "details:", coreError.details);
       if (coreError.code === "23505") {
-        return NextResponse.json({ error: "Ese RUT o teléfono ya está registrado por otro maestro." }, { status: 409 });
+        return NextResponse.json({ error: mensajeDesde23505(coreError.message) }, { status: 409 });
       }
       return NextResponse.json(
         { error: "Error al guardar en Supabase", supabaseError: { code: coreError.code, message: coreError.message } },
@@ -159,7 +158,7 @@ export async function POST(req: NextRequest) {
   } else if (upsertError) {
     console.error("[update-profile] upsert failed — code:", upsertError.code, "message:", upsertError.message, "details:", upsertError.details, "hint:", upsertError.hint);
     if (upsertError.code === "23505") {
-      return NextResponse.json({ error: "Ese RUT o teléfono ya está registrado por otro maestro." }, { status: 409 });
+      return NextResponse.json({ error: mensajeDesde23505(upsertError.message) }, { status: 409 });
     }
     return NextResponse.json(
       { error: "Error al guardar en Supabase", supabaseError: { code: upsertError.code, message: upsertError.message } },
@@ -215,7 +214,7 @@ export async function POST(req: NextRequest) {
         profile: {
           ...existingProfile,
           nombre:                (body.nombre          as string) ?? "",
-          rut:                   (body.rut             as string) ?? "",
+          rut:                   (body.rut as string) ? normalizeRut(body.rut as string) : "",
           telefono:              (body.telefono        as string) ?? "",
           esWhatsapp:            (body.esWhatsapp      as boolean) ?? false,
           redes:                 body.redes            ?? { whatsapp: "", instagram: "", facebook: "", tiktok: "" },

@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { normalizeRut, MSG_RUT_DUPLICADO } from "@/lib/maestro-shared";
 
 // Real-time hint only, called on RUT-field blur in registro-basico and completar-perfil.
 // The definitive check still happens server-side on save (registro-basico/update-profile
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (!rut) return NextResponse.json({ disponible: true });
 
   const { data: duplicados, error } = await getSupabaseAdmin()
-    .rpc("check_maestro_duplicado", { p_clerk_user_id: userId, p_rut: rut, p_telefono: null });
+    .rpc("check_maestro_duplicado", { p_clerk_user_id: userId, p_rut: normalizeRut(rut), p_telefono: null });
 
   if (error) {
     console.error("[check-rut] duplicate check failed:", error.message);
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   const rutDuplicado = (duplicados ?? []).some((d: { campo: string }) => d.campo === "rut");
   if (rutDuplicado) {
-    return NextResponse.json({ disponible: false, mensaje: "Ese RUT ya está registrado por otro maestro." });
+    return NextResponse.json({ disponible: false, mensaje: MSG_RUT_DUPLICADO });
   }
   return NextResponse.json({ disponible: true });
 }

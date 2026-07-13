@@ -73,6 +73,14 @@ export default function RegistroBasicoPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        // 409 = RUT/teléfono duplicado — show the specific server message as-is,
+        // in the red banner, keeping every field the user already filled in.
+        if (res.status === 409 && data.error) {
+          setErrors([data.error]);
+          setSaving(false);
+          window.scrollTo(0, 0);
+          return;
+        }
         throw new Error(data.error || `Error ${res.status}`);
       }
       router.push("/dashboard/maestro");

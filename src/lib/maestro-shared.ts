@@ -46,15 +46,38 @@ export function validateRUT(rut: string): boolean {
   return verifier === expected;
 }
 
+// Canonical format for storing/comparing RUTs: no dots, no spaces, dash before
+// the verifier digit, uppercase K — e.g. "12.345.678-k" → "12345678-K".
+// Must stay equivalent to the SQL normalization in migration 020's unique indexes.
+export function normalizeRut(rut: string): string {
+  const clean = rut.replace(/[^0-9kK]/g, "").toUpperCase();
+  if (clean.length < 2) return clean;
+  return `${clean.slice(0, -1)}-${clean.slice(-1)}`;
+}
+
+export const MSG_RUT_DUPLICADO =
+  "Este RUT ya está registrado en ObraBien. Si es tu cuenta, intenta iniciar sesión.";
+export const MSG_TELEFONO_DUPLICADO =
+  "Este número de teléfono ya está registrado en otra cuenta de ObraBien.";
+
 // Used server-side by registro-basico and update-profile after calling the
 // check_maestro_duplicado RPC (migration 020) to build a user-facing message.
 export type DuplicadoRow = { campo: string; clerk_user_id: string };
 
 export function mensajeDuplicado(duplicados: DuplicadoRow[]): string {
   const campos = new Set(duplicados.map(d => d.campo));
-  if (campos.has("rut") && campos.has("telefono")) {
-    return "Ese RUT y ese teléfono ya están registrados por otro maestro.";
-  }
-  if (campos.has("rut")) return "Ese RUT ya está registrado por otro maestro.";
-  return "Ese teléfono ya está registrado por otro maestro.";
+  // If both collide, the RUT message wins — its "try logging in" hint is the useful one.
+  if (campos.has("rut")) return MSG_RUT_DUPLICADO;
+  return MSG_TELEFONO_DUPLICADO;
+}
+
+// Fallback for when the unique index itself rejects the write (Postgres 23505,
+// e.g. two requests racing past the RPC pre-check). The Postgres error message
+// names the violated index — idx_maestros_rut_normalizado_unique or
+// idx_maestros_telefono_normalizado_unique — so match on that.
+export function mensajeDesde23505(pgMessage: string | null | undefined): string {
+  const msg = pgMessage ?? "";
+  if (msg.includes("rut")) return MSG_RUT_DUPLICADO;
+  if (msg.includes("telefono")) return MSG_TELEFONO_DUPLICADO;
+  return "Este RUT o teléfono ya está registrado en otra cuenta de ObraBien.";
 }
