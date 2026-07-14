@@ -275,7 +275,10 @@ export default async function MaestroDashboard() {
           </div>
         )}
 
-        {/* ── Profile banner (availability toggle embedded) ── */}
+        {/* ── Profile banner (availability toggle embedded) ──
+             Only when the profile is unambiguously public: hidden while in review
+             or rejected, so it never contradicts the status banners above. */}
+        {(perfilEstado === "basico" || perfilEstado === "completo") && (
         <div style={{ background: "var(--navy)", padding: "18px 24px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -298,6 +301,7 @@ export default async function MaestroDashboard() {
             </Link>
           </div>
         </div>
+        )}
 
         {/* ── Stats ── */}
         <div className="dash-stats" style={{ marginBottom: 24 }}>
