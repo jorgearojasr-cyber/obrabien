@@ -16,6 +16,10 @@ const DISP: Record<string, string> = {
   pausado:       "Pausado",
 };
 
+// Identity-verification system temporarily disabled — hides the per-row
+// "Verificar →" link to /admin/verificaciones (page/endpoint still exist).
+const MOSTRAR_VERIFICACIONES = false;
+
 type FilterEstado = "todos" | "aprobado" | "pendiente" | "sin_verificar" | "rechazado";
 type Modal =
   | { type: "reminder"; id: string; nombre: string }
@@ -397,7 +401,7 @@ export default function MaestrosList({
                     <span style={{ fontSize: 11.5, color: "#22c55e", fontWeight: 700, fontFamily: "var(--font-jetbrains), monospace" }}>
                       ✓
                     </span>
-                  ) : (
+                  ) : MOSTRAR_VERIFICACIONES ? (
                     <a
                       href={`/admin/verificaciones?maestroId=${m.id}`}
                       style={{
@@ -410,7 +414,7 @@ export default function MaestrosList({
                     >
                       Verificar →
                     </a>
-                  )}
+                  ) : null}
 
                   {!m.verificado && (
                     reminderSent.has(m.id) ? (

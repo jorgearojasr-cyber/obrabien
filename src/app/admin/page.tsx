@@ -26,6 +26,11 @@ function timeAgo(iso: string): string {
 
 type FeedEvent = { icon: string; text: string; time: string; key: string };
 
+// Identity-verification system temporarily disabled — the /admin/verificaciones
+// page, VerifList component and /api/admin/verificar endpoint all still exist;
+// only this hub card is hidden. Flip to true to restore the nav link.
+const MOSTRAR_VERIFICACIONES = false;
+
 export default async function AdminPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
@@ -139,7 +144,8 @@ export default async function AdminPage() {
         {/* Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16, marginBottom: 40 }}>
 
-          {/* Verificaciones */}
+          {/* Verificaciones (oculto vía MOSTRAR_VERIFICACIONES) */}
+          {MOSTRAR_VERIFICACIONES && (
           <Link href="/admin/verificaciones" className="card hoverable" style={{ textDecoration: "none", display: "block", padding: "24px 22px", position: "relative" }}>
             {(pendientesCount ?? 0) > 0 && (
               <div style={badgePill}>{pendientesCount}</div>
@@ -153,6 +159,7 @@ export default async function AdminPage() {
               </div>
             )}
           </Link>
+          )}
 
           {/* Maestros */}
           <Link href="/admin/maestros" className="card hoverable" style={{ textDecoration: "none", display: "block", padding: "24px 22px", position: "relative" }}>

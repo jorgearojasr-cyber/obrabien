@@ -9,6 +9,12 @@ import NotifsSection, { type Notif } from "@/components/NotifsSection";
 import ActivitySection, { type ActivityItem } from "@/components/ActivitySection";
 import UrgencyToggle from "@/components/UrgencyToggle";
 
+// Identity-verification UI temporarily disabled (banners below + admin nav link).
+// The Supabase columns (verificacion_estado, cedula_*, verificado), the upload
+// endpoint (/api/verificacion) and the admin page/endpoint all remain intact —
+// flip this to true to bring the banners back.
+const VERIFICACION_UI_ACTIVA = false;
+
 export default async function MaestroDashboard() {
   const user = await currentUser();
   if (!user) redirect("/login");
@@ -239,8 +245,8 @@ export default async function MaestroDashboard() {
         )}
 
         {/* ── Availability ── */}
-        {/* ── Verification banners ── */}
-        {verificacionEstado === "pendiente" && (
+        {/* ── Verification banners (desactivados vía VERIFICACION_UI_ACTIVA) ── */}
+        {VERIFICACION_UI_ACTIVA && verificacionEstado === "pendiente" && (
           <div style={{ background: "rgba(245,158,11,0.08)", border: "1.5px solid #F59E0B", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 20, flexShrink: 0 }}>🕐</span>
             <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14, color: "#92400e" }}>
@@ -248,7 +254,7 @@ export default async function MaestroDashboard() {
             </div>
           </div>
         )}
-        {verificacionEstado === "aprobado" && (
+        {VERIFICACION_UI_ACTIVA && verificacionEstado === "aprobado" && (
           <div style={{ background: "rgba(34,197,94,0.08)", border: "1.5px solid #22c55e", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 20, flexShrink: 0 }}>✅</span>
             <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 14, color: "#15803d" }}>
@@ -256,7 +262,7 @@ export default async function MaestroDashboard() {
             </div>
           </div>
         )}
-        {verificacionEstado === "rechazado" && (
+        {VERIFICACION_UI_ACTIVA && verificacionEstado === "rechazado" && (
           <div style={{ background: "rgba(239,68,68,0.07)", border: "1.5px solid #EF4444", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ fontSize: 20, flexShrink: 0 }}>❌</span>

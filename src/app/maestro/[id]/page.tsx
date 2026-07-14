@@ -11,6 +11,10 @@ import ProfilePhotoLightbox from "@/components/ProfilePhotoLightbox";
 import AvailabilityPicker from "@/components/AvailabilityPicker";
 import UrgencyToggle from "@/components/UrgencyToggle";
 
+// Identity-verification badge temporarily hidden (system paused) — the
+// `verificado` column keeps its data; flip to true to show it again.
+const MOSTRAR_BADGE_VERIFICADO = false;
+
 // ── Icons ──────────────────────────────────────────────────────────────────────
 
 function CheckIcon() {
@@ -324,7 +328,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                     <h1 style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 800, margin: 0, color: "var(--ink)" }}>
                       {m.name}
                     </h1>
-                    {m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
+                    {MOSTRAR_BADGE_VERIFICADO && m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
                     <AvailabilityPicker initialStatus={m.disponibilidad} isOwnProfile={isOwnProfile} />
                     {!isOwnProfile && m.atiendeUrgencias && (
                       <span style={{

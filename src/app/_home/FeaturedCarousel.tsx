@@ -5,6 +5,9 @@ import Link from "next/link";
 import { SAMPLE_MASTERS } from "@/lib/data";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 
+// Identity-verification badge temporarily hidden (system paused).
+const MOSTRAR_BADGE_VERIFICADO = false;
+
 function ArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -105,7 +108,7 @@ export default function FeaturedCarousel() {
                     <div className="col gap-4" style={{ flex: 1, minWidth: 0 }}>
                       <div className="row center gap-6 wrap-flex">
                         <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: 15.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
-                        {m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
+                        {MOSTRAR_BADGE_VERIFICADO && m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
                       </div>
                       <AvailabilityBadge status={m.disponibilidad} size="sm" />
                       <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--font-jetbrains), monospace", fontSize: 12, fontWeight: 600 }}>
@@ -176,7 +179,7 @@ export default function FeaturedCarousel() {
                       <div className="col gap-4" style={{ flex: 1, minWidth: 0 }}>
                         <div className="row center gap-6 wrap-flex">
                           <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: 17, fontWeight: 700 }}>{m.name}</span>
-                          {m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
+                          {MOSTRAR_BADGE_VERIFICADO && m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
                         </div>
                         <AvailabilityBadge status={m.disponibilidad} size="sm" />
                         <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--font-jetbrains), monospace", fontSize: 12, fontWeight: 600 }}>

@@ -8,6 +8,11 @@ import PasswordSection from "@/components/PasswordSection";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
+// Identity-verification UI temporarily disabled (upload section in step 4).
+// The /api/verificacion endpoint and the Supabase columns remain intact —
+// flip to true to bring the section back.
+const VERIFICACION_UI_ACTIVA = false;
+
 const ESPECIALIDADES = [
   "Albañilería", "Gasfitería", "Electricidad", "Carpintería", "Pintura",
   "Techumbres", "Climatización / AC", "Cerrajería", "Pisos y revestimientos",
@@ -1379,6 +1384,7 @@ export default function CompletarPerfilPage() {
             </p>
           </Section>
 
+          {VERIFICACION_UI_ACTIVA && (
           <Section title="Verificación de identidad" optional>
             {/* Status banners */}
             {(verif.sent || verif.estado === "pendiente") && (
@@ -1503,6 +1509,7 @@ export default function CompletarPerfilPage() {
               </button>
             )}
           </Section>
+          )}
 
           <Section title="¿Cómo llegaste a ObraBien?" optional>
             <div style={{marginBottom: form.comoLlego === "Me lo recomendó un maestro" ? 16 : 0}}>

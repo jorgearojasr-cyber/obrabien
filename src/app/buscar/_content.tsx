@@ -6,6 +6,11 @@ import { useSearchParams } from "next/navigation";
 import { REGIONS, SPECIALTIES, type Master } from "@/lib/data";
 import { useFavorites } from "@/hooks/useFavorites";
 
+// Identity-verification UI temporarily hidden (badge + "solo verificados"
+// filters) — the `verificado` data and filter state remain; flip to true
+// to restore.
+const MOSTRAR_VERIFICACION = false;
+
 /* ── Icons ─────────────────────────────────────────────────────────────────── */
 function StarFilled({ size = 13 }: { size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor"><path d="M12 17.3 5.8 21l1.6-7.1L2 9.3l7.2-.6L12 2l2.8 6.7 7.2.6-5.4 4.6L18.2 21z" /></svg>;
@@ -152,12 +157,14 @@ function SidebarFilters(p: FiltersProps) {
           </button>
         </div>
       )}
+      {MOSTRAR_VERIFICACION && (
       <FilterSection title="Verificación">
         <label style={RL}>
           <input type="checkbox" style={CB} checked={p.soloVerificados} onChange={e => p.setSoloVerificados(e.target.checked)} />
           <span style={{ display: "flex", alignItems: "center", gap: 6 }}>Solo maestros verificados</span>
         </label>
       </FilterSection>
+      )}
       <FilterSection title="Calificación mínima">
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {([{ val: 0, label: "Cualquier calificación" }, { val: 3, label: "3+ estrellas" }, { val: 4, label: "4+ estrellas" }, { val: 5, label: "5 estrellas" }] as const).map(({ val, label }) => (
@@ -304,7 +311,7 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
           <Link href={`/maestro/${m.id}`} style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 15.5, color: "#1B2B4B", textDecoration: "none" }}>
             {m.name}
           </Link>
-          {m.verified && (
+          {MOSTRAR_VERIFICACION && m.verified && (
             <span style={{
               display: "inline-flex", alignItems: "center", gap: 4,
               background: "#EFF6FF", color: "#1D4ED8",
@@ -601,7 +608,9 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
             </select>
 
             {/* Quick filter pills */}
-            <FilterPill label="✓ Verificados" active={soloVerificados} onClick={() => setSoloVerificados(v => !v)} />
+            {MOSTRAR_VERIFICACION && (
+              <FilterPill label="✓ Verificados" active={soloVerificados} onClick={() => setSoloVerificados(v => !v)} />
+            )}
             <FilterPill label="🟢 Disponible" active={soloDisponibles} onClick={() => setSoloDisponibles(v => !v)} />
             <FilterPill label="⭐ 4+ estrellas" active={minRating >= 4} onClick={() => setMinRating(r => r >= 4 ? 0 : 4)} />
             <FilterPill label="🚨 Urgencias" active={urgenciaCategoria === "Otros"} onClick={() => setUrgenciaCategoria(c => c === "Otros" ? "" : "Otros")} activeColor="#DC2626" />

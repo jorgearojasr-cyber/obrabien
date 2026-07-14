@@ -5,6 +5,9 @@ import Image from "next/image";
 import { useRef } from "react";
 import { MapPin, Star } from "lucide-react";
 
+// Identity-verification badge temporarily hidden (system paused).
+const MOSTRAR_BADGE_VERIFICADO = false;
+
 export interface MaestroCard {
   id: string;
   name: string;
@@ -139,7 +142,7 @@ export default function MaestrosDestacados({ maestros }: { maestros: MaestroCard
                     </div>
                   )}
 
-                  {m.verified && (
+                  {MOSTRAR_BADGE_VERIFICADO && m.verified && (
                     <div style={{
                       marginTop: 5,
                       display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start",

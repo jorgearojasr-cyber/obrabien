@@ -4,6 +4,9 @@ import Link from "next/link";
 import { SAMPLE_MASTERS } from "@/lib/data";
 import { useFavorites } from "@/hooks/useFavorites";
 
+// Identity-verification badge temporarily hidden (system paused).
+const MOSTRAR_BADGE_VERIFICADO = false;
+
 function HeartIcon({ filled }: { filled: boolean }) {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18"
@@ -111,7 +114,7 @@ export default function FavoritosPage() {
                         <div className="col gap-4" style={{ flex: 1, minWidth: 0, paddingRight: 36 }}>
                           <div className="row center gap-6 wrap-flex">
                             <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: 16, fontWeight: 700, lineHeight: 1.15 }}>{m.name}</span>
-                            {m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
+                            {MOSTRAR_BADGE_VERIFICADO && m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
                           </div>
                           <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--font-jetbrains), monospace", fontSize: 12, fontWeight: 600 }}>
                             <StarIcon /> {m.rating.toFixed(1)}
