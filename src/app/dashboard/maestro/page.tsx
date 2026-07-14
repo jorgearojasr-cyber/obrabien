@@ -33,8 +33,13 @@ export default async function MaestroDashboard() {
   if (maestroFetchError) console.error("[maestro-dashboard] maestro fetch error:", maestroFetchError.message);
   const row = maestroData as Record<string, unknown> | null;
 
-  const especialidadesRow = (row?.especialidades as unknown[] | null) ?? [];
-  if (!row || !row.nombre || !row.rut || !row.telefono ||
+  // No row at all → the user never did the quick basic registration; send them
+  // there (mirrors the central routing in dashboard/page.tsx). A row that exists
+  // but is missing core fields → the full wizard to fill in what's left.
+  if (!row) redirect("/dashboard/maestro/registro-basico");
+
+  const especialidadesRow = (row.especialidades as unknown[] | null) ?? [];
+  if (!row.nombre || !row.rut || !row.telefono ||
       !Array.isArray(especialidadesRow) || especialidadesRow.length === 0) {
     redirect("/dashboard/maestro/completar-perfil");
   }

@@ -43,7 +43,10 @@ export default function OnboardingForm() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || `Error ${res.status}`);
       }
-      router.push(`/dashboard/${role}`);
+      // Route through /dashboard (central routing) instead of jumping straight to
+      // /dashboard/{role} — for maestros, dashboard/page.tsx decides between
+      // registro-basico (no Supabase row yet) and the maestro dashboard.
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar tu perfil. Intenta de nuevo.");
       setLoading(null);
