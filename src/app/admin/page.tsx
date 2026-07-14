@@ -50,6 +50,7 @@ export default async function AdminPage() {
 
   const [
     { count: pendientesCount },
+    { count: pendientesPerfilesCount },
     { count: maestrosCount },
     { count: clientesCount },
     { count: mkpPendientesCount },
@@ -68,6 +69,7 @@ export default async function AdminPage() {
     { data: topDownloads },
   ] = await Promise.all([
     supabase.from("maestros").select("*", { count: "exact", head: true }).eq("verificacion_estado", "pendiente"),
+    supabase.from("maestros").select("*", { count: "exact", head: true }).eq("perfil_estado", "pendiente_revision"),
     supabase.from("maestros").select("*", { count: "exact", head: true }),
     supabase.from("clientes").select("*", { count: "exact", head: true }),
     supabase.from("marketplace_items").select("*", { count: "exact", head: true }).eq("payment_status", "revision"),
@@ -160,6 +162,21 @@ export default async function AdminPage() {
             )}
           </Link>
           )}
+
+          {/* Revisión de perfiles */}
+          <Link href="/admin/revision-perfiles" className="card hoverable" style={{ textDecoration: "none", display: "block", padding: "24px 22px", position: "relative" }}>
+            {(pendientesPerfilesCount ?? 0) > 0 && (
+              <div style={badgePill}>{pendientesPerfilesCount}</div>
+            )}
+            <div style={{ fontSize: 28, marginBottom: 12 }}>📋</div>
+            <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 16, color: "var(--ink)", marginBottom: 6 }}>Revisión de perfiles</div>
+            <div style={{ fontSize: 13, color: "var(--mute)", lineHeight: 1.5, marginBottom: (pendientesPerfilesCount ?? 0) > 0 ? 10 : 0 }}>Aprobar o rechazar perfiles completados por maestros.</div>
+            {(pendientesPerfilesCount ?? 0) > 0 && (
+              <div style={{ display: "inline-block", background: "#EF4444", color: "#fff", fontSize: 11.5, fontWeight: 700, fontFamily: "var(--font-jetbrains), monospace", padding: "3px 10px" }}>
+                {pendientesPerfilesCount} pendiente{pendientesPerfilesCount !== 1 ? "s" : ""}
+              </div>
+            )}
+          </Link>
 
           {/* Maestros */}
           <Link href="/admin/maestros" className="card hoverable" style={{ textDecoration: "none", display: "block", padding: "24px 22px", position: "relative" }}>

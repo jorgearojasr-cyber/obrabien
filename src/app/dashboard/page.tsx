@@ -2,33 +2,13 @@ import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-function metadataProfileComplete(metadata: Record<string, unknown>): boolean {
-  const profile = metadata.profile as Record<string, unknown> | null | undefined;
-  if (!profile) return false;
-  const especialidades = profile.especialidades;
-  return !!(
-    profile.nombre &&
-    profile.rut &&
-    profile.telefono &&
-    Array.isArray(especialidades) && especialidades.length > 0
-  );
-}
-
-async function supabaseMaestroComplete(userId: string): Promise<boolean> {
-  try {
-    const { data } = await getSupabaseAdmin()
-      .from("maestros")
-      .select("nombre, especialidades")
-      .eq("clerk_user_id", userId)
-      .single();
-    if (!data) return false;
-    return !!(
-      data.nombre &&
-      Array.isArray(data.especialidades) && data.especialidades.length > 0
-    );
-  } catch {
-    return false;
-  }
+async function supabaseMaestroExists(userId: string): Promise<boolean> {
+  const { data } = await getSupabaseAdmin()
+    .from("maestros")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
+  return !!data;
 }
 
 export default async function DashboardPage({
@@ -74,12 +54,13 @@ export default async function DashboardPage({
   }
 
   if (role === "maestro") {
-    // Check Clerk metadata first (fast), then verify against Supabase
-    const clerkOk = metadataProfileComplete(metadata);
-    const profileComplete = clerkOk ? await supabaseMaestroComplete(userId) : false;
-    redirect(profileComplete
+    // Basic registration flow: any existing Supabase row (regardless of perfil_estado)
+    // sends the maestro straight to their dashboard. Only brand-new maestros with no
+    // row yet go through the quick registro-basico form.
+    const hasProfile = await supabaseMaestroExists(userId);
+    redirect(hasProfile
       ? "/dashboard/maestro"
-      : "/dashboard/maestro/completar-perfil");
+      : "/dashboard/maestro/registro-basico");
   }
 
   if (role === "cliente") redirect("/dashboard/cliente");
