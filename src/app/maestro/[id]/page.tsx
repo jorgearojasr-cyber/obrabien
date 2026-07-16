@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { SAMPLE_MASTERS, type Master } from "@/lib/data";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { notFound } from "next/navigation";
@@ -172,6 +173,73 @@ function rowToMaster(row: Record<string, unknown>): Master {
   };
 }
 
+// ── Metadata ───────────────────────────────────────────────────────────────────
+
+// Query liviana, separada de la del componente (que trae fotos/reseñas/etc.) —
+// Next.js deduplica automáticamente llamadas fetch idénticas dentro del mismo
+// request, pero esta solo pide lo que generateMetadata necesita.
+async function getMaestroForMetadata(id: string) {
+  const { data } = await getSupabaseAdmin()
+    .from("maestros")
+    .select("nombre, especialidades, ciudades, descripcion")
+    .eq("id", id)
+    .eq("activo", true)
+    .maybeSingle();
+  return data as { nombre: string | null; especialidades: string[] | null; ciudades: string[] | null; descripcion: string | null } | null;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  if (!UUID_RE.test(id)) {
+    return { title: "Maestro no encontrado | ObraBien" };
+  }
+
+  const row = await getMaestroForMetadata(id);
+  if (!row) {
+    return { title: "Maestro no encontrado | ObraBien" };
+  }
+
+  const nombre       = row.nombre || "Maestro";
+  const especialidad = row.especialidades?.[0];
+  const comuna       = row.ciudades?.[0];
+
+  const title = especialidad && comuna
+    ? `${nombre} - ${especialidad} en ${comuna} | ObraBien`
+    : especialidad
+      ? `${nombre} - ${especialidad} | ObraBien`
+      : `${nombre} | ObraBien`;
+
+  const description = (row.descripcion?.trim() ||
+    `${nombre}, ${especialidad ?? "profesional de la construcción"}${comuna ? ` en ${comuna}` : ""}. Contacta directo por WhatsApp a través de ObraBien.`
+  ).slice(0, 160);
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      // og/route.tsx genera hoy una imagen genérica de marca (no personalizada
+      // por maestro — no lee ningún query param). Igual mejora sobre no tener
+      // ninguna imagen OG; personalizarla es trabajo aparte.
+      images: [{ url: "/og", width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og"],
+    },
+  };
+}
+
+// Evita que texto de usuario (nombre, descripción) rompa el <script> del
+// JSON-LD si llegara a contener el substring "</script>".
+function safeJsonLd(obj: unknown): string {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default async function PerfilMaestro({ params }: { params: Promise<{ id: string }> }) {
@@ -294,8 +362,38 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
       }))
     : SEED_REVIEWS;
 
+  // JSON-LD solo para perfiles reales — un perfil de demo (SAMPLE_MASTERS) no
+  // es una entidad real y no debería anunciarse como tal a los motores de
+  // búsqueda. Person en vez de LocalBusiness: hoy no hay ningún campo que
+  // distinga cuentas individuales de negocios formales, así que Person es la
+  // opción siempre válida.
+  const personJsonLd = isReal ? {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: m.name,
+    url: `https://www.obrabien.cl/maestro/${m.id}`,
+    ...(m.specialties[0] ? { jobTitle: m.specialties[0] } : {}),
+    ...(m.photoUrl ? { image: m.photoUrl } : {}),
+    ...(m.city ? { address: { "@type": "PostalAddress", addressLocality: m.city, addressCountry: "CL" } } : {}),
+    ...(m.rating > 0 ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: m.rating,
+        reviewCount: m.jobs,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    } : {}),
+  } : null;
+
   return (
     <div style={{ background: "var(--bg)", minHeight: "70vh" }}>
+      {personJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(personJsonLd) }}
+        />
+      )}
 
       {/* Back bar */}
       <div style={{ background: "#fff", borderBottom: "1px solid var(--line)", padding: "12px 0" }}>

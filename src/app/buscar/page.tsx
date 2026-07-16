@@ -1,9 +1,49 @@
 export const dynamic = 'force-dynamic';
 
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { type Master } from "@/lib/data";
 import BuscarContent from "./_content";
+
+// ── Metadata ───────────────────────────────────────────────────────────────────
+// El filtrado real sigue siendo 100% client-side (_content.tsx via
+// useSearchParams) — el HTML no cambia según estos params. Esto solo ajusta
+// el <title>/<meta description> que Google muestra en resultados de
+// búsqueda cuando alguien comparte/indexa un link con filtros, sin
+// necesitar rediseñar el filtrado a server-side.
+type BuscarSearchParams = { esp?: string; ciudad?: string; region?: string };
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<BuscarSearchParams>;
+}): Promise<Metadata> {
+  const params  = await searchParams;
+  const esp     = params.esp?.trim();
+  const ciudad  = params.ciudad?.trim() || params.region?.trim();
+
+  if (!esp && !ciudad) {
+    return {
+      title: "Buscar Maestros en Chile | ObraBien",
+      description: "Encuentra albañiles, gasfiteres, electricistas y más profesionales de la construcción cerca de ti. Perfiles verificados, contacto directo por WhatsApp.",
+    };
+  }
+
+  const title = esp && ciudad
+    ? `${esp} en ${ciudad} | ObraBien`
+    : esp
+      ? `${esp} en Chile | ObraBien`
+      : `Maestros en ${ciudad} | ObraBien`;
+
+  const description = esp && ciudad
+    ? `Encuentra maestros de ${esp.toLowerCase()} verificados en ${ciudad}. Contacto directo por WhatsApp, sin intermediarios.`
+    : esp
+      ? `Encuentra maestros de ${esp.toLowerCase()} verificados en toda Chile. Contacto directo por WhatsApp.`
+      : `Encuentra maestros verificados en ${ciudad}. Contacto directo por WhatsApp.`;
+
+  return { title, description };
+}
 
 type HorarioRow = { tipo?: string; desde?: string; hasta?: string; dias?: string[] } | null;
 

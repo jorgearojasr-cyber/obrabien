@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import RecursoBody from "./_body";
@@ -49,6 +50,56 @@ const CATS: Record<string, { emoji: string; label: string }> = {
   guias:      { emoji: "📚", label: "Guías y Manuales" },
 };
 
+// ── Metadata ───────────────────────────────────────────────────────────────────
+
+async function getRecursoForMetadata(id: string) {
+  const { data } = await getSupabaseAdmin()
+    .from("recursos")
+    .select("titulo, descripcion, imagen_url, created_at")
+    .eq("id", id)
+    .or("estado.is.null,estado.neq.borrador")
+    .maybeSingle();
+  return data as { titulo: string | null; descripcion: string | null; imagen_url: string | null; created_at: string | null } | null;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const recurso = await getRecursoForMetadata(id);
+  if (!recurso) return { title: "Recurso no encontrado | ObraBien" };
+
+  const titulo = recurso.titulo || "Recurso";
+  const title  = `${titulo} | Recursos ObraBien`;
+  const description = (
+    recurso.descripcion?.trim() || `Guía práctica para maestros y clientes de la construcción en Chile: ${titulo}.`
+  ).slice(0, 160);
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      // og/route.tsx genera hoy una imagen genérica de marca (no personalizada
+      // — no lee ningún query param). Igual mejora sobre no tener ninguna
+      // imagen OG; personalizarla es trabajo aparte.
+      images: [{ url: "/og", width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og"],
+    },
+  };
+}
+
+// Evita que texto de usuario (título, descripción) rompa el <script> del
+// JSON-LD si llegara a contener el substring "</script>".
+function safeJsonLd(obj: unknown): string {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
 export default async function RecursoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
@@ -78,8 +129,24 @@ export default async function RecursoDetailPage({ params }: { params: Promise<{ 
         ? [{ label: recurso.titulo as string, url: recurso.pdf_url as string }]
         : [];
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: recurso.titulo as string,
+    ...(recurso.descripcion ? { description: recurso.descripcion as string } : {}),
+    ...(recurso.created_at ? { datePublished: recurso.created_at as string } : {}),
+    ...(recurso.imagen_url ? { image: recurso.imagen_url as string } : {}),
+    author: { "@type": "Organization", name: "ObraBien" },
+    publisher: { "@type": "Organization", name: "ObraBien" },
+    mainEntityOfPage: `https://www.obrabien.cl/recursos/${id}`,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(articleJsonLd) }}
+      />
       {/* Header */}
       <div style={{ background: "var(--navy)", padding: "32px 0 28px" }}>
         <div className="wrap">
