@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import Lightbox from "@/components/Lightbox";
-import { FORUM_POSTS, FORUM_CATEGORIES, FORUM_CAT_COLORS, type ForumPost, type ForumAuthor } from "@/lib/forum";
+import { FORUM_CATEGORIES, FORUM_CAT_COLORS, type ForumPost, type ForumAuthor } from "@/lib/forum";
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
 function PinIcon()        { return <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M17.5 3.5a2.12 2.12 0 0 1 3 3L7 20l-4 1 1-4Z"/></svg>; }
@@ -180,6 +180,10 @@ const SORT_OPTIONS: { id: SortMode; label: string }[] = [
   { id: "comentados", label: "Más comentados" },
 ];
 
+// No hay paginación real implementada (el botón "Cargar más discusiones" no
+// tenía onClick ni lógica detrás) — oculto hasta que exista de verdad.
+const PAGINACION_IMPLEMENTADA = false;
+
 /* ── Main content ───────────────────────────────────────────────────────── */
 export default function ComunidadContent({ dbPosts }: { dbPosts: ForumPost[] }) {
   const { isSignedIn } = useUser();
@@ -187,14 +191,11 @@ export default function ComunidadContent({ dbPosts }: { dbPosts: ForumPost[] }) 
   const [sort, setSort]                   = useState<SortMode>("recientes");
   const [lightboxSrc, setLightboxSrc]     = useState<string | null>(null);
 
-  const allPosts = useMemo(
-    () => [...dbPosts, ...FORUM_POSTS],
-    [dbPosts],
-  );
-
+  // FORUM_POSTS (fixtures de demo, ~32 posts hardcodeados en lib/forum.ts) ya
+  // no se mezcla con el contenido real — el listado usa solo dbPosts.
   const filtered = useMemo(
-    () => activeCat === "todos" ? allPosts : allPosts.filter(p => p.category === activeCat),
-    [activeCat, allPosts],
+    () => activeCat === "todos" ? dbPosts : dbPosts.filter(p => p.category === activeCat),
+    [activeCat, dbPosts],
   );
 
   const sorted = useMemo(() => {
@@ -206,7 +207,7 @@ export default function ComunidadContent({ dbPosts }: { dbPosts: ForumPost[] }) 
         (b.replyCount ?? b.seedReplies.length) - (a.replyCount ?? a.seedReplies.length)
       );
     }
-    // "recientes": keep original order (DB posts newest-first, then seed posts)
+    // "recientes": keep original order (DB posts newest-first)
     return posts;
   }, [filtered, sort]);
 
@@ -313,7 +314,7 @@ export default function ComunidadContent({ dbPosts }: { dbPosts: ForumPost[] }) 
             {pinned.map(post => <PostCard key={post.id} post={post} pinned onImageClick={setLightboxSrc} />)}
             {rest.map(post   => <PostCard key={post.id} post={post} onImageClick={setLightboxSrc} />)}
 
-            {filtered.length > 0 && (
+            {PAGINACION_IMPLEMENTADA && filtered.length > 0 && (
               <div style={{ textAlign: "center", marginTop: 32 }}>
                 <button style={{
                   padding: "12px 28px", border: "1.5px solid var(--ink)",

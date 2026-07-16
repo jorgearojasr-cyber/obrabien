@@ -57,6 +57,11 @@ export const FORUM_CAT_COLORS: Record<string, { bg: string; color: string }> = {
   empleos:      { bg: "rgba(109,40,217,0.10)", color: "#6d28d9" },
 };
 
+// Datos de demo/fixtures — ya NO se muestran en producción (ver
+// comunidad/_content.tsx, que ahora renderiza solo dbPosts). Se mantiene sin
+// borrar por si sirve como fixtures de testing más adelante. El detalle de un
+// post individual (comunidad/[id]/page.tsx) todavía puede resolver estos ids
+// tipo "p-001" si alguien tiene un link viejo guardado — eso no se tocó.
 export const FORUM_POSTS: ForumPost[] = [
   {
     id: "p-001",

@@ -38,6 +38,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     row as Record<string, unknown>,
     (maestro?.nombre as string) ?? "Usuario",
     !!(maestro?.verificado as boolean),
+    !!maestro, // tiene fila en maestros → "maestro"; si no, "cliente"
   );
 
   // Fetch existing replies

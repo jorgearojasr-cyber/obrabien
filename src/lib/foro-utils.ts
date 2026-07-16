@@ -17,6 +17,7 @@ export function rowToForumPost(
   row: Record<string, unknown>,
   authorName: string,
   authorVerified: boolean,
+  isMaestro: boolean,
 ): ForumPost {
   const titulo    = (row.titulo    as string) ?? "Sin título";
   const contenido = (row.contenido as string) ?? "";
@@ -33,7 +34,7 @@ export function rowToForumPost(
     excerpt,
     content:     contenido,
     category:    (row.categoria      as string)              ?? "consultas",
-    author:      { name: authorName, initials, role: "maestro", verified: authorVerified },
+    author:      { name: authorName, initials, role: isMaestro ? "maestro" : "cliente", verified: authorVerified },
     time:        formatForoTime(createdAt),
     views:       0,
     useful:      0,

@@ -75,6 +75,7 @@ export default async function ComunidadPage() {
       r as Record<string, unknown>,
       auth?.nombre     ?? "Usuario",
       auth?.verificado ?? false,
+      auth !== undefined, // tiene fila en maestros → "maestro"; si no, "cliente"
     );
     post.replyCount = replyCountMap[post.id] ?? 0;
     return post;

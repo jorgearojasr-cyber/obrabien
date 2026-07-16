@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const POSTS_PER_HOUR = 10;
@@ -59,6 +60,11 @@ export async function POST(req: NextRequest) {
     console.error("[foro-posts] Supabase error:", error.message, error.details, error.hint);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Invalida el Router Cache del lado del servidor para /comunidad — sin esto,
+  // una navegación cliente-a-cliente de vuelta al foro (ej. el link "Ver el
+  // foro" tras publicar) puede servir una versión cacheada de antes de este post.
+  revalidatePath("/comunidad");
 
   return NextResponse.json({ ok: true, id: data.id });
 }
