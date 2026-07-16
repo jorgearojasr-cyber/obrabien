@@ -1285,6 +1285,16 @@ export default function CompletarPerfilPage() {
             <p style={{fontSize:13,color:"var(--mute)",margin:"0 0 16px"}}>
               Sube fotos de tus mejores proyectos. Cada foto puede tener una descripción corta.
             </p>
+            <div style={{
+              display:"flex", alignItems:"flex-start", gap:10,
+              background:"var(--bg-2)", border:"1px solid var(--line)",
+              padding:"10px 14px", marginBottom:16,
+            }}>
+              <span style={{fontSize:15, lineHeight:1.4, flexShrink:0}}>ℹ️</span>
+              <p style={{margin:0, fontSize:12.5, color:"var(--mute)", lineHeight:1.6}}>
+                Los cambios en tu galería de fotos se guardan recién cuando completas y envías los 4 pasos del formulario. Si sales antes de terminar, los cambios no quedarán guardados.
+              </p>
+            </div>
             <div className="galeria-grid">
               {form.galeria.map((item,i)=>(
                 <div key={i} style={{border:"1.5px solid var(--line)",overflow:"hidden",background:"#fafafa"}}>
