@@ -37,21 +37,41 @@ END $$;
 -- These tables contain public-facing data (profiles, posts, etc.)
 -- Anyone with the anon key can read them; writes go through
 -- service-role only (server-side routes).
+--
+-- NOTE: "CREATE POLICY IF NOT EXISTS" is NOT valid PostgreSQL syntax
+-- (unlike CREATE TABLE). Each policy is wrapped in a DO block that
+-- swallows duplicate_object instead, so the script is truly
+-- idempotent and re-runnable.
 
-CREATE POLICY IF NOT EXISTS "maestros_public_select"
-  ON maestros FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "maestros_public_select"
+    ON maestros FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY IF NOT EXISTS "fotos_trabajos_public_select"
-  ON fotos_trabajos FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "fotos_trabajos_public_select"
+    ON fotos_trabajos FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY IF NOT EXISTS "resenas_public_select"
-  ON resenas FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "resenas_public_select"
+    ON resenas FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY IF NOT EXISTS "foro_posts_public_select"
-  ON foro_posts FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "foro_posts_public_select"
+    ON foro_posts FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY IF NOT EXISTS "marketplace_items_public_select"
-  ON marketplace_items FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "marketplace_items_public_select"
+    ON marketplace_items FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 DO $$ BEGIN
   CREATE POLICY "foro_replies_public_select"
