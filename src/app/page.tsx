@@ -13,19 +13,23 @@ export default async function Home() {
   // ── Maestros destacados ──────────────────────────────────────────────────────
   let featuredMaestros: MaestroCard[] = [];
   try {
+    // Sin ORDER BY en la query: el ranking real (referidos > reseñas > rating)
+    // requiere un agregado de maestro_referidos que Supabase no puede hacer vía
+    // .order() directo, así que se trae el universo de activos y se ordena en
+    // JS antes de cortar a 10 — mismo patrón que buscar/page.tsx.
     const { data: rows } = await getSupabaseAdmin()
       .from("maestros")
-      .select("id, nombre, foto_url, especialidades, ciudades, descripcion, verificado, verificacion_estado")
-      .eq("activo", true)
-      .order("verificado", { ascending: false })
-      .limit(10);
+      .select("id, nombre, foto_url, especialidades, ciudades, descripcion, verificado, verificacion_estado, created_at")
+      .eq("activo", true);
 
     if (rows && rows.length > 0) {
+      const ids = rows.map((r: Record<string, unknown>) => r.id as string);
+
       // Fetch ratings
       const { data: resenas } = await getSupabaseAdmin()
         .from("resenas")
         .select("maestro_id, calificacion")
-        .in("maestro_id", rows.map((r: Record<string, unknown>) => r.id));
+        .in("maestro_id", ids);
 
       const ratingMap: Record<string, { sum: number; count: number }> = {};
       for (const r of resenas ?? []) {
@@ -34,24 +38,43 @@ export default async function Home() {
         ratingMap[r.maestro_id].count += 1;
       }
 
-      featuredMaestros = (rows as Record<string, unknown>[]).map(r => {
-        const nombre = (r.nombre as string) ?? "Maestro";
-        const initials = nombre.split(" ").slice(0, 2).map((w: string) => w[0] ?? "").join("").toUpperCase();
-        const ciudades = (r.ciudades as string[]) ?? [];
-        const s = ratingMap[r.id as string];
-        return {
-          id:          r.id as string,
-          name:        nombre,
-          initials,
-          photoUrl:    (r.foto_url as string) || undefined,
-          specialties: (r.especialidades as string[]) ?? [],
-          city:        ciudades[0] ?? "Chile",
-          rating:      s ? Math.round(s.sum / s.count * 10) / 10 : 0,
-          jobs:        s?.count ?? 0,
-          verified:    !!(r.verificado as boolean) || (r.verificacion_estado as string) === "aprobado",
-          description: (r.descripcion as string) ?? "",
-        };
-      });
+      // Fetch referral counts — un solo query agregado en JS, mismo patrón que buscar/page.tsx.
+      const { data: referidos } = await getSupabaseAdmin()
+        .from("maestro_referidos")
+        .select("maestro_id")
+        .in("maestro_id", ids);
+
+      const referidosMap: Record<string, number> = {};
+      for (const r of referidos ?? []) referidosMap[r.maestro_id] = (referidosMap[r.maestro_id] ?? 0) + 1;
+
+      featuredMaestros = (rows as Record<string, unknown>[])
+        .map(r => {
+          const nombre = (r.nombre as string) ?? "Maestro";
+          const initials = nombre.split(" ").slice(0, 2).map((w: string) => w[0] ?? "").join("").toUpperCase();
+          const ciudades = (r.ciudades as string[]) ?? [];
+          const s = ratingMap[r.id as string];
+          return {
+            id:          r.id as string,
+            name:        nombre,
+            initials,
+            photoUrl:    (r.foto_url as string) || undefined,
+            specialties: (r.especialidades as string[]) ?? [],
+            city:        ciudades[0] ?? "Chile",
+            rating:      s ? Math.round(s.sum / s.count * 10) / 10 : 0,
+            jobs:        s?.count ?? 0,
+            verified:    !!(r.verificado as boolean) || (r.verificacion_estado as string) === "aprobado",
+            description: (r.descripcion as string) ?? "",
+            referidosCount: referidosMap[r.id as string] ?? 0,
+          };
+        })
+        .sort((a, b) => {
+          if (a.referidosCount !== b.referidosCount) return b.referidosCount - a.referidosCount;
+          if (a.jobs === 0 && b.jobs > 0) return 1;
+          if (a.jobs > 0 && b.jobs === 0) return -1;
+          return b.rating - a.rating;
+        })
+        .slice(0, 10)
+        .map(({ referidosCount: _referidosCount, ...card }) => card);
     }
   } catch { /* fallback */ }
 

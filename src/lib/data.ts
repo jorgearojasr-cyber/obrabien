@@ -71,6 +71,7 @@ export interface Master {
   atiendeUrgencias?: boolean;
   especialidadesUrgencia?: string[];
   createdAt?: string;
+  referidosCount?: number;
 }
 
 export const SAMPLE_MASTERS: Master[] = [

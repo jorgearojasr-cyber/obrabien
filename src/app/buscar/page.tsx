@@ -76,6 +76,8 @@ function rowToMaster(row: Record<string, unknown>): Master {
     gallery:      [],
     atiendeUrgencias:     !!(row.atiende_urgencias as boolean),
     especialidadesUrgencia: (row.especialidades_urgencia as string[]) ?? [],
+    createdAt:    (row.created_at as string) ?? undefined,
+    referidosCount: 0,
   };
 }
 
@@ -116,6 +118,20 @@ export default async function BuscarPage() {
           m.jobs    = s.count;
         }
       }
+    }
+
+    // Fetch referral counts for all real maestros in one query — used to boost
+    // "Más relevantes" (ver buscar/_content.tsx). Un solo query agregado en
+    // JS, no N llamadas por maestro.
+    const { data: referidos } = await getSupabaseAdmin()
+      .from("maestro_referidos")
+      .select("maestro_id")
+      .in("maestro_id", realMaestros.map(m => m.id));
+
+    if (referidos && referidos.length > 0) {
+      const referidosCounts: Record<string, number> = {};
+      for (const r of referidos) referidosCounts[r.maestro_id] = (referidosCounts[r.maestro_id] ?? 0) + 1;
+      for (const m of realMaestros) m.referidosCount = referidosCounts[m.id] ?? 0;
     }
   }
 

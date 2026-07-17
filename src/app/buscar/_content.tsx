@@ -534,7 +534,14 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
     const arr = [...filtered];
     if (sortBy === "rating") arr.sort((a, b) => { if (a.jobs === 0 && b.jobs > 0) return 1; if (a.jobs > 0 && b.jobs === 0) return -1; return b.rating - a.rating || b.jobs - a.jobs; });
     if (sortBy === "experiencia") arr.sort((a, b) => b.yearsExp - a.yearsExp);
-    if (sortBy === "relevantes") arr.sort((a, b) => { if (a.verified !== b.verified) return a.verified ? -1 : 1; if (a.jobs === 0 && b.jobs > 0) return 1; if (a.jobs > 0 && b.jobs === 0) return -1; return b.rating - a.rating; });
+    if (sortBy === "relevantes") arr.sort((a, b) => {
+      const refA = a.referidosCount ?? 0, refB = b.referidosCount ?? 0;
+      if (refA !== refB) return refB - refA;
+      if (a.jobs === 0 && b.jobs > 0) return 1;
+      if (a.jobs > 0 && b.jobs === 0) return -1;
+      return b.rating - a.rating;
+    });
+    if (sortBy === "recientes") arr.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
     return arr;
   }, [filtered, sortBy]);
 
