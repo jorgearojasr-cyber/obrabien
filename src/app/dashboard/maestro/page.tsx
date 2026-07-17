@@ -8,6 +8,8 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import NotifsSection, { type Notif } from "@/components/NotifsSection";
 import ActivitySection, { type ActivityItem } from "@/components/ActivitySection";
 import UrgencyToggle from "@/components/UrgencyToggle";
+import CopyReferralLink from "@/components/CopyReferralLink";
+import { normalizeRut } from "@/lib/maestro-shared";
 
 // Identity-verification UI temporarily disabled (banners below + admin nav link).
 // The Supabase columns (verificacion_estado, cedula_*, verificado), the upload
@@ -81,6 +83,17 @@ export default async function MaestroDashboard() {
     visitasCount   = visitas   ?? 0;
     contactosCount = contactos ?? 0;
   }
+
+  // ── Referidos ──────────────────────────────────────────────────────────────
+  let referidosCount = 0;
+  if (maestroId) {
+    const { count: referidos } = await supabase
+      .from("maestro_referidos")
+      .select("id", { count: "exact", head: true })
+      .eq("maestro_id", maestroId);
+    referidosCount = referidos ?? 0;
+  }
+  const referralUrl = `https://obrabien.cl/registro?tab=maestro&ref=${normalizeRut((row.rut as string) ?? "")}`;
 
   // ── Notifications ──────────────────────────────────────────────────────────
   let notifs: Notif[] = [];
@@ -322,6 +335,22 @@ export default async function MaestroDashboard() {
               <div style={{ fontSize: 11, color: "var(--mute)", fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.05em" }}>{sub}</div>
             </div>
           ))}
+        </div>
+
+        {/* ── Referidos ── */}
+        <div style={{ background: "#fff", border: "1px solid var(--line)", padding: "20px 24px", marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
+            <h2 style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 17, color: "var(--ink)", margin: 0 }}>
+              Invita a otros maestros
+            </h2>
+            <span style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900, fontSize: 20, color: "var(--orange)" }}>
+              {referidosCount} referido{referidosCount !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <p style={{ fontSize: 13, color: "var(--mute)", margin: "0 0 14px" }}>
+            Comparte tu link con otros maestros — cuando se registren y su perfil sea aprobado, sumas un referido.
+          </p>
+          <CopyReferralLink url={referralUrl} />
         </div>
 
         {/* ── Notifications ── */}

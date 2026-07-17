@@ -427,6 +427,11 @@ export default function CompletarPerfilPage() {
   const [referidoNombre,   setReferidoNombre]   = useState<string | null>(null);
   const [referidoError,    setReferidoError]    = useState("");
 
+  // Atribución ya guardada (inmutable) — distinto de referidoNombre, que es la
+  // vista previa en vivo mientras se escribe un RUT nuevo sin guardar todavía.
+  const [referidoPorId,     setReferidoPorId]     = useState<string | null>(null);
+  const [referidoPorNombre, setReferidoPorNombre] = useState<string | null>(null);
+
   const [rutChecking, setRutChecking] = useState(false);
 
   const [formasPago,     setFormasPago]     = useState<string[]>([]);
@@ -448,6 +453,9 @@ export default function CompletarPerfilPage() {
           setForm(prev => ({ ...prev, ...populateForm(data as Record<string, unknown>, fotos) }));
           setHasExistingProfile(true);
           const d = data as Record<string, unknown>;
+
+          setReferidoPorId((d.referido_por_maestro_id as string) ?? null);
+          setReferidoPorNombre((d.referente as { nombre: string } | null)?.nombre ?? null);
 
           const rawFP = d.formas_pago;
           const rawMC = d.modalidad_cobro;
@@ -476,6 +484,27 @@ export default function CompletarPerfilPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Precarga el RUT de referido desde el link de invitación (?ref=, capturado
+  // en localStorage por /registro) — solo si el perfil no tiene ya un
+  // referente guardado (inmutable) y el campo sigue vacío. Espera a que
+  // get-profile resuelva (!loading) para conocer referidoPorId primero.
+  useEffect(() => {
+    if (loading || referidoPorId || form.referidoRut) return;
+    try {
+      const raw = localStorage.getItem("obrabien_ref");
+      if (!raw) return;
+      const { rut, ts } = JSON.parse(raw) as { rut?: string; ts?: number };
+      const TREINTA_DIAS_MS = 30 * 24 * 60 * 60 * 1000;
+      if (!rut || !ts || Date.now() - ts > TREINTA_DIAS_MS) {
+        localStorage.removeItem("obrabien_ref");
+        return;
+      }
+      setForm(prev => ({ ...prev, comoLlego: "Me lo recomendó un maestro", referidoRut: formatRUT(rut) }));
+    } catch {
+      localStorage.removeItem("obrabien_ref");
+    }
+  }, [loading, referidoPorId, form.referidoRut]);
 
   useEffect(() => {
     if (form.comoLlego !== "Me lo recomendó un maestro" || !form.referidoRut) {
@@ -715,6 +744,7 @@ export default function CompletarPerfilPage() {
         }
         throw new Error(detail);
       }
+      try { localStorage.removeItem("obrabien_ref"); } catch { /* no-op */ }
       router.push("/dashboard/maestro?perfil=actualizado");
     } catch (err) {
       const detail = err instanceof Error && err.message ? ` (${err.message})` : "";
@@ -1522,6 +1552,20 @@ export default function CompletarPerfilPage() {
           )}
 
           <Section title="¿Cómo llegaste a ObraBien?" optional>
+            {referidoPorId ? (
+              // Atribución ya guardada — inmutable, se muestra de solo lectura
+              // (backend también la rechaza si llegara un ?ref= distinto).
+              <div>
+                <label style={{...SL,marginBottom:8}}>Quién te refirió</label>
+                <div style={{
+                  ...SI, height:48, display:"flex", alignItems:"center",
+                  background:"var(--bg-2)", color:"var(--ink-soft)", fontWeight:600,
+                }}>
+                  Fuiste referido por: {referidoPorNombre ?? "un maestro"}
+                </div>
+              </div>
+            ) : (
+            <>
             <div style={{marginBottom: form.comoLlego === "Me lo recomendó un maestro" ? 16 : 0}}>
               <label style={{...SL,marginBottom:8}}>¿Cómo nos conociste?</label>
               <select
@@ -1587,6 +1631,8 @@ export default function CompletarPerfilPage() {
                   </p>
                 )}
               </div>
+            )}
+            </>
             )}
           </Section>
 

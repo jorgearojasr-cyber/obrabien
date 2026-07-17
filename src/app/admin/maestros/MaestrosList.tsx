@@ -326,7 +326,11 @@ export default function MaestrosList({
                   {m.como_llego && (
                     <div style={{ fontSize: 10.5, color: "var(--mute)", fontFamily: "var(--font-jetbrains), monospace", marginTop: 3 }}>
                       via: {m.como_llego === "Otro" && m.como_llego_otro ? m.como_llego_otro : m.como_llego}
-                      {m.referido_rut && ` · ref: ${m.referido_rut}`}
+                      {m.referido_por_nombre
+                        ? ` · ref: ${m.referido_por_nombre}`
+                        : m.referido_rut
+                          ? ` · ref: ${m.referido_rut} (sin validar)`
+                          : ""}
                     </div>
                   )}
                 </div>

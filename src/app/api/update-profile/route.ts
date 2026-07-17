@@ -173,6 +173,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No se obtuvo el ID del maestro" }, { status: 500 });
   }
 
+  // 1.5. Referral attribution — non-blocking. Sets referido_por_maestro_id if this
+  // maestro doesn't have one yet and referidoRut resolves to a real maestro.
+  // Does NOT grant credit — that only happens on admin approval (see
+  // acreditar_referido, called from revisar-perfil/route.ts).
+  const { error: referidoError } = await getSupabaseAdmin()
+    .rpc("procesar_referido", { p_maestro_id: maestroRow.id, p_referido_rut: (body.referidoRut as string) ?? null });
+  if (referidoError) {
+    console.error("[update-profile] procesar_referido failed (non-fatal):", referidoError.message);
+  }
+
   // 2. Replace fotos_trabajos: delete existing rows, then insert normalized set
   const { error: deleteError } = await getSupabaseAdmin()
     .from("fotos_trabajos")

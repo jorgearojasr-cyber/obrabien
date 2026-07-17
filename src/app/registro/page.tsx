@@ -218,6 +218,20 @@ function RegistroContent() {
     router.replace(email === ADMIN_EMAIL ? "/admin" : "/dashboard");
   }, [authLoaded, isSignedIn, user, router]);
 
+  // Captura ?ref=<rut> del link de invitación en localStorage — sobrevive la
+  // cadena de redirects hasta completar-perfil (donde vive el campo real),
+  // que un query param por sí solo no sobreviviría. Se ignora si tiene más de
+  // 30 días (ver completar-perfil/page.tsx).
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (!ref) return;
+    try {
+      localStorage.setItem("obrabien_ref", JSON.stringify({ rut: ref, ts: Date.now() }));
+    } catch {
+      // localStorage no disponible (modo privado, etc.) — el ref simplemente no se precarga
+    }
+  }, [searchParams]);
+
   const benefits = BENEFITS[tab];
   const redirectUrl = tab === "maestro" ? "/dashboard?role=maestro" : "/dashboard?role=cliente";
 

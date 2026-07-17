@@ -6,9 +6,11 @@ export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // referente: embed del maestro referenciado por referido_por_maestro_id (self-FK,
+  // requiere el nombre de columna como hint para que PostgREST desambigüe el join).
   const { data, error } = await getSupabaseAdmin()
     .from("maestros")
-    .select("*, fotos_trabajos(id, url, descripcion)")
+    .select("*, fotos_trabajos(id, url, descripcion), referente:referido_por_maestro_id(nombre)")
     .eq("clerk_user_id", userId)
     .single();
 

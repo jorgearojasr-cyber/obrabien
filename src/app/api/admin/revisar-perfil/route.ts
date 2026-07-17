@@ -119,6 +119,18 @@ export async function POST(req: NextRequest) {
 
   console.log("[revisar-perfil] OK —", accion, "maestroId:", maestroId);
 
+  // ── Crédito de referido — solo al aprobar, no bloquea la respuesta ─────────
+  // Único punto donde se crea la fila en maestro_referidos: perfil_estado pasa
+  // a 'completo' recién aquí. acreditar_referido es idempotente (ON CONFLICT
+  // DO NOTHING), así que reaprobaciones tras un ciclo de edición no duplican.
+  if (accion === "aprobar") {
+    const { error: creditError } = await getSupabaseAdmin()
+      .rpc("acreditar_referido", { p_maestro_id: maestroId });
+    if (creditError) {
+      console.error("[revisar-perfil] acreditar_referido failed (non-fatal):", creditError.message);
+    }
+  }
+
   // ── Email al maestro — best-effort ─────────────────────────────────────────
   // Any failure here (RESEND_API_KEY missing/invalid, Clerk lookup, no email)
   // is logged and swallowed: the approve/reject above is already saved and

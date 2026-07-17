@@ -21,6 +21,8 @@ export type MaestroAdminRow = {
   como_llego: string | null;
   como_llego_otro: string | null;
   referido_rut: string | null;
+  referido_por_maestro_id: string | null;
+  referido_por_nombre: string | null;
 };
 
 export default async function AdminMaestros({
@@ -44,7 +46,21 @@ export default async function AdminMaestros({
 
   if (fetchError) console.error("[admin/maestros] fetch error:", fetchError.message);
 
-  const rows: MaestroAdminRow[] = (data ?? []).map(m => ({ ...m, email: "" }));
+  const rows: MaestroAdminRow[] = (data ?? []).map(m => ({ ...m, email: "", referido_por_nombre: null }));
+
+  // Nombres de referentes validados — solo resuelve los ids realmente presentes,
+  // evita traer la tabla completa cuando la mayoría de las filas no tiene referente.
+  const referenteIds = [...new Set(rows.map(m => m.referido_por_maestro_id).filter(Boolean))] as string[];
+  if (referenteIds.length > 0) {
+    const { data: referentes } = await getSupabaseAdmin()
+      .from("maestros")
+      .select("id, nombre")
+      .in("id", referenteIds);
+    const nombreMap = new Map((referentes ?? []).map(r => [r.id as string, r.nombre as string]));
+    rows.forEach(m => {
+      if (m.referido_por_maestro_id) m.referido_por_nombre = nombreMap.get(m.referido_por_maestro_id) ?? null;
+    });
+  }
 
   const clerkIds = rows.map(m => m.clerk_user_id).filter(Boolean) as string[];
   if (clerkIds.length > 0) {
