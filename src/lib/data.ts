@@ -72,6 +72,12 @@ export interface Master {
   especialidadesUrgencia?: string[];
   createdAt?: string;
   referidosCount?: number;
+  // TRUST-010 (Sprint 13): valores reales para que trust-engine.ts deje de
+  // aproximar la dimensión "Perfil". Poblados hoy únicamente por
+  // maestro/[id]/page.tsx — buscar/page.tsx y src/app/page.tsx quedan
+  // pendientes de un sprint futuro y siguen usando la aproximación anterior.
+  perfilEstado?: string;
+  fotosCount?: number;
 }
 
 export const SAMPLE_MASTERS: Master[] = [

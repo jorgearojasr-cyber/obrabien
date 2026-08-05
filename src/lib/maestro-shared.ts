@@ -2,6 +2,16 @@
 // (dashboard/maestro/completar-perfil) and the basic registration form
 // (dashboard/maestro/registro-basico). Keep values in sync with completar-perfil/page.tsx.
 
+// PER-005: fuente de verdad única del badge "Perfil verificado" para la
+// pantalla de Perfil del Maestro — usada por maestro/[id]/page.tsx y
+// ProfessionalCard.tsx (antes cada uno tenía su propio criterio, y
+// ProfessionalCard no tenía ninguno). Sistema de verificación de identidad
+// pausado en todo el producto — no activar aquí sin coordinarlo con las
+// otras copias independientes de este mismo flag (buscar/_content.tsx,
+// favoritos/page.tsx, _home/MaestrosDestacados.tsx), que quedan fuera del
+// alcance de este sprint.
+export const MOSTRAR_BADGE_VERIFICADO_PERFIL = false;
+
 export const ESPECIALIDADES = [
   "Albañilería", "Gasfitería", "Electricidad", "Carpintería", "Pintura",
   "Techumbres", "Climatización / AC", "Cerrajería", "Pisos y revestimientos",

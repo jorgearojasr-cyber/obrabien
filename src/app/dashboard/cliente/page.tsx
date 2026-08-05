@@ -7,6 +7,7 @@ import SignOutBtn from "@/components/SignOutBtn";
 import MigrateToMaestroCard from "@/components/MigrateToMaestroCard";
 import CancelMigrationBanner from "@/components/CancelMigrationBanner";
 import NotificacionesBanner from "@/components/NotificacionesBanner";
+import MisSolicitudes from "@/components/solicitudes/MisSolicitudes";
 
 type AItem = {
   id: string;
@@ -203,6 +204,9 @@ export default async function ClienteDashboard({
 
         {/* ── Notifications (client component — hides itself when empty) ── */}
         <NotificacionesBanner />
+
+        {/* ── Mis solicitudes (Sprint 22, JOB-043) ── */}
+        <MisSolicitudes />
 
         {/* ── Quick actions ── */}
         <h2 style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 16, color: "var(--ink)", margin: "0 0 12px" }}>

@@ -78,6 +78,9 @@ function rowToMaster(row: Record<string, unknown>): Master {
     especialidadesUrgencia: (row.especialidades_urgencia as string[]) ?? [],
     createdAt:    (row.created_at as string) ?? undefined,
     referidosCount: 0,
+    // TRUST-017 (Sprint 14): valores reales para trust-engine.ts — mismo
+    // campo que ya puebla maestro/[id]/page.tsx desde el Sprint 13.
+    perfilEstado: (row.perfil_estado as string) || undefined,
   };
 }
 
@@ -132,6 +135,20 @@ export default async function BuscarPage() {
       const referidosCounts: Record<string, number> = {};
       for (const r of referidos) referidosCounts[r.maestro_id] = (referidosCounts[r.maestro_id] ?? 0) + 1;
       for (const m of realMaestros) m.referidosCount = referidosCounts[m.id] ?? 0;
+    }
+
+    // TRUST-017 (Sprint 14): conteo real de fotos por maestro, mismo patrón
+    // de query agregada que resenas/referidos arriba — evita que
+    // trust-engine.ts tenga que aproximar la señal de galería.
+    const { data: fotos } = await getSupabaseAdmin()
+      .from("fotos_trabajos")
+      .select("maestro_id")
+      .in("maestro_id", realMaestros.map(m => m.id));
+
+    if (fotos && fotos.length > 0) {
+      const fotosCounts: Record<string, number> = {};
+      for (const f of fotos) fotosCounts[f.maestro_id] = (fotosCounts[f.maestro_id] ?? 0) + 1;
+      for (const m of realMaestros) m.fotosCount = fotosCounts[m.id] ?? 0;
     }
   }
 

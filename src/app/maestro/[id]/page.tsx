@@ -11,10 +11,8 @@ import GalleryCarousel from "@/components/GalleryCarousel";
 import ProfilePhotoLightbox from "@/components/ProfilePhotoLightbox";
 import AvailabilityPicker from "@/components/AvailabilityPicker";
 import UrgencyToggle from "@/components/UrgencyToggle";
-
-// Identity-verification badge temporarily hidden (system paused) — the
-// `verificado` column keeps its data; flip to true to show it again.
-const MOSTRAR_BADGE_VERIFICADO = false;
+import { MOSTRAR_BADGE_VERIFICADO_PERFIL } from "@/lib/maestro-shared";
+import { getTrustResult } from "@/lib/trust-engine";
 
 // ── Icons ──────────────────────────────────────────────────────────────────────
 
@@ -164,6 +162,10 @@ function rowToMaster(row: Record<string, unknown>): Master {
     atiendeUrgencias:      !!(row.atiende_urgencias as boolean),
     especialidadesUrgencia: (row.especialidades_urgencia as string[]) ?? [],
     createdAt:             (row.created_at as string) || undefined,
+    // TRUST-011 (Sprint 13): valores reales para trust-engine.ts — evita que
+    // la dimensión "Perfil" tenga que aproximar por riqueza de campos aquí.
+    perfilEstado: (row.perfil_estado as string) || undefined,
+    fotosCount:   ((row.fotos_trabajos as unknown[]) ?? []).length,
     social: {
       whatsapp:  social?.whatsapp  ?? undefined,
       instagram: social?.instagram ?? undefined,
@@ -323,6 +325,10 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
     colorIdx = idx;
   }
 
+  // TRUST-012: única fuente de verdad — no se recalcula ninguna regla aquí,
+  // solo se consume el resultado ya calculado por el Trust Engine.
+  const trust = getTrustResult(m);
+
   const [bg, fg]    = AV_COLORS[colorIdx % AV_COLORS.length];
   const isLoggedIn   = !!userId;
   const isOwnProfile = !!userId && !!maestroClerkId && userId === maestroClerkId;
@@ -426,7 +432,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                     <h1 style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 800, margin: 0, color: "var(--ink)" }}>
                       {m.name}
                     </h1>
-                    {MOSTRAR_BADGE_VERIFICADO && m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
+                    {MOSTRAR_BADGE_VERIFICADO_PERFIL && m.verified && <span className="verified"><CheckIcon /> Verificado</span>}
                     <AvailabilityPicker initialStatus={m.disponibilidad} isOwnProfile={isOwnProfile} />
                     {!isOwnProfile && m.atiendeUrgencias && (
                       <span style={{
@@ -445,8 +451,19 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                       <UrgencyToggle initialValue={m.atiendeUrgencias ?? false} variant="light" />
                     </div>
                   )}
+                  {/* PER-007: mismo criterio que ProfessionalCard — la primera
+                      especialidad (principal) se destaca en naranja; el resto
+                      (secundarias) comparte un único tratamiento agrupado. */}
                   <div className="row gap-6 wrap-flex">
-                    {m.specialties.map(sp => <span key={sp} className="chip chip-dark">{sp}</span>)}
+                    {m.specialties.map((sp, i) => (
+                      <span
+                        key={sp}
+                        className={i === 0 ? "chip" : "chip chip-dark"}
+                        style={i === 0 ? { background: "var(--orange)", borderColor: "var(--orange)", color: "#fff", fontWeight: 700 } : undefined}
+                      >
+                        {sp}
+                      </span>
+                    ))}
                   </div>
                   {isOwnProfile && (
                     <div>
@@ -488,12 +505,47 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
-            {/* Descripción */}
-            {m.description && (
+            {/* Nivel de confianza (TRUST-013) — fuera de .maestro-profile-header
+                a propósito, para que quede visible también en mobile (ese
+                bloque se oculta bajo 768px; ver .maestro-grid en globals.css).
+                "perfil_basico" no se muestra: es el nivel más bajo y exhibirlo
+                de forma prominente en el perfil público penalizaría
+                visualmente a los maestros recién registrados (riesgo ya
+                señalado en el Sprint 10, CONF-010). */}
+            {trust.level !== "perfil_basico" && (
+              <div style={{ background: "#fff", border: "1px solid var(--line)", padding: 24 }}>
+                <span className="label" style={{ marginBottom: 12, display: "block" }}>// NIVEL DE CONFIANZA</span>
+                <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 800, fontSize: 18, color: "var(--navy)", marginBottom: trust.fortalezas.length > 0 ? 14 : 0 }}>
+                  {trust.levelLabel}
+                </div>
+                {trust.fortalezas.length > 0 && (
+                  <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {trust.fortalezas.slice(0, 4).map(f => (
+                      <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--ink-soft)" }}>
+                        <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span> {f}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {/* Descripción + cobertura — PER-006: la cobertura (m.sector) ya no
+                depende de que exista descripción; el bloque se monta si hay
+                CUALQUIERA de sus piezas. "sector !== city" evita duplicar la
+                ciudad principal (ya visible en la cabecera) cuando el maestro
+                solo cubre una comuna. */}
+            {(m.description || m.phone || m.schedule || (m.sector && m.sector !== m.city)) && (
               <div style={{ background: "#fff", border: "1px solid var(--line)", padding: 24 }}>
                 <span className="label" style={{ marginBottom: 12, display: "block" }}>// Sobre {m.name.split(" ")[0]}</span>
-                <p style={{ fontSize: 15.5, color: "var(--ink-soft)", lineHeight: 1.65, margin: 0 }}>{m.description}</p>
-                <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginTop: 20, paddingTop: 20, borderTop: "1px solid var(--line)" }}>
+                {m.description && (
+                  <p style={{ fontSize: 15.5, color: "var(--ink-soft)", lineHeight: 1.65, margin: 0 }}>{m.description}</p>
+                )}
+                <div style={{
+                  display: "flex", gap: 24, flexWrap: "wrap",
+                  marginTop: m.description ? 20 : 0, paddingTop: m.description ? 20 : 0,
+                  borderTop: m.description ? "1px solid var(--line)" : "none",
+                }}>
                   {m.phone && (
                     <a
                       href={`tel:${m.phone}`}
@@ -509,9 +561,9 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                       <ClockIcon /> {m.schedule}
                     </div>
                   )}
-                  {m.sector && (
+                  {m.sector && m.sector !== m.city && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}>
-                      <PinIcon /> {m.sector}
+                      <PinIcon /> Cobertura: {m.sector}
                     </div>
                   )}
                 </div>

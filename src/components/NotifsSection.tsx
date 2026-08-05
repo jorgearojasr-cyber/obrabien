@@ -21,6 +21,9 @@ function notifIcon(tipo: string) {
   if (tipo === "marketplace_consulta") return "🛒";
   if (tipo === "respuesta_foro" || tipo === "foro_respuesta") return "💬";
   if (tipo === "verificacion") return "✅";
+  if (tipo === "solicitud_respondida") return "📩";
+  if (tipo === "solicitud_aceptada") return "✅";
+  if (tipo === "solicitud_rechazada") return "❌";
   return "🔔";
 }
 

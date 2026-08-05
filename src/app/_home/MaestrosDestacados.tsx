@@ -19,6 +19,7 @@ export interface MaestroCard {
   jobs: number;
   verified: boolean;
   description: string;
+  yearsExp: number;
 }
 
 function PhotoOrInitials({ m }: { m: MaestroCard }) {
@@ -67,7 +68,7 @@ export default function MaestrosDestacados({ maestros }: { maestros: MaestroCard
             fontWeight: 800, fontSize: "clamp(18px, 2.5vw, 24px)",
             color: "var(--navy)", letterSpacing: "-0.02em", margin: 0,
           }}>
-            Maestros destacados
+            Profesionales recomendados
           </h2>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Link href="/buscar" style={{
@@ -130,15 +131,24 @@ export default function MaestrosDestacados({ maestros }: { maestros: MaestroCard
                     <span style={{ fontSize: 11.5, color: "var(--mute)" }}>{m.city}</span>
                   </div>
 
-                  {m.rating > 0 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 1 }}>
-                      <Star size={11} color="#f59e0b" fill="#f59e0b" />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--navy)" }}>
-                        {m.rating.toFixed(1)}
-                      </span>
-                      <span style={{ fontSize: 11, color: "var(--mute)" }}>
-                        ({m.jobs} {m.jobs === 1 ? "reseña" : "reseñas"})
-                      </span>
+                  {(m.rating > 0 || m.yearsExp > 0) && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1, flexWrap: "wrap" }}>
+                      {m.rating > 0 && (
+                        <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                          <Star size={11} color="#f59e0b" fill="#f59e0b" />
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--navy)" }}>
+                            {m.rating.toFixed(1)}
+                          </span>
+                          <span style={{ fontSize: 11, color: "var(--mute)" }}>
+                            ({m.jobs} {m.jobs === 1 ? "reseña" : "reseñas"})
+                          </span>
+                        </span>
+                      )}
+                      {m.yearsExp > 0 && (
+                        <span style={{ fontSize: 11, color: "var(--mute)" }}>
+                          🏆 {m.yearsExp} {m.yearsExp === 1 ? "año" : "años"} exp.
+                        </span>
+                      )}
                     </div>
                   )}
 

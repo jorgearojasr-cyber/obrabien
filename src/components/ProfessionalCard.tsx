@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Master } from "@/lib/data";
 import { LogoMark } from "@/components/LogoMark";
+import { MOSTRAR_BADGE_VERIFICADO_PERFIL } from "@/lib/maestro-shared";
 import domtoimage from "dom-to-image-more";
 
 const NAVY = "#1B2B4B";
@@ -313,6 +314,16 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
   const mainSpecialty = m.specialties[0] ?? "";
   const otherSpecialties = m.specialties.slice(1);
   const specialtyEmoji = SPECIALTY_EMOJI[mainSpecialty] ?? "🛠️";
+
+  // PER-008: cobertura completa en la celda "UBICACIÓN" del stats row — sin
+  // agregar una fila nueva (mantiene el grid de 4 columnas intacto). Con 1
+  // sola comuna se muestra igual que antes; con 2+ se agrega "+N" y el
+  // detalle completo queda disponible al pasar el mouse (title nativo), sin
+  // costo de altura.
+  const comunas = m.sector ? m.sector.split(", ").filter(Boolean) : (m.city ? [m.city] : []);
+  const extraComunas = Math.max(0, comunas.length - 1);
+  const ubicacionValue = extraComunas > 0 ? `${m.city} +${extraComunas}` : (m.city || "Chile");
+  const ubicacionTitle = extraComunas > 0 ? `Cobertura: ${comunas.join(", ")}` : undefined;
   // Two-column specialty layout when there is 1+ additional specialty
   const showTwoColSpecialty = otherSpecialties.length >= 1;
 
@@ -378,7 +389,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                 </div>
               </div>
             </div>
-            {m.verified && (
+            {MOSTRAR_BADGE_VERIFICADO_PERFIL && m.verified && (
               <span style={{
                 background: ORANGE, color: "#fff",
                 padding: "3px 10px", borderRadius: 20,
@@ -417,14 +428,16 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
                     ? <img src={m.photoUrl} alt={m.name} crossOrigin="anonymous" className="foto-perfil" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     : m.initials}
                 </div>
-                <div style={{
-                  position: "absolute", bottom: 2, right: 2,
-                  width: 24, height: 24,
-                  background: VER_GREEN, borderRadius: "50%",
-                  border: "2px solid #fff",
-                  display: "grid", placeItems: "center",
-                  color: "#fff", fontSize: 11, fontWeight: 800,
-                }}>✓</div>
+                {MOSTRAR_BADGE_VERIFICADO_PERFIL && m.verified && (
+                  <div style={{
+                    position: "absolute", bottom: 2, right: 2,
+                    width: 24, height: 24,
+                    background: VER_GREEN, borderRadius: "50%",
+                    border: "2px solid #fff",
+                    display: "grid", placeItems: "center",
+                    color: "#fff", fontSize: 11, fontWeight: 800,
+                  }}>✓</div>
+                )}
               </div>
 
               {/* RIGHT — name, phone, location — clipped so nothing overflows */}
@@ -545,12 +558,12 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             background: "#fff",
           }}>
             {([
-              { icon: "📍", iconColor: "#E11D48", value: m.city || "Chile",                                sub: "UBICACIÓN",    valueColor: "#475569" },
-              { icon: "🕐", iconColor: "#3B82F6", value: m.yearsExp > 0 ? `${m.yearsExp} años` : "—",    sub: "EXPERIENCIA",  valueColor: "#475569" },
-              { icon: "⭐", iconColor: "#F59E0B", value: m.rating > 0 ? m.rating.toFixed(1) : "—",        sub: m.jobs > 0 ? `${m.jobs} reseña${m.jobs !== 1 ? "s" : ""}` : "Sin reseñas", valueColor: "#475569" },
-              { icon: "✅", iconColor: VER_GREEN,  value: m.verified ? "Perfil verif." : "No verif.",      sub: "OBRABIEN",     valueColor: m.verified ? VER_GREEN : "#94A3B8" },
+              { icon: "📍", iconColor: "#E11D48", value: ubicacionValue,                                sub: "UBICACIÓN",    valueColor: "#475569", title: ubicacionTitle },
+              { icon: "🕐", iconColor: "#3B82F6", value: m.yearsExp > 0 ? `${m.yearsExp} años` : "—",    sub: "EXPERIENCIA",  valueColor: "#475569", title: undefined },
+              { icon: "⭐", iconColor: "#F59E0B", value: m.rating > 0 ? m.rating.toFixed(1) : "—",        sub: m.jobs > 0 ? `${m.jobs} reseña${m.jobs !== 1 ? "s" : ""}` : "Sin reseñas", valueColor: "#475569", title: undefined },
+              { icon: "✅", iconColor: VER_GREEN,  value: MOSTRAR_BADGE_VERIFICADO_PERFIL ? (m.verified ? "Perfil verif." : "No verif.") : "—", sub: "OBRABIEN", valueColor: MOSTRAR_BADGE_VERIFICADO_PERFIL && m.verified ? VER_GREEN : "#94A3B8", title: undefined },
             ]).map((stat, i) => (
-              <div key={i} style={{
+              <div key={i} title={stat.title} style={{
                 padding: "8px 3px", textAlign: "center",
                 borderRight: i < 3 ? `1px solid ${BORDER}` : "none",
               }}>

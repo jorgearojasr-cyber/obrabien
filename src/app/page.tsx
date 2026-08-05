@@ -19,7 +19,7 @@ export default async function Home() {
     // JS antes de cortar a 10 — mismo patrón que buscar/page.tsx.
     const { data: rows } = await getSupabaseAdmin()
       .from("maestros")
-      .select("id, nombre, foto_url, especialidades, ciudades, descripcion, verificado, verificacion_estado, created_at")
+      .select("id, nombre, foto_url, especialidades, ciudades, descripcion, verificado, verificacion_estado, created_at, anos_experiencia")
       .eq("activo", true);
 
     if (rows && rows.length > 0) {
@@ -64,6 +64,7 @@ export default async function Home() {
             jobs:        s?.count ?? 0,
             verified:    !!(r.verificado as boolean) || (r.verificacion_estado as string) === "aprobado",
             description: (r.descripcion as string) ?? "",
+            yearsExp:    (r.anos_experiencia as number) || 0,
             referidosCount: referidosMap[r.id as string] ?? 0,
           };
         })

@@ -2,9 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { REGIONS, SPECIALTIES } from "@/lib/data";
+import { REGIONS } from "@/lib/data";
 
 const POPULAR = ["Albañil", "Gasfiter", "Electricista", "Carpintero", "Pintor", "Ceramista"];
+
+// OB-001: placeholders de ejemplo del ticket, rotan cada 3s en el campo de texto libre.
+const PROBLEMA_PLACEHOLDERS = [
+  "Tengo una filtración...",
+  "Necesito pintar mi casa...",
+  "Busco un gasfiter...",
+  "Quiero instalar un portón...",
+];
 
 function normalize(s: string) {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
@@ -184,15 +192,36 @@ function UbicacionPicker({
 /* ── Main search bar ── */
 export function HomeSearch() {
   const router = useRouter();
-  const [specialty, setSpecialty] = useState("");
+  // OB-001: "problema" reemplaza el antiguo "specialty" — campo de texto libre,
+  // acepta tanto una especialidad ("Gasfiter") como una descripción del problema
+  // ("Tengo una filtración"). Se envía como el mismo param `q` que /buscar ya
+  // usa para su búsqueda de texto libre (_content.tsx) — sin lógica de matching
+  // nueva, reutiliza el filtro existente.
+  const [problema, setProblema] = useState("");
   const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoMsg, setGeoMsg] = useState("");
+  const [locationError, setLocationError] = useState(false);
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(
+      () => setPlaceholderIdx(i => (i + 1) % PROBLEMA_PLACEHOLDERS.length),
+      3000,
+    );
+    return () => clearInterval(id);
+  }, []);
 
   function handleSearch() {
+    // OB-001: ubicación obligatoria — sin región seleccionada, no se busca.
+    if (!region) {
+      setLocationError(true);
+      return;
+    }
+    setLocationError(false);
     const params = new URLSearchParams();
-    if (specialty) params.set("esp", specialty);
+    if (problema.trim()) params.set("q", problema.trim());
     if (region) params.set("region", region);
     if (city) params.set("ciudad", city);
     const qs = params.toString();
@@ -272,18 +301,17 @@ export function HomeSearch() {
         }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end" }}>
 
-            {/* Especialidad */}
+            {/* OB-001: ¿Qué necesitas? — texto libre, reemplaza el select de Especialidad */}
             <div className="field home-search-field" style={{ flex: "1 1 190px" }}>
-              <label>Especialidad</label>
-              <select
-                className="ob-select home-search-input"
-                value={specialty}
-                onChange={e => setSpecialty(e.target.value)}
-                style={{ color: specialty ? "var(--ink)" : "var(--mute)" }}
-              >
-                <option value="">Todas las especialidades</option>
-                {SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <label>¿Qué necesitas?</label>
+              <input
+                type="text"
+                className="ob-input home-search-input"
+                value={problema}
+                onChange={e => setProblema(e.target.value)}
+                placeholder={PROBLEMA_PLACEHOLDERS[placeholderIdx]}
+                style={{ height: 40, fontSize: 15 }}
+              />
             </div>
 
             {/* Ubicación picker + Geo button */}
@@ -291,7 +319,7 @@ export function HomeSearch() {
               <UbicacionPicker
                 region={region}
                 city={city}
-                onSelect={(r, c) => { setRegion(r); setCity(c); setGeoMsg(""); }}
+                onSelect={(r, c) => { setRegion(r); setCity(c); setGeoMsg(""); setLocationError(false); }}
               />
 
               {/* Geo button */}
@@ -348,6 +376,11 @@ export function HomeSearch() {
             </div>
           </div>
 
+          {locationError && (
+            <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "#DC2626", lineHeight: 1.4 }}>
+              Selecciona una región para buscar.
+            </p>
+          )}
           {geoMsg && (
             <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--mute)", lineHeight: 1.4 }}>
               {geoMsg}
@@ -361,12 +394,12 @@ export function HomeSearch() {
           {POPULAR.map(s => (
             <button
               key={s}
-              onClick={() => setSpecialty(specialty === s ? "" : s)}
+              onClick={() => setProblema(problema === s ? "" : s)}
               style={{
                 display: "inline-flex", alignItems: "center", flexShrink: 0,
-                border: `1px solid ${specialty === s ? "var(--orange)" : "var(--navy)"}`,
-                background: specialty === s ? "var(--orange)" : "#fff",
-                color: specialty === s ? "#fff" : "var(--navy)",
+                border: `1px solid ${problema === s ? "var(--orange)" : "var(--navy)"}`,
+                background: problema === s ? "var(--orange)" : "#fff",
+                color: problema === s ? "#fff" : "var(--navy)",
                 padding: "5px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 500,
                 cursor: "pointer", transition: "all .15s",
               }}

@@ -5,11 +5,20 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { REGIONS, SPECIALTIES, type Master } from "@/lib/data";
 import { useFavorites } from "@/hooks/useFavorites";
+import { getTrustResult } from "@/lib/trust-engine";
 
 // Identity-verification UI temporarily hidden (badge + "solo verificados"
 // filters) — the `verificado` data and filter state remain; flip to true
 // to restore.
 const MOSTRAR_VERIFICACION = false;
+
+// RES-002: simplificación de filtros — Calificación mínima, Disponibilidad,
+// Urgencias, Experiencia y el buscador de texto libre se ocultan de la UI.
+// El estado y la lógica de filtrado quedan intactos (mismo patrón que
+// MOSTRAR_VERIFICACION) para no romper la conexión con el buscador de la
+// Home (OB-001, que ya envía `q` a esta pantalla) ni perder la capacidad de
+// filtrar si se decide reactivarlos más adelante.
+const MOSTRAR_FILTROS_SECUNDARIOS = false;
 
 /* ── Icons ─────────────────────────────────────────────────────────────────── */
 function StarFilled({ size = 13 }: { size?: number }) {
@@ -165,6 +174,7 @@ function SidebarFilters(p: FiltersProps) {
         </label>
       </FilterSection>
       )}
+      {MOSTRAR_FILTROS_SECUNDARIOS && (
       <FilterSection title="Calificación mínima">
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {([{ val: 0, label: "Cualquier calificación" }, { val: 3, label: "3+ estrellas" }, { val: 4, label: "4+ estrellas" }, { val: 5, label: "5 estrellas" }] as const).map(({ val, label }) => (
@@ -175,12 +185,16 @@ function SidebarFilters(p: FiltersProps) {
           ))}
         </div>
       </FilterSection>
+      )}
+      {MOSTRAR_FILTROS_SECUNDARIOS && (
       <FilterSection title="Disponibilidad">
         <label style={RL}>
           <input type="checkbox" style={CB} checked={p.soloDisponibles} onChange={e => p.setSoloDisponibles(e.target.checked)} />
           <span style={{ fontSize: 13 }}>Ocultar no disponibles</span>
         </label>
       </FilterSection>
+      )}
+      {MOSTRAR_FILTROS_SECUNDARIOS && (
       <FilterSection title="Urgencias 🚨">
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <label style={RL}><input type="radio" name={`${rp}-urgencia`} style={CB} checked={p.urgenciaCategoria === ""} onChange={() => p.setUrgenciaCategoria("")} /><span style={{ fontSize: 12.5 }}>Sin filtro</span></label>
@@ -192,6 +206,7 @@ function SidebarFilters(p: FiltersProps) {
           ))}
         </div>
       </FilterSection>
+      )}
       <FilterSection title="Región" collapsible defaultOpen={!!p.region}>
         <select value={p.region} onChange={e => { p.setRegion(e.target.value); p.setCiudad(""); }} style={{ width: "100%", height: 38, border: "1.5px solid #E2E8F0", padding: "0 8px", fontSize: 13, background: "#fff", cursor: "pointer" }}>
           <option value="">Toda Chile</option>
@@ -222,6 +237,7 @@ function SidebarFilters(p: FiltersProps) {
           {visibleSpecs.length === 0 && <span style={{ fontSize: 12, color: "var(--mute)", padding: "8px 0" }}>Sin resultados</span>}
         </div>
       </FilterSection>
+      {MOSTRAR_FILTROS_SECUNDARIOS && (
       <FilterSection title="Experiencia">
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {([{ val: 0, label: "Cualquiera" }, { val: 1, label: "1+ año" }, { val: 5, label: "5+ años" }, { val: 10, label: "10+ años" }] as const).map(({ val, label }) => (
@@ -232,6 +248,7 @@ function SidebarFilters(p: FiltersProps) {
           ))}
         </div>
       </FilterSection>
+      )}
     </>
   );
 }
@@ -250,6 +267,10 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
     : null;
 
   const isAvailable = (m.disponibilidad ?? "disponible") === "disponible";
+
+  // TRUST-018: única fuente de verdad — no se recalcula ninguna regla aquí,
+  // solo se consume el resultado ya calculado por el Trust Engine.
+  const trust = getTrustResult(m);
 
   return (
     <div
@@ -311,6 +332,18 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
           <Link href={`/maestro/${m.id}`} style={{ fontFamily: "var(--font-archivo), sans-serif", fontWeight: 700, fontSize: 15.5, color: "#1B2B4B", textDecoration: "none" }}>
             {m.name}
           </Link>
+          {/* TRUST-019: solo el nivel, sin fortalezas/dimensiones/recomendaciones.
+              "perfil_basico" es el estado mínimo — no se muestra ningún badge. */}
+          {trust.level !== "perfil_basico" && (
+            <span style={{
+              display: "inline-flex", alignItems: "center",
+              fontSize: 9.5, fontFamily: "var(--font-jetbrains), monospace", fontWeight: 700,
+              color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0",
+              padding: "2px 7px", borderRadius: 4, letterSpacing: "0.04em", textTransform: "uppercase",
+            }}>
+              {trust.levelLabel}
+            </span>
+          )}
           {MOSTRAR_VERIFICACION && m.verified && (
             <span style={{
               display: "inline-flex", alignItems: "center", gap: 4,
@@ -579,7 +612,10 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
         <div className="wrap">
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0", flexWrap: "wrap" }}>
 
-            {/* Text search */}
+            {/* RES-002: input de texto libre oculto de la UI — el estado `q` y el
+                filtrado siguen activos por debajo, así que un link con ?q= (ej.
+                desde el buscador de la Home) sigue funcionando igual. */}
+            {MOSTRAR_FILTROS_SECUNDARIOS && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, border: "1.5px solid #E2E8F0", background: "#F8FAFC", padding: "0 12px", height: 38, borderRadius: 8, width: 220, flexShrink: 0 }}>
               <SearchIcon />
               <input
@@ -590,6 +626,7 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
               />
               {q && <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#94A3B8", display: "flex" }}><CloseIcon /></button>}
             </div>
+            )}
 
             {/* Specialty dropdown */}
             <select
@@ -618,9 +655,15 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
             {MOSTRAR_VERIFICACION && (
               <FilterPill label="✓ Verificados" active={soloVerificados} onClick={() => setSoloVerificados(v => !v)} />
             )}
-            <FilterPill label="🟢 Disponible" active={soloDisponibles} onClick={() => setSoloDisponibles(v => !v)} />
-            <FilterPill label="⭐ 4+ estrellas" active={minRating >= 4} onClick={() => setMinRating(r => r >= 4 ? 0 : 4)} />
-            <FilterPill label="🚨 Urgencias" active={urgenciaCategoria === "Otros"} onClick={() => setUrgenciaCategoria(c => c === "Otros" ? "" : "Otros")} activeColor="#DC2626" />
+            {MOSTRAR_FILTROS_SECUNDARIOS && (
+              <FilterPill label="🟢 Disponible" active={soloDisponibles} onClick={() => setSoloDisponibles(v => !v)} />
+            )}
+            {MOSTRAR_FILTROS_SECUNDARIOS && (
+              <FilterPill label="⭐ 4+ estrellas" active={minRating >= 4} onClick={() => setMinRating(r => r >= 4 ? 0 : 4)} />
+            )}
+            {MOSTRAR_FILTROS_SECUNDARIOS && (
+              <FilterPill label="🚨 Urgencias" active={urgenciaCategoria === "Otros"} onClick={() => setUrgenciaCategoria(c => c === "Otros" ? "" : "Otros")} activeColor="#DC2626" />
+            )}
 
             {/* Más filtros — dropdown */}
             <div ref={moreRef} style={{ position: "relative" }}>
@@ -707,12 +750,34 @@ export default function BuscarContent({ allMaestros, realIds }: { allMaestros: M
                 <p style={{ fontSize: 14.5, color: "#64748B", marginBottom: 24 }}>
                   {allMaestros.length === 0
                     ? "Aún no hay maestros registrados en esta categoría. ¡Pronto habrá más!"
-                    : "No encontramos maestros con esos filtros. Intenta ampliar la búsqueda."}
+                    : "No encontramos maestros con esos filtros. Prueba una de estas opciones:"}
                 </p>
                 {allMaestros.length > 0 && (
-                  <button onClick={clearAll} style={{ height: 44, padding: "0 24px", background: "#F97316", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}>
-                    Ver todos los maestros
-                  </button>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "center" }}>
+                    {/* RES-003: alternativas concretas en vez de un solo botón genérico */}
+                    {(region || ciudad) && (
+                      <button
+                        onClick={() => { setRegion(""); setCiudad(""); }}
+                        style={{ height: 42, padding: "0 20px", width: 240, background: "#fff", color: "#1B2B4B", border: "1.5px solid #1B2B4B", fontWeight: 700, fontSize: 13.5, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}
+                      >
+                        Cambiar región
+                      </button>
+                    )}
+                    {especialidades.length > 0 && (
+                      <button
+                        onClick={() => setEspecialidades([])}
+                        style={{ height: 42, padding: "0 20px", width: 240, background: "#fff", color: "#1B2B4B", border: "1.5px solid #1B2B4B", fontWeight: 700, fontSize: 13.5, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}
+                      >
+                        Buscar otra especialidad
+                      </button>
+                    )}
+                    <button
+                      onClick={clearAll}
+                      style={{ height: 44, padding: "0 24px", width: 240, background: "#F97316", color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", borderRadius: 8, fontFamily: "var(--font-archivo), sans-serif" }}
+                    >
+                      Limpiar filtros
+                    </button>
+                  </div>
                 )}
               </div>
             )}

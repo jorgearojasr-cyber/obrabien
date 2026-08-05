@@ -9,6 +9,7 @@ import NotifsSection, { type Notif } from "@/components/NotifsSection";
 import ActivitySection, { type ActivityItem } from "@/components/ActivitySection";
 import UrgencyToggle from "@/components/UrgencyToggle";
 import CopyReferralLink from "@/components/CopyReferralLink";
+import SolicitudesRecibidas from "@/components/solicitudes/SolicitudesRecibidas";
 import { normalizeRut } from "@/lib/maestro-shared";
 
 // Identity-verification UI temporarily disabled (banners below + admin nav link).
@@ -67,22 +68,58 @@ export default async function MaestroDashboard() {
   const displayPhoto = fotoUrlSB || user.imageUrl || null;
 
   // ── Stats ──────────────────────────────────────────────────────────────────
-  let visitasCount   = 0;
-  let contactosCount = 0;
+  let visitasCount         = 0;
+  let contactosCount       = 0;
+  let calificacionPromedio = 0;
+  let calificacionCount    = 0;
+  let fotosTrabajosCount   = 0;
   if (maestroId) {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const startOfMonth  = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-    const [{ count: visitas }, { count: contactos }] = await Promise.all([
+    const [{ count: visitas }, { count: contactos }, { data: resenasData }, { count: fotosTrabajos }] = await Promise.all([
       supabase.from("perfil_visitas")
         .select("id", { count: "exact", head: true })
         .eq("maestro_id", maestroId).gte("visited_at", thirtyDaysAgo),
       supabase.from("contactos_clicks")
         .select("id", { count: "exact", head: true })
         .eq("maestro_id", maestroId).gte("clicked_at", startOfMonth),
+      // PANEL-006: mismo cálculo que en maestro/[id]/page.tsx — promedio de
+      // calificacion redondeado a 1 decimal, más el conteo de reseñas.
+      supabase.from("resenas")
+        .select("calificacion")
+        .eq("maestro_id", maestroId),
+      supabase.from("fotos_trabajos")
+        .select("id", { count: "exact", head: true })
+        .eq("maestro_id", maestroId),
     ]);
-    visitasCount   = visitas   ?? 0;
-    contactosCount = contactos ?? 0;
+    visitasCount       = visitas   ?? 0;
+    contactosCount     = contactos ?? 0;
+    fotosTrabajosCount = fotosTrabajos ?? 0;
+    if (resenasData && resenasData.length > 0) {
+      calificacionCount    = resenasData.length;
+      calificacionPromedio = Math.round(resenasData.reduce((s, r) => s + (r.calificacion as number), 0) / resenasData.length * 10) / 10;
+    }
   }
+
+  // ── PANEL-008: conversión = contactos / visitas ────────────────────────────
+  const conversionPct = visitasCount > 0 ? Math.round((contactosCount / visitasCount) * 100) : null;
+
+  // ── PANEL-007: consejo inteligente basado en reglas simples (sin IA) ───────
+  // Evalúa condiciones en orden de prioridad y muestra solo la primera que aplique.
+  const consejo = !fotoUrlSB
+    ? "Agrega una foto de perfil — los perfiles con foto generan mucha más confianza."
+    : !(row.anos_experiencia as number)
+    ? "Indica tus años de experiencia — es una de las señales que más confianza genera en tu perfil."
+    : fotosTrabajosCount === 0
+    ? "Sube fotos de trabajos anteriores — ayudan a que los clientes elijan tu perfil."
+    : perfilEstado !== "completo"
+    ? "Termina de completar tu perfil para que aparezca con toda su información."
+    : (
+      <>
+        Los perfiles con foto, especialidades y al menos 3 reseñas reciben{" "}
+        <strong style={{ color: "var(--navy)" }}>4× más contactos</strong> que los incompletos.
+      </>
+    );
 
   // ── Referidos ──────────────────────────────────────────────────────────────
   let referidosCount = 0;
@@ -327,7 +364,18 @@ export default async function MaestroDashboard() {
           {[
             { n: String(visitasCount),   label: "Visitas al perfil",    sub: "Últimos 30 días", accent: "var(--navy)" },
             { n: String(contactosCount), label: "Contactos recibidos",  sub: "Este mes",        accent: "var(--orange)" },
-            { n: "—",                    label: "Calificación promedio", sub: "Sin reseñas aún", accent: "var(--navy)" },
+            {
+              n:     calificacionCount > 0 ? calificacionPromedio.toFixed(1) : "—",
+              label: "Calificación promedio",
+              sub:   calificacionCount > 0 ? `${calificacionCount} reseña${calificacionCount !== 1 ? "s" : ""}` : "Sin reseñas aún",
+              accent: "var(--navy)",
+            },
+            {
+              n:     conversionPct !== null ? `${conversionPct}%` : "—",
+              label: "Conversión",
+              sub:   conversionPct !== null ? "Contactos / visitas" : "Sin datos suficientes",
+              accent: "var(--orange)",
+            },
           ].map(({ n, label, sub, accent }) => (
             <div key={label} style={{ background: "#fff", border: "1px solid var(--line)", padding: "20px 18px" }}>
               <div style={{ fontFamily: "var(--font-archivo), sans-serif", fontSize: 38, fontWeight: 900, color: accent, lineHeight: 1, marginBottom: 8 }}>{n}</div>
@@ -336,6 +384,9 @@ export default async function MaestroDashboard() {
             </div>
           ))}
         </div>
+
+        {/* ── Solicitudes recibidas (Sprint 20, JOB-033) ── */}
+        <SolicitudesRecibidas />
 
         {/* ── Referidos ── */}
         <div style={{ background: "#fff", border: "1px solid var(--line)", padding: "20px 24px", marginBottom: 24 }}>
@@ -375,12 +426,11 @@ export default async function MaestroDashboard() {
         {/* ── Activity ── */}
         <ActivitySection items={activityItems} />
 
-        {/* ── Tip ── */}
+        {/* ── Tip: consejo inteligente (PANEL-007, reglas simples) ── */}
         <div style={{ background: "var(--bg-2)", border: "1px solid var(--line)", padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: 12 }}>
           <span style={{ fontSize: 20, flexShrink: 0 }}>💡</span>
           <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>
-            Los perfiles con foto, especialidades y al menos 3 reseñas reciben{" "}
-            <strong style={{ color: "var(--navy)" }}>4× más contactos</strong> que los incompletos.
+            {consejo}
           </p>
         </div>
       </div>

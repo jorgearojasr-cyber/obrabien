@@ -47,7 +47,9 @@ export async function POST(req: NextRequest) {
             ? `ObraBien/recursos/pdfs`
             : type === "recurso-imagen"
               ? `ObraBien/recursos/imagenes`
-              : `ObraBien/trabajos/${userId}`;
+              : type === "solicitud"
+                ? `ObraBien/solicitudes/${userId}`
+                : `ObraBien/trabajos/${userId}`;
 
   if (type === "recurso-pdf") {
     try {

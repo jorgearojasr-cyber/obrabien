@@ -15,6 +15,9 @@ const ICONS: Record<string, string> = {
   empleo_postulacion:   "💼",
   marketplace_consulta: "🛒",
   respuesta_foro:       "💬",
+  solicitud_respondida: "📩",
+  solicitud_aceptada:   "✅",
+  solicitud_rechazada:  "❌",
 };
 
 export default function NotificacionesBanner() {
