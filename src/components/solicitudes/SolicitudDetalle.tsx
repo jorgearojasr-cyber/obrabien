@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EstadoBadge from "./EstadoBadge";
+import { DetalleSkeleton } from "./Skeleton";
 import type { SolicitudDestinatarioEstado, SolicitudEstado } from "@/lib/solicitudes";
 
 // Sprint 20 (JOB-034/036) + Sprint 21 (JOB-038/039/040). Única fuente de
@@ -131,7 +132,7 @@ export default function SolicitudDetalle({ id }: { id: string }) {
   }
 
   if (!solicitud) {
-    return <p style={{ fontSize: 13.5, color: "var(--mute)" }}>Cargando…</p>;
+    return <DetalleSkeleton />;
   }
 
   // JOB-034 pide "estado" — el de MI copia como maestro, no el de otros
@@ -187,7 +188,7 @@ export default function SolicitudDetalle({ id }: { id: string }) {
       {/* JOB-058: el cliente marcó el trabajo como terminado — solo
           información y notificación, ninguna acción nueva para el maestro. */}
       {solicitud.estado === "trabajo_terminado" && (
-        <div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", color: "#166534", padding: "14px 18px", marginBottom: 20, fontSize: 13.5, display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ background: "var(--success-bg)", border: "1px solid var(--success-border)", color: "var(--success)", padding: "14px 18px", marginBottom: 20, fontSize: 13.5, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 16 }}>🏁</span>
           <span>
             El cliente marcó este trabajo como terminado
@@ -210,7 +211,7 @@ export default function SolicitudDetalle({ id }: { id: string }) {
             <button
               onClick={() => handleAccion("aceptar")}
               disabled={actualizandoEstado}
-              style={{ background: "#16A34A", color: "#fff", border: "none", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, cursor: actualizandoEstado ? "default" : "pointer", opacity: actualizandoEstado ? 0.6 : 1 }}
+              style={{ background: "var(--success)", color: "#fff", border: "none", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, cursor: actualizandoEstado ? "default" : "pointer", opacity: actualizandoEstado ? 0.6 : 1 }}
             >
               ✓ Aceptar trabajo
             </button>

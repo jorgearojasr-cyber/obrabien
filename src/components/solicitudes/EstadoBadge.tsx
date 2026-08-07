@@ -8,7 +8,7 @@ const ESTILO: Record<SolicitudDestinatarioEstado, { label: string; bg: string; c
   enviado:         { label: "Enviada",        bg: "#F1F5F9", color: "#64748B" },
   vista:           { label: "Vista",          bg: "#EFF6FF", color: "#1D4ED8" },
   respondida:      { label: "Respondida",     bg: "#FFF7ED", color: "#C2410C" },
-  aceptada:        { label: "Aceptada",       bg: "#F0FDF4", color: "#16A34A" },
+  aceptada:        { label: "Aceptada",       bg: "var(--success-bg)", color: "var(--success)" },
   rechazada:       { label: "Rechazada",      bg: "#FEF2F2", color: "#DC2626" },
   expirada:        { label: "Expirada",       bg: "#F3F4F6", color: "#6B7280" },
   no_seleccionado: { label: "No seleccionado", bg: "#F3F4F6", color: "#6B7280" },

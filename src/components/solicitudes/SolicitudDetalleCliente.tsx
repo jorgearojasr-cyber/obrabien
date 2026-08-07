@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EstadoBadge from "./EstadoBadge";
+import { DetalleSkeleton } from "./Skeleton";
 import type { SolicitudDestinatarioEstado, SolicitudEstado } from "@/lib/solicitudes";
 
 // Sprint 24 (JOB-057): estrellas mínimas para la reseña verificada — mismo
@@ -189,7 +190,7 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
   }
 
   if (!solicitud) {
-    return <p style={{ fontSize: 13.5, color: "var(--mute)" }}>Cargando…</p>;
+    return <DetalleSkeleton />;
   }
 
   const yaAsignada = solicitud.estado === "cerrada_asignado";
@@ -205,7 +206,7 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
           {yaAsignada && (
             <span style={{
               display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#F0FDF4", color: "#16A34A", border: "1px solid #BBF7D0",
+              background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success-border)",
               fontSize: 11.5, fontWeight: 700, fontFamily: "var(--font-jetbrains), monospace",
               textTransform: "uppercase", letterSpacing: "0.04em", padding: "3px 9px",
             }}>
@@ -275,7 +276,7 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
 
           {resena ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <span style={{ color: "#16A34A", fontWeight: 700, fontSize: 13.5 }}>✓ Ya calificaste este trabajo</span>
+              <span style={{ color: "var(--success)", fontWeight: 700, fontSize: 13.5 }}>✓ Ya calificaste este trabajo</span>
               <span style={{ color: "#F59E0B", fontSize: 14, letterSpacing: 1 }}>{"★".repeat(resena.calificacion)}{"☆".repeat(5 - resena.calificacion)}</span>
             </div>
           ) : mostrandoFormResena ? (
@@ -343,7 +344,7 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
             const puedeAsignarse = !yaAsignada && dest.estado === "aceptada";
 
             return (
-              <div key={dest.id} style={{ background: "#fff", border: esElAsignado ? "1.5px solid #22C55E" : "1px solid var(--line)", padding: "18px 22px" }}>
+              <div key={dest.id} style={{ background: "#fff", border: esElAsignado ? "1.5px solid var(--success)" : "1px solid var(--line)", padding: "18px 22px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: mensajes.length > 0 || puedeAsignarse ? 16 : 0, flexWrap: "wrap" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", background: "var(--navy)", flexShrink: 0, display: "grid", placeItems: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
@@ -356,7 +357,7 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {esElAsignado && (
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#16A34A", fontFamily: "var(--font-jetbrains), monospace" }}>✓ ASIGNADO</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--success)", fontFamily: "var(--font-jetbrains), monospace" }}>✓ ASIGNADO</span>
                     )}
                     <EstadoBadge estado={dest.estado} />
                   </div>

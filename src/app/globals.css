@@ -15,6 +15,11 @@
   --card: #FFFFFF;
   --yellow: var(--orange);
   --yellow-deep: var(--orange-deep);
+  /* Sprint 25 (item 9): tono único de "éxito" — antes cada pantalla usaba su
+     propio verde suelto (#16A34A/#22C55E/#166534, #F0FDF4, #BBF7D0...). */
+  --success: #16A34A;
+  --success-bg: #F0FDF4;
+  --success-border: #BBF7D0;
 }
 
 * { box-sizing: border-box; }

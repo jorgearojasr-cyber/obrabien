@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EstadoBadge from "./EstadoBadge";
-import type { SolicitudDestinatarioEstado } from "@/lib/solicitudes";
+import { ListaSkeleton } from "./Skeleton";
+import type { SolicitudDestinatarioEstado, SolicitudEstado } from "@/lib/solicitudes";
 
 // Sprint 22 (JOB-043/046). Única fuente de datos: GET /api/solicitudes/cliente
 // — sin ninguna consulta a Supabase acá. Mismo patrón que SolicitudesRecibidas
@@ -18,6 +19,7 @@ type ItemAPI = {
   especialidad: string | null;
   region: string | null;
   comuna: string | null;
+  estado: SolicitudEstado;
   createdAt: string;
   enviadaAt: string | null;
   destinatariosEstados: SolicitudDestinatarioEstado[];
@@ -56,15 +58,16 @@ export default function MisSolicitudes() {
       <div style={{ padding: "16px 20px 20px" }}>
         {error && <p style={{ fontSize: 13.5, color: "#B91C1C", margin: 0 }}>{error}</p>}
 
-        {!error && items === null && (
-          <p style={{ fontSize: 13.5, color: "var(--mute)", margin: 0 }}>Cargando…</p>
-        )}
+        {!error && items === null && <ListaSkeleton items={2} />}
 
-        {/* JOB-046: estado vacío */}
+        {/* JOB-046 + Sprint 25 (item 4): estado vacío con ícono, mismo patrón
+            que SolicitudesRecibidas — acá sí hay un CTA claro y accionable
+            (crear la primera solicitud). */}
         {items !== null && items.length === 0 && (
           <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
             <p style={{ margin: "0 0 12px", fontSize: 13.5, color: "var(--mute)" }}>
-              Todavía no has creado ninguna solicitud de trabajo.
+              Todavía no has creado ninguna solicitud de trabajo. Cuéntanos qué necesitas y elige a los maestros que quieras contactar.
             </p>
             <Link href="/solicitudes/nueva" style={{ color: "var(--navy)", fontWeight: 700, fontSize: 13.5, textDecoration: "none" }}>
               Crear una solicitud →
@@ -82,11 +85,26 @@ export default function MisSolicitudes() {
                 style={{ display: "block", border: "1px solid var(--line)", padding: "14px 16px", textDecoration: "none", color: "inherit" }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
                     {item.destinatariosEstados.length === 0 ? (
                       <span style={{ fontSize: 11.5, color: "var(--mute)" }}>Sin maestros seleccionados</span>
                     ) : (
                       item.destinatariosEstados.map((estado, i) => <EstadoBadge key={i} estado={estado} />)
+                    )}
+                    {/* Sprint 25 (item 2): mismo indicador que en Solicitudes
+                        recibidas — solicitud.estado es lo único que refleja
+                        el cierre real del trabajo, los badges de arriba son
+                        por destinatario y nunca lo muestran. */}
+                    {item.estado === "trabajo_terminado" && (
+                      <span style={{
+                        display: "inline-flex", alignItems: "center",
+                        background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success-border)",
+                        fontSize: 11, fontWeight: 700, fontFamily: "var(--font-jetbrains), monospace",
+                        textTransform: "uppercase", letterSpacing: "0.04em",
+                        padding: "3px 9px", borderRadius: 4, flexShrink: 0,
+                      }}>
+                        🏁 Terminado
+                      </span>
                     )}
                   </div>
                   <span style={{ fontSize: 11.5, color: "var(--mute)", fontFamily: "var(--font-jetbrains), monospace" }}>

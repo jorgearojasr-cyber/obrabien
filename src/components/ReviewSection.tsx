@@ -15,6 +15,10 @@ interface Review {
   tags_negativos?: string[] | null;
   tipo_trabajo?: string | null;
   fotos?: string[] | null;
+  /** Sprint 25 (item 1): true cuando la reseña viene de una Solicitud real
+   *  con el trabajo marcado como terminado (resenas.solicitud_id no nulo,
+   *  ver Sprint 24). Las reseñas del flujo libre histórico no lo traen. */
+  verificado?: boolean;
 }
 
 export interface ExistingReview {
@@ -40,6 +44,10 @@ interface Props {
 
 const POS_TAGS = ["Puntual", "Responsable", "Trabajo limpio", "Buen precio", "Cordial", "Honesto", "Rápido", "Recomendable"];
 const NEG_TAGS = ["Impuntual", "Trabajo descuidado", "No cumplió lo prometido", "Mal precio", "No respondió", "Dejó trabajo incompleto"];
+
+function CheckMiniIcon() {
+  return <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7" /></svg>;
+}
 
 function StarFilled({ size = 13 }: { size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor"><path d="M12 17.3 5.8 21l1.6-7.1L2 9.3l7.2-.6L12 2l2.8 6.7 7.2.6-5.4 4.6L18.2 21z"/></svg>;
@@ -86,10 +94,18 @@ function ReviewCard({ r }: { r: Review }) {
           letterSpacing: "0.07em", color: "var(--orange)", fontWeight: 700,
         }}>Tu reseña</span>
       )}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, gap: 10, flexWrap: "wrap" }}>
         <div>
           <span style={{ fontWeight: 600, fontSize: 14 }}>{r.author}</span>
           <span style={{ fontSize: 12, color: "var(--mute)", marginLeft: 8 }}>{r.date}</span>
+          {/* Sprint 25 (item 1): distingue una reseña verificada (originada
+              en una Solicitud terminada) de una del flujo libre histórico —
+              reutiliza la misma clase .verified del badge de perfil verificado. */}
+          {r.verificado && (
+            <span className="verified" style={{ marginLeft: 8, verticalAlign: "middle" }}>
+              <CheckMiniIcon /> Trabajo verificado
+            </span>
+          )}
         </div>
         <span style={{ color: "var(--orange)", display: "flex", gap: 1 }}>
           {[0,1,2,3,4].map(j => j < r.rating ? <StarFilled key={j} /> : <StarEmpty key={j} />)}
@@ -291,7 +307,7 @@ export default function ReviewSection({
     const now = new Date();
     const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
     const newReview: Review = {
-      author:         userName || "Cliente anónimo",
+      author:         userName || "Cliente de ObraBien",
       date:           `${months[now.getMonth()]} ${now.getFullYear()}`,
       text:           text.trim(),
       rating,
@@ -483,8 +499,12 @@ export default function ReviewSection({
 
       {/* Review list */}
       <div className="col gap-12" style={{ marginBottom: 28 }}>
+        {/* Sprint 25 (item 10): único lugar donde se muestra este mensaje
+            (antes se repetía también en la cabecera del perfil). */}
         {allReviews.length === 0 && (
-          <p style={{ fontSize: 13.5, color: "var(--mute)", margin: 0 }}>Sin reseñas aún. ¡Sé el primero en dejar una!</p>
+          <p style={{ fontSize: 13.5, color: "var(--mute)", margin: 0 }}>
+            Este maestro todavía no tiene reseñas. Las reseñas quedan registradas automáticamente cuando un cliente marca un trabajo como terminado.
+          </p>
         )}
         {allReviews.map((r, i) => <ReviewCard key={i} r={r} />)}
       </div>

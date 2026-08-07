@@ -10,7 +10,7 @@ import domtoimage from "dom-to-image-more";
 const NAVY = "#1B2B4B";
 const ORANGE = "#F97316";
 const WA_GREEN = "#25D366";
-const VER_GREEN = "#16A34A";
+const VER_GREEN = "var(--success)"; // Sprint 25 (item 9): tono compartido, antes hardcodeado acá
 const CARD_BG = "#F8FAFC";
 const BORDER = "#E2E8F0";
 
@@ -600,7 +600,7 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             return (
               <div style={{
                 ...sep,
-                background: isAvail ? "#F0FDF4" : CARD_BG,
+                background: isAvail ? "var(--success-bg)" : CARD_BG,
                 display: "grid",
                 gridTemplateColumns: showUrgencias ? "1fr 1fr" : "1fr",
               }}>
@@ -725,14 +725,14 @@ export default function ProfessionalCard({ m, maestroId }: Props) {
             </button>
             <button
               onClick={() => setShareOpen(true)}
-              onMouseEnter={e => (e.currentTarget.style.background = "#F0FDF4")}
+              onMouseEnter={e => (e.currentTarget.style.background = "var(--success-bg)")}
               onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
               style={{
                 flex: 1,
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 padding: "9px 10px",
-                border: `2px solid #22C55E`, borderRadius: 10,
-                background: "#fff", color: "#22C55E",
+                border: `2px solid var(--success)`, borderRadius: 10,
+                background: "#fff", color: "var(--success)",
                 fontSize: 12, fontWeight: 600, cursor: "pointer",
                 fontFamily: "'Inter Tight', system-ui, sans-serif",
                 transition: "background 0.15s",

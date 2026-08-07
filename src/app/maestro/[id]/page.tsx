@@ -257,6 +257,10 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
     tags_negativos: string[] | null;
     tipo_trabajo: string | null;
     fotos: string[] | null;
+    // Sprint 25 (item 1): presencia de solicitud_id = reseña verificada
+    // (originada en un trabajo real terminado, ver Sprint 24). No se agrega
+    // ninguna consulta nueva — es una columna más en el mismo SELECT.
+    solicitud_id: string | null;
   };
 
   let m: Master;
@@ -281,7 +285,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
         .single(),
       getSupabaseAdmin()
         .from("resenas")
-        .select("cliente_nombre, calificacion, comentario, created_at, tags, tags_negativos, tipo_trabajo, fotos")
+        .select("cliente_nombre, calificacion, comentario, created_at, tags, tags_negativos, tipo_trabajo, fotos, solicitud_id")
         .eq("maestro_id", id)
         .order("created_at", { ascending: false }),
       currentUser(),
@@ -357,7 +361,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
   const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   const reviews = isReal
     ? resenas.map(r => ({
-        author:         r.cliente_nombre ?? "Cliente anónimo",
+        author:         r.cliente_nombre ?? "Cliente de ObraBien",
         date:           `${MONTHS[new Date(r.created_at).getMonth()]} ${new Date(r.created_at).getFullYear()}`,
         text:           r.comentario,
         rating:         r.calificacion,
@@ -365,6 +369,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
         tags_negativos: r.tags_negativos,
         tipo_trabajo:   r.tipo_trabajo,
         fotos:          r.fotos,
+        verificado:     !!r.solicitud_id,
       }))
     : SEED_REVIEWS;
 
@@ -485,14 +490,15 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                       <span style={{ color: m.rating > 0 ? "var(--orange)" : "#D1D5DB", display: "flex", gap: 1 }}>
                         {[1,2,3,4,5].map(i => <StarIcon key={i} size={14} filled={i <= Math.round(m.rating)} />)}
                       </span>
-                      {m.rating > 0 ? (
+                      {m.rating > 0 && (
                         <>
                           <strong style={{ color: "var(--ink)", fontFamily: "var(--font-jetbrains), monospace" }}>{m.rating.toFixed(1)}</strong>
                           <span>· {m.jobs} reseña{m.jobs !== 1 ? "s" : ""}</span>
                         </>
-                      ) : (
-                        <span style={{ color: "var(--mute)" }}>Sin reseñas aún</span>
                       )}
+                      {/* Sprint 25 (item 10): antes repetía "Sin reseñas aún"
+                          acá Y en la sección de reseñas más abajo — el mensaje
+                          único y más útil vive ahora solo en esa sección. */}
                     </span>
                     {m.city && (
                       <span style={{ display: "flex", alignItems: "center", gap: 5 }}><PinIcon /> {m.city}</span>
@@ -562,8 +568,19 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
                     </div>
                   )}
                   {m.sector && m.sector !== m.city && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--mute)" }}>
-                      <PinIcon /> Cobertura: {m.sector}
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13.5, color: "var(--mute)" }}>
+                      <span style={{ display: "flex", alignItems: "center", height: 22, flexShrink: 0 }}><PinIcon /></span>
+                      <div>
+                        <span style={{ display: "block", marginBottom: 6 }}>Cobertura:</span>
+                        {/* Sprint 25 (item 7): mismo estilo de chip ya usado
+                            para las especialidades (arriba en este archivo),
+                            en vez de una lista de texto plano separada por comas. */}
+                        <div className="row gap-6 wrap-flex">
+                          {m.sector.split(", ").filter(Boolean).map(comuna => (
+                            <span key={comuna} className="chip chip-dark">{comuna}</span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

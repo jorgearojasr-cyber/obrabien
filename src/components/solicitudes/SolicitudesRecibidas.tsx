@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EstadoBadge from "./EstadoBadge";
-import type { SolicitudDestinatarioEstado } from "@/lib/solicitudes";
+import { ListaSkeleton } from "./Skeleton";
+import type { SolicitudDestinatarioEstado, SolicitudEstado } from "@/lib/solicitudes";
 
 // Sprint 20 (JOB-033). Única fuente de datos: GET /api/solicitudes/maestro —
 // sin ninguna consulta a Supabase acá (ver solicitudes.ts para el porqué de
@@ -20,6 +21,7 @@ type ItemAPI = {
     especialidad: string | null;
     region: string | null;
     comuna: string | null;
+    estado: SolicitudEstado;
     createdAt: string;
     enviadaAt: string | null;
   };
@@ -57,14 +59,19 @@ export default function SolicitudesRecibidas() {
 
       {error && <p style={{ fontSize: 13.5, color: "#B91C1C", margin: 0 }}>{error}</p>}
 
-      {!error && items === null && (
-        <p style={{ fontSize: 13.5, color: "var(--mute)", margin: 0 }}>Cargando…</p>
-      )}
+      {!error && items === null && <ListaSkeleton items={2} />}
 
+      {/* Sprint 25 (item 4): estado vacío con ícono y copy orientador. Sin CTA
+          acá a propósito — "Completa tu perfil" (más visitas) ya es el CTA
+          relevante para este caso y vive justo arriba, en el dashboard;
+          duplicarlo en este bloque sería ruido, no ayuda nueva. */}
       {items !== null && items.length === 0 && (
-        <p style={{ fontSize: 13.5, color: "var(--mute)", margin: 0 }}>
-          Todavía no recibiste ninguna solicitud de trabajo.
-        </p>
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+          <p style={{ margin: 0, fontSize: 13.5, color: "var(--mute)" }}>
+            Todavía no recibiste ninguna solicitud de trabajo — apenas un cliente te elija, aparecerá acá.
+          </p>
+        </div>
       )}
 
       {items !== null && items.length > 0 && (
@@ -77,7 +84,25 @@ export default function SolicitudesRecibidas() {
               style={{ display: "block", border: "1px solid var(--line)", padding: "14px 16px", textDecoration: "none", color: "inherit" }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                <EstadoBadge estado={item.destinatario.estado} />
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                  <EstadoBadge estado={item.destinatario.estado} />
+                  {/* Sprint 25 (item 2): destinatario.estado nunca pasa a
+                      "trabajo_terminado" (es un estado de la SOLICITUD, no del
+                      destinatario — ver Sprint 23) — sin este indicador, un
+                      trabajo ya cerrado y calificado seguía mostrando
+                      "Aceptada" para siempre. */}
+                  {item.solicitud.estado === "trabajo_terminado" && (
+                    <span style={{
+                      display: "inline-flex", alignItems: "center",
+                      background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success-border)",
+                      fontSize: 11, fontWeight: 700, fontFamily: "var(--font-jetbrains), monospace",
+                      textTransform: "uppercase", letterSpacing: "0.04em",
+                      padding: "3px 9px", borderRadius: 4, flexShrink: 0,
+                    }}>
+                      🏁 Terminado
+                    </span>
+                  )}
+                </div>
                 <span style={{ fontSize: 11.5, color: "var(--mute)", fontFamily: "var(--font-jetbrains), monospace" }}>
                   {formatFecha(item.solicitud.enviadaAt ?? item.solicitud.createdAt)}
                 </span>

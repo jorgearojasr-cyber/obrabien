@@ -88,7 +88,7 @@ function Stars({ count, size = 12 }: { count: number; size?: number }) {
 function availDot(status?: string) {
   if (status === "ocupado") return "#F59E0B";
   if (status === "no_disponible") return "#9CA3AF";
-  return "#22C55E";
+  return "var(--success)";
 }
 
 /* ── FilterSection (reused in drawer) ──────────────────────────────────────── */
@@ -338,7 +338,7 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
             <span style={{
               display: "inline-flex", alignItems: "center",
               fontSize: 9.5, fontFamily: "var(--font-jetbrains), monospace", fontWeight: 700,
-              color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0",
+              color: "var(--success)", background: "var(--success-bg)", border: "1px solid var(--success-border)",
               padding: "2px 7px", borderRadius: 4, letterSpacing: "0.04em", textTransform: "uppercase",
             }}>
               {trust.levelLabel}
@@ -412,20 +412,24 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
         {/* Bottom row: availability + action buttons */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {isAvailable && (
-            <span style={{ fontSize: 12, color: "#16A34A", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 7, height: 7, background: "#22C55E", borderRadius: "50%", flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: "var(--success)", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ width: 7, height: 7, background: "var(--success)", borderRadius: "50%", flexShrink: 0 }} />
               Disponible esta semana
             </span>
           )}
+          {/* Sprint 25 (item 5): "Ver perfil" pasa a ser la acción con más
+              peso visual — es la que expone Trust Engine, reseñas y perfil
+              completo. WhatsApp se mantiene 100% visible y clickeable, solo
+              con menos peso (outline en vez de relleno). */}
           <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
             <Link
               href={`/maestro/${m.id}`}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 5,
-                border: "1.5px solid #1B2B4B", color: "#1B2B4B",
+                border: "1.5px solid #1B2B4B", color: "#fff",
                 padding: "7px 14px", borderRadius: 8,
                 fontSize: 12.5, fontWeight: 700, textDecoration: "none",
-                whiteSpace: "nowrap", background: "#fff",
+                whiteSpace: "nowrap", background: "#1B2B4B",
               }}
             >
               Ver perfil →
@@ -444,7 +448,7 @@ function MasterCard({ m, idx, isFav, onToggleFav, isReal }: {
                 }}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
-                  background: "#25D366", color: "#fff",
+                  background: "#fff", color: "#25D366", border: "1.5px solid #25D366",
                   padding: "7px 14px", borderRadius: 8,
                   fontSize: 12.5, fontWeight: 700, textDecoration: "none",
                   whiteSpace: "nowrap",
