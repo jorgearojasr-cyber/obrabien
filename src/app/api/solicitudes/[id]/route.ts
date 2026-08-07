@@ -23,6 +23,7 @@ import {
   listarMensajes,
   listarMensajesPorSolicitud,
   obtenerIdentidadMaestros,
+  obtenerResenaDeSolicitud,
 } from "@/lib/solicitudes";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -70,14 +71,20 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   // JOB-044/045: el cliente ve el historial de cada destinatario que invitó,
   // más la identidad básica de cada maestro para poder distinguirlos.
+  // Sprint 24 (JOB-057): también necesita saber si ya dejó la reseña
+  // verificada de este trabajo, para mostrar "Calificar maestro" o "Ya fue
+  // enviada" — no aplica al maestro, que no tiene ninguna acción nueva
+  // sobre la reseña (JOB-058).
   let mensajesPorDestinatario: Awaited<ReturnType<typeof listarMensajesPorSolicitud>> = {};
   let maestros: Awaited<ReturnType<typeof obtenerIdentidadMaestros>> = {};
+  let resena: Awaited<ReturnType<typeof obtenerResenaDeSolicitud>> = null;
   if (esCliente) {
-    [mensajesPorDestinatario, maestros] = await Promise.all([
+    [mensajesPorDestinatario, maestros, resena] = await Promise.all([
       listarMensajesPorSolicitud(id),
       obtenerIdentidadMaestros(solicitud.destinatarios.map(d => d.maestroId)),
+      obtenerResenaDeSolicitud(id),
     ]);
   }
 
-  return NextResponse.json({ solicitud, mensajes, mensajesPorDestinatario, maestros });
+  return NextResponse.json({ solicitud, mensajes, mensajesPorDestinatario, maestros, resena });
 }

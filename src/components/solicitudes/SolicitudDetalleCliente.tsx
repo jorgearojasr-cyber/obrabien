@@ -5,6 +5,29 @@ import Link from "next/link";
 import EstadoBadge from "./EstadoBadge";
 import type { SolicitudDestinatarioEstado, SolicitudEstado } from "@/lib/solicitudes";
 
+// Sprint 24 (JOB-057): estrellas mínimas para la reseña verificada — mismo
+// concepto visual que StarPicker de ReviewSection.tsx, pero ese componente no
+// se exporta y está fuertemente acoplado al contexto del perfil público
+// (masterId/masterName/isOwnProfile). Reconstruir un picker chico acá es más
+// seguro que tocar ese archivo ya validado.
+function EstrellasPicker({ valor, onChange }: { valor: number; onChange: (v: number) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 4 }}>
+      {[1, 2, 3, 4, 5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          aria-label={`${n} estrellas`}
+          style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 26, lineHeight: 1, color: n <= valor ? "#F59E0B" : "#E5E7EB" }}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // Sprint 22 (JOB-044/045/046/047) + Sprint 23 (JOB-048/049/051). Única fuente
 // de datos: GET /api/solicitudes/[id] y, para asignar, POST
 // /api/solicitudes/[id]/asignar. No decide acá qué destinatarios pueden
@@ -35,11 +58,14 @@ type DetalleAPI = {
   comuna: string | null;
   createdAt: string;
   enviadaAt: string | null;
+  finalizadaAt: string | null;
   archivos: { id: string; url: string; descripcion: string | null }[];
   destinatarios: Destinatario[];
 };
 
 type MaestroIdentidad = { nombre: string; fotoUrl: string | null };
+
+type ResenaAPI = { id: string; calificacion: number; comentario: string };
 
 function formatFecha(iso: string): string {
   return new Date(iso).toLocaleDateString("es-CL", { day: "numeric", month: "long", year: "numeric" });
@@ -58,6 +84,16 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
   const [asignando, setAsignando] = useState<string | null>(null); // maestroId en curso
   const [errorAsignar, setErrorAsignar] = useState<string | null>(null);
 
+  // Sprint 24 (JOB-057)
+  const [resena, setResena] = useState<ResenaAPI | null>(null);
+  const [finalizando, setFinalizando] = useState(false);
+  const [errorFinalizar, setErrorFinalizar] = useState<string | null>(null);
+  const [mostrandoFormResena, setMostrandoFormResena] = useState(false);
+  const [calificacion, setCalificacion] = useState(0);
+  const [comentarioResena, setComentarioResena] = useState("");
+  const [enviandoResena, setEnviandoResena] = useState(false);
+  const [errorResena, setErrorResena] = useState<string | null>(null);
+
   function cargar() {
     return fetch(`/api/solicitudes/${id}`)
       .then(async res => {
@@ -67,6 +103,7 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
         setSolicitud(data.solicitud);
         setMensajesPorDestinatario(data.mensajesPorDestinatario ?? {});
         setMaestros(data.maestros ?? {});
+        setResena(data.resena ?? null);
       })
       .catch(() => setError("No se pudo conectar con el servidor."));
   }
@@ -94,6 +131,43 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
       setErrorAsignar("No se pudo conectar con el servidor.");
     } finally {
       setAsignando(null);
+    }
+  }
+
+  // JOB-054
+  async function handleFinalizar() {
+    setFinalizando(true);
+    setErrorFinalizar(null);
+    try {
+      const res = await fetch(`/api/solicitudes/${id}/finalizar`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) { setErrorFinalizar(data.error ?? "No se pudo marcar el trabajo como terminado."); return; }
+      await cargar();
+    } catch {
+      setErrorFinalizar("No se pudo conectar con el servidor.");
+    } finally {
+      setFinalizando(false);
+    }
+  }
+
+  // JOB-055
+  async function handleEnviarResena() {
+    setEnviandoResena(true);
+    setErrorResena(null);
+    try {
+      const res = await fetch(`/api/solicitudes/${id}/resena`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ calificacion, comentario: comentarioResena }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setErrorResena(data.error ?? "No se pudo enviar la reseña."); return; }
+      setMostrandoFormResena(false);
+      await cargar();
+    } catch {
+      setErrorResena("No se pudo conectar con el servidor.");
+    } finally {
+      setEnviandoResena(false);
     }
   }
 
@@ -175,6 +249,79 @@ export default function SolicitudDetalleCliente({ id }: { id: string }) {
       {errorAsignar && (
         <div style={{ background: "#FEF2F2", border: "1.5px solid #FCA5A5", color: "#B91C1C", padding: "12px 16px", marginBottom: 16, fontSize: 13.5 }}>
           {errorAsignar}
+        </div>
+      )}
+
+      {/* JOB-054/055/057 — Cierre del trabajo y reseña verificada */}
+      {solicitud.estado === "cerrada_asignado" && (
+        <div style={{ background: "#fff", border: "1px solid var(--line)", padding: "20px 24px", marginBottom: 20 }}>
+          <span className="label" style={{ marginBottom: 12, display: "block" }}>// Cierre del trabajo</span>
+          {errorFinalizar && (
+            <p style={{ margin: "0 0 12px", fontSize: 13, color: "#B91C1C" }}>{errorFinalizar}</p>
+          )}
+          <button
+            onClick={handleFinalizar}
+            disabled={finalizando}
+            style={{ background: "var(--navy)", color: "#fff", border: "none", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, cursor: finalizando ? "default" : "pointer", opacity: finalizando ? 0.6 : 1 }}
+          >
+            {finalizando ? "Marcando…" : "Marcar trabajo como terminado"}
+          </button>
+        </div>
+      )}
+
+      {solicitud.estado === "trabajo_terminado" && (
+        <div style={{ background: "#fff", border: "1px solid var(--line)", padding: "20px 24px", marginBottom: 20 }}>
+          <span className="label" style={{ marginBottom: 12, display: "block" }}>// Reseña</span>
+
+          {resena ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <span style={{ color: "#16A34A", fontWeight: 700, fontSize: 13.5 }}>✓ Ya calificaste este trabajo</span>
+              <span style={{ color: "#F59E0B", fontSize: 14, letterSpacing: 1 }}>{"★".repeat(resena.calificacion)}{"☆".repeat(5 - resena.calificacion)}</span>
+            </div>
+          ) : mostrandoFormResena ? (
+            <div>
+              {errorResena && (
+                <p style={{ margin: "0 0 12px", fontSize: 13, color: "#B91C1C" }}>{errorResena}</p>
+              )}
+              <div style={{ marginBottom: 12 }}>
+                <EstrellasPicker valor={calificacion} onChange={setCalificacion} />
+              </div>
+              <textarea
+                value={comentarioResena}
+                onChange={e => setComentarioResena(e.target.value)}
+                placeholder="Cuéntanos cómo fue el trabajo…"
+                style={{ width: "100%", height: 90, border: "1.5px solid var(--line)", padding: 12, fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", marginBottom: 12 }}
+              />
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={handleEnviarResena}
+                  disabled={enviandoResena || calificacion === 0 || !comentarioResena.trim()}
+                  style={{
+                    background: "var(--orange)", color: "#fff", border: "none", padding: "10px 20px",
+                    fontWeight: 700, fontSize: 13.5,
+                    cursor: enviandoResena ? "default" : "pointer",
+                    opacity: enviandoResena || calificacion === 0 || !comentarioResena.trim() ? 0.6 : 1,
+                  }}
+                >
+                  {enviandoResena ? "Enviando…" : "Enviar reseña"}
+                </button>
+                <button
+                  onClick={() => setMostrandoFormResena(false)}
+                  disabled={enviandoResena}
+                  style={{ background: "#fff", color: "var(--mute)", border: "1.5px solid var(--line)", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setMostrandoFormResena(true)}
+              style={{ background: "var(--orange)", color: "#fff", border: "none", padding: "10px 20px", fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}
+            >
+              Calificar maestro
+            </button>
+          )}
         </div>
       )}
 

@@ -30,10 +30,22 @@
 //   quedado ya en "rechazada"/"expirada", sin importar en qué estado
 //   intermedio estuviera — decisión de negocio explícita: una vez asignado
 //   el trabajo no quedan oportunidades abiertas para nadie más.
+//   Sprint 24 (JOB-054/055/056): cierre del ciclo completo. El cliente marca
+//   el trabajo como terminado (nuevo estado "trabajo_terminado", solo válido
+//   desde "cerrada_asignado") y puede dejar, exactamente una vez, una reseña
+//   VERIFICADA para el maestro asignado — vinculada a la solicitud vía
+//   resenas.solicitud_id (migración 025). Decisión de producto explícita:
+//   el modelo de reseñas pasa de "una por (maestro, cliente) para siempre" a
+//   "una por trabajo real terminado" — se eliminó el índice único viejo
+//   (resenas_user_maestro_unique) y el endpoint libre /api/resenas queda
+//   congelado por compatibilidad, sin nuevos consumidores. El Trust Engine no
+//   se modificó: ya consume cualquier fila nueva de `resenas` automáticamente
+//   (ver evaluarReputacion() en trust-engine.ts, que lee Master.jobs/rating,
+//   calculados aguas arriba desde `resenas` sin filtrar por solicitud_id).
 //
 // PUNTO DE EXTENSIÓN AÚN PENDIENTE
-//   Cierre del trabajo, cotizaciones y cancelación por el cliente —
-//   explícitamente fuera de alcance del Sprint 23.
+//   Cotizaciones y cancelación por el cliente — fuera de alcance del
+//   Sprint 24 también.
 
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -46,7 +58,8 @@ export type SolicitudEstado =
   | "con_propuesta"
   | "cerrada_asignado"
   | "cerrada_sin_resultado"
-  | "cancelada";
+  | "cancelada"
+  | "trabajo_terminado";
 
 export type SolicitudDestinatarioEstado =
   | "enviado"
@@ -69,6 +82,7 @@ export interface Solicitud {
   maestroAsignadoId: string | null;
   createdAt: string;
   enviadaAt: string | null;
+  finalizadaAt: string | null;
   updatedAt: string;
 }
 
@@ -143,6 +157,7 @@ type SolicitudRow = {
   maestro_asignado_id: string | null;
   created_at: string;
   enviada_at: string | null;
+  finalizada_at: string | null;
   updated_at: string;
 };
 
@@ -187,6 +202,7 @@ function rowToSolicitud(row: SolicitudRow): Solicitud {
     maestroAsignadoId: row.maestro_asignado_id,
     createdAt: row.created_at,
     enviadaAt: row.enviada_at,
+    finalizadaAt: row.finalizada_at,
     updatedAt: row.updated_at,
   };
 }
@@ -837,4 +853,186 @@ export async function asignarTrabajo(params: {
   await Promise.all(notificaciones);
 
   return { solicitud: rowToSolicitud(solActualizada as SolicitudRow), destinatarios: destinatariosFinal };
+}
+
+// ── Sprint 24: cierre del trabajo y reseñas verificadas ─────────────────────
+
+// JOB-054: el cliente marca oficialmente terminado un trabajo ya asignado.
+// Único estado de origen válido: "cerrada_asignado" — no tiene sentido
+// terminar un trabajo que nunca se asignó, ni volver a terminarlo dos veces.
+export async function finalizarTrabajo(params: {
+  solicitudId: string;
+  clienteClerkUserId: string;
+}): Promise<Solicitud> {
+  const { solicitudId, clienteClerkUserId } = params;
+  const supabase = getSupabaseAdmin();
+
+  const { data: solicitudRow } = await supabase
+    .from("solicitudes")
+    .select("*")
+    .eq("id", solicitudId)
+    .maybeSingle();
+  if (!solicitudRow) throw new SolicitudTransicionError("No encontrada");
+
+  const solicitudActual = rowToSolicitud(solicitudRow as SolicitudRow);
+  // Mismo criterio que asignarTrabajo(): "No encontrada" también para una
+  // solicitud ajena, no solo para una inexistente.
+  if (solicitudActual.clienteClerkUserId !== clienteClerkUserId) {
+    throw new SolicitudTransicionError("No encontrada");
+  }
+  if (solicitudActual.estado !== "cerrada_asignado") {
+    throw new SolicitudTransicionError("Solo puedes marcar como terminado un trabajo que ya fue asignado a un maestro.");
+  }
+
+  const ahora = new Date().toISOString();
+  const { data: solActualizada, error } = await supabase
+    .from("solicitudes")
+    .update({ estado: "trabajo_terminado", finalizada_at: ahora })
+    .eq("id", solicitudId)
+    .select()
+    .single();
+  if (error || !solActualizada) {
+    throw new Error(`[solicitudes] error finalizando trabajo: ${error?.message ?? "sin datos"}`);
+  }
+
+  // Notificación al maestro asignado — mismo criterio que Sprint 21/23: no
+  // debe tumbar la transición si falla, ya se guardó lo importante. Reutiliza
+  // obtenerIdentidadMaestros()/notificarMaestro() tal cual, sin funciones
+  // nuevas de por medio.
+  if (solicitudActual.maestroAsignadoId) {
+    const identidad = await obtenerIdentidadMaestros([solicitudActual.maestroAsignadoId]);
+    const clerkId = identidad[solicitudActual.maestroAsignadoId]?.clerkUserId;
+    if (clerkId) {
+      await notificarMaestro(
+        clerkId,
+        "solicitud_finalizada",
+        `El cliente marcó como terminado el trabajo${solicitudActual.especialidad ? ` de ${solicitudActual.especialidad}` : ""}.`
+      );
+    }
+  }
+
+  return rowToSolicitud(solActualizada as SolicitudRow);
+}
+
+// JOB-055/056: reseña verificada. A diferencia del flujo libre de
+// /api/resenas (sin `solicitudId`, cualquier maestro, sin restricción de
+// estado), esta función no recibe un maestroId — SIEMPRE reseña al
+// `maestroAsignadoId` de la propia solicitud, lo que ya excluye por
+// construcción a cualquier maestro no seleccionado. El único chequeo de
+// estado necesario es "trabajo_terminado": una solicitud cancelada, sin
+// asignar, o asignada pero aún no terminada, nunca llega a ese estado.
+export type ResenaVerificada = {
+  id: string;
+  solicitudId: string;
+  maestroId: string;
+  clienteClerkUserId: string;
+  calificacion: number;
+  comentario: string;
+  createdAt: string;
+};
+
+type ResenaRow = {
+  id: string;
+  solicitud_id: string | null;
+  maestro_id: string;
+  clerk_user_id: string | null;
+  calificacion: number;
+  comentario: string | null;
+  created_at: string;
+};
+
+function rowToResena(row: ResenaRow): ResenaVerificada {
+  return {
+    id: row.id,
+    solicitudId: row.solicitud_id ?? "",
+    maestroId: row.maestro_id,
+    clienteClerkUserId: row.clerk_user_id ?? "",
+    calificacion: row.calificacion,
+    comentario: row.comentario ?? "",
+    createdAt: row.created_at,
+  };
+}
+
+const RESENA_COLUMNS = "id, solicitud_id, maestro_id, clerk_user_id, calificacion, comentario, created_at";
+
+// JOB-057: usada por el detalle del cliente para saber si ya calificó este
+// trabajo (y así mostrar "Calificar maestro" vs. "Ya fue enviada").
+export async function obtenerResenaDeSolicitud(solicitudId: string): Promise<ResenaVerificada | null> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("resenas")
+    .select(RESENA_COLUMNS)
+    .eq("solicitud_id", solicitudId)
+    .maybeSingle();
+  return data ? rowToResena(data as ResenaRow) : null;
+}
+
+export async function crearResenaVerificada(params: {
+  solicitudId: string;
+  clienteClerkUserId: string;
+  calificacion: number;
+  comentario: string;
+}): Promise<ResenaVerificada> {
+  const { solicitudId, clienteClerkUserId, calificacion, comentario } = params;
+
+  if (!Number.isInteger(calificacion) || calificacion < 1 || calificacion > 5) {
+    throw new SolicitudValidationError("La calificación debe ser un número entero entre 1 y 5.", ["calificacion"]);
+  }
+  if (!comentario?.trim()) {
+    throw new SolicitudValidationError("El comentario no puede estar vacío.", ["comentario"]);
+  }
+
+  const supabase = getSupabaseAdmin();
+
+  const { data: solicitudRow } = await supabase
+    .from("solicitudes")
+    .select("*")
+    .eq("id", solicitudId)
+    .maybeSingle();
+  if (!solicitudRow) throw new SolicitudTransicionError("No encontrada");
+
+  const solicitudActual = rowToSolicitud(solicitudRow as SolicitudRow);
+  if (solicitudActual.clienteClerkUserId !== clienteClerkUserId) {
+    throw new SolicitudTransicionError("No encontrada");
+  }
+  // JOB-055: cubre las 4 exclusiones del ticket con un solo chequeo — una
+  // solicitud cancelada, sin asignación, o asignada pero no terminada nunca
+  // llega a "trabajo_terminado"; y no reseñar "maestros no seleccionados" ya
+  // está garantizado porque esta función ni siquiera recibe un maestroId.
+  if (solicitudActual.estado !== "trabajo_terminado" || !solicitudActual.maestroAsignadoId) {
+    throw new SolicitudTransicionError("Solo puedes calificar un trabajo que ya fue marcado como terminado.");
+  }
+
+  const existente = await obtenerResenaDeSolicitud(solicitudId);
+  if (existente) {
+    throw new SolicitudTransicionError("Ya calificaste este trabajo.");
+  }
+
+  // Mismo criterio de identidad ya usado para el listado del maestro
+  // (listarSolicitudesPorMaestro): una consulta agregada a `clientes` para
+  // no dejar la reseña sin nombre de autor visible.
+  const { data: clienteRow } = await supabase
+    .from("clientes")
+    .select("nombre")
+    .eq("user_id", clienteClerkUserId)
+    .maybeSingle();
+
+  const { data: resenaRow, error } = await supabase
+    .from("resenas")
+    .insert({
+      maestro_id: solicitudActual.maestroAsignadoId,
+      clerk_user_id: clienteClerkUserId,
+      solicitud_id: solicitudId,
+      cliente_nombre: (clienteRow as { nombre: string | null } | null)?.nombre ?? null,
+      calificacion,
+      comentario: comentario.trim(),
+    })
+    .select(RESENA_COLUMNS)
+    .single();
+
+  if (error || !resenaRow) {
+    throw new Error(`[solicitudes] error creando reseña verificada: ${error?.message ?? "sin datos"}`);
+  }
+
+  return rowToResena(resenaRow as ResenaRow);
 }

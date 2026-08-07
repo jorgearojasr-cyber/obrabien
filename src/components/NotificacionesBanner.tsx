@@ -20,6 +20,7 @@ const ICONS: Record<string, string> = {
   solicitud_rechazada:  "❌",
   solicitud_asignada:      "🎉",
   solicitud_no_seleccionado: "🔒",
+  solicitud_finalizada:    "🏁",
 };
 
 export default function NotificacionesBanner() {

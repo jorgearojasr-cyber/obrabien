@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EstadoBadge from "./EstadoBadge";
-import type { SolicitudDestinatarioEstado } from "@/lib/solicitudes";
+import type { SolicitudDestinatarioEstado, SolicitudEstado } from "@/lib/solicitudes";
 
 // Sprint 20 (JOB-034/036) + Sprint 21 (JOB-038/039/040). Única fuente de
 // datos: GET /api/solicitudes/[id] (detalle + historial) y los 3 endpoints de
@@ -21,6 +21,8 @@ type Mensaje = {
 };
 
 type DetalleAPI = {
+  estado: SolicitudEstado;
+  finalizadaAt: string | null;
   descripcion: string | null;
   region: string | null;
   comuna: string | null;
@@ -181,6 +183,18 @@ export default function SolicitudDetalle({ id }: { id: string }) {
           </div>
         )}
       </div>
+
+      {/* JOB-058: el cliente marcó el trabajo como terminado — solo
+          información y notificación, ninguna acción nueva para el maestro. */}
+      {solicitud.estado === "trabajo_terminado" && (
+        <div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", color: "#166534", padding: "14px 18px", marginBottom: 20, fontSize: 13.5, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 16 }}>🏁</span>
+          <span>
+            El cliente marcó este trabajo como terminado
+            {solicitud.finalizadaAt ? ` el ${formatFecha(solicitud.finalizadaAt)}` : ""}.
+          </span>
+        </div>
+      )}
 
       {errorAccion && (
         <div style={{ background: "#FEF2F2", border: "1.5px solid #FCA5A5", color: "#B91C1C", padding: "12px 16px", marginBottom: 20, fontSize: 13.5 }}>

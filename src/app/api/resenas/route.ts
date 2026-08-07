@@ -1,11 +1,21 @@
 // Required Supabase migrations:
 // ALTER TABLE resenas ADD COLUMN IF NOT EXISTS clerk_user_id text;
-// CREATE UNIQUE INDEX IF NOT EXISTS resenas_user_maestro_unique
-//   ON resenas (maestro_id, clerk_user_id) WHERE clerk_user_id IS NOT NULL;
 // ALTER TABLE resenas ADD COLUMN IF NOT EXISTS tags text[];
 // ALTER TABLE resenas ADD COLUMN IF NOT EXISTS tipo_trabajo text;
 // ALTER TABLE resenas ADD COLUMN IF NOT EXISTS fotos text[];
 // ALTER TABLE resenas ADD COLUMN IF NOT EXISTS tags_negativos text[];
+//
+// Este endpoint (reseña libre, sin verificar) se mantiene por compatibilidad,
+// pero queda congelado: ninguna pantalla nueva debe usarlo. El flujo nuevo es
+// la reseña verificada, originada exclusivamente desde una Solicitud de
+// Trabajo con estado "trabajo_terminado" — ver crearResenaVerificada() en
+// src/lib/solicitudes.ts y supabase/migrations/025_trabajo_terminado_resenas_verificadas.sql
+// (Sprint 24, JOB-054/055/056). Esa migración agregó resenas.solicitud_id y
+// ELIMINÓ el índice único resenas_user_maestro_unique que antes limitaba a
+// una reseña por (maestro_id, clerk_user_id) para siempre — la unicidad ahora
+// es por solicitud_id (una reseña por trabajo real). Las filas ya existentes,
+// creadas por este endpoint, no se tocaron ni se migraron: conviven con las
+// reseñas verificadas nuevas (solicitud_id queda NULL en las históricas).
 
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
