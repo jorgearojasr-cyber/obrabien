@@ -24,6 +24,8 @@ function notifIcon(tipo: string) {
   if (tipo === "solicitud_respondida") return "📩";
   if (tipo === "solicitud_aceptada") return "✅";
   if (tipo === "solicitud_rechazada") return "❌";
+  if (tipo === "solicitud_asignada") return "🎉";
+  if (tipo === "solicitud_no_seleccionado") return "🔒";
   return "🔔";
 }
 

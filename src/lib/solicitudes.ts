@@ -23,15 +23,17 @@
 //   solicitud (a diferencia del maestro, que solo ve el suyo), e identidad
 //   básica de cada maestro para distinguir sus hilos. Sin transiciones
 //   nuevas — el cliente solo lee en este sprint.
+//   Sprint 23 (JOB-048/049/050/052): primera transición iniciada por el
+//   CLIENTE (no el maestro) — asignar el trabajo a uno de los destinatarios
+//   en "aceptada". Cierra `solicitudes.estado` (nunca escrito hasta ahora) y
+//   mueve a "no_seleccionado" a cualquier otro destinatario que no haya
+//   quedado ya en "rechazada"/"expirada", sin importar en qué estado
+//   intermedio estuviera — decisión de negocio explícita: una vez asignado
+//   el trabajo no quedan oportunidades abiertas para nadie más.
 //
 // PUNTO DE EXTENSIÓN AÚN PENDIENTE
-//   Asignación del maestro elegido, cierre del trabajo, cotizaciones y
-//   cancelación por el cliente — explícitamente fuera de alcance del Sprint
-//   21 ("No implementar: asignación del maestro, cierre del trabajo,
-//   cotizaciones"). El estado "no_seleccionado" ya está contemplado en las
-//   validaciones de actualizarEstadoDestinatario() aunque hoy ningún código
-//   lo produzca todavía — cuando exista "asignar", no debería requerir
-//   cambios en las funciones ya escritas acá, solo una nueva.
+//   Cierre del trabajo, cotizaciones y cancelación por el cliente —
+//   explícitamente fuera de alcance del Sprint 23.
 
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -696,20 +698,143 @@ export async function listarMensajesPorSolicitud(solicitudId: string): Promise<R
 // ninguno de los JOB-043 a JOB-047 pide mostrar nivel de confianza, así que
 // agregarlo sería ampliar el alcance por iniciativa propia — solo identidad
 // mínima. Consulta agregada, no una por maestro.
+//
+// Sprint 23 (JOB-052): se agregó clerkUserId a la MISMA consulta (una
+// columna más en el SELECT ya existente, ninguna consulta nueva) — hace
+// falta para poder notificar a un maestro por primera vez, ver
+// notificarMaestro() más abajo.
 export async function obtenerIdentidadMaestros(
   maestroIds: string[]
-): Promise<Record<string, { nombre: string; fotoUrl: string | null }>> {
+): Promise<Record<string, { nombre: string; fotoUrl: string | null; clerkUserId: string | null }>> {
   if (maestroIds.length === 0) return {};
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("maestros")
-    .select("id, nombre, foto_url")
+    .select("id, nombre, foto_url, clerk_user_id")
     .in("id", Array.from(new Set(maestroIds)));
   if (error) throw new Error(`[solicitudes] error obteniendo identidad de maestros: ${error.message}`);
 
-  const mapa: Record<string, { nombre: string; fotoUrl: string | null }> = {};
-  for (const m of (data ?? []) as { id: string; nombre: string | null; foto_url: string | null }[]) {
-    mapa[m.id] = { nombre: m.nombre ?? "Maestro", fotoUrl: m.foto_url };
+  const mapa: Record<string, { nombre: string; fotoUrl: string | null; clerkUserId: string | null }> = {};
+  for (const m of (data ?? []) as { id: string; nombre: string | null; foto_url: string | null; clerk_user_id: string | null }[]) {
+    mapa[m.id] = { nombre: m.nombre ?? "Maestro", fotoUrl: m.foto_url, clerkUserId: m.clerk_user_id };
   }
   return mapa;
+}
+
+// ── Sprint 23: asignación del trabajo (cliente) ─────────────────────────────
+
+// JOB-052: notificación hacia un MAESTRO — dirección inversa a
+// notificarCliente() (Sprint 21). Se mantiene como función separada a
+// propósito, mismo estilo y misma resiliencia (una notificación fallida no
+// debe tumbar la asignación, que ya se guardó): decisión explícita de no
+// generalizar código ya validado en producción por una sola dirección nueva.
+async function notificarMaestro(maestroClerkUserId: string, tipo: string, mensaje: string): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("notificaciones")
+    .insert({ user_id: maestroClerkUserId, tipo, mensaje, leida: false });
+  if (error) console.error(`[solicitudes] error creando notificación (${tipo}):`, error.message);
+}
+
+// JOB-048/049: el cliente asigna el trabajo a un destinatario en "aceptada".
+// Regla de negocio confirmada explícitamente para este sprint: al asignar,
+// CUALQUIER destinatario que no sea el elegido pasa a "no_seleccionado" sin
+// importar en qué estado intermedio estuviera (enviado/vista/respondida/
+// aceptada) — una vez cerrado el trabajo no quedan oportunidades abiertas
+// para nadie más. Los únicos que NO cambian son "rechazada" y "expirada":
+// ya son estados finales por sí mismos, "no_seleccionado" no agrega
+// información ahí y sobrescribirlos perdería la razón real de por qué
+// quedaron fuera.
+const ESTADOS_QUE_NO_CAMBIAN_AL_ASIGNAR: SolicitudDestinatarioEstado[] = ["rechazada", "expirada"];
+
+export async function asignarTrabajo(params: {
+  solicitudId: string;
+  clienteClerkUserId: string;
+  maestroId: string;
+}): Promise<{ solicitud: Solicitud; destinatarios: SolicitudDestinatario[] }> {
+  const { solicitudId, clienteClerkUserId, maestroId } = params;
+  const supabase = getSupabaseAdmin();
+
+  const { data: solicitudRow } = await supabase
+    .from("solicitudes")
+    .select("*")
+    .eq("id", solicitudId)
+    .maybeSingle();
+  if (!solicitudRow) throw new SolicitudTransicionError("No encontrada");
+
+  const solicitudActual = rowToSolicitud(solicitudRow as SolicitudRow);
+  // Mismo mensaje que "no existe" a propósito: no confirmar ni negar la
+  // existencia de una solicitud ajena (mismo criterio que GET /api/solicitudes/[id]).
+  if (solicitudActual.clienteClerkUserId !== clienteClerkUserId) {
+    throw new SolicitudTransicionError("No encontrada");
+  }
+  if (solicitudActual.estado === "cerrada_asignado") {
+    throw new SolicitudTransicionError("Esta solicitud ya fue asignada a un maestro.");
+  }
+
+  const { data: destRows, error: destError } = await supabase
+    .from("solicitud_destinatarios")
+    .select("*")
+    .eq("solicitud_id", solicitudId);
+  if (destError) throw new Error(`[solicitudes] error obteniendo destinatarios: ${destError.message}`);
+  const destinatarios = (destRows ?? []).map(r => rowToDestinatario(r as SolicitudDestinatarioRow));
+
+  const elegido = destinatarios.find(d => d.maestroId === maestroId);
+  if (!elegido) throw new SolicitudTransicionError("Ese maestro no es un destinatario de esta solicitud.");
+  if (elegido.estado !== "aceptada") {
+    throw new SolicitudTransicionError("Solo puedes asignar el trabajo a un maestro que haya aceptado.");
+  }
+
+  const ahora = new Date().toISOString();
+
+  const { data: solActualizada, error: solError } = await supabase
+    .from("solicitudes")
+    .update({ estado: "cerrada_asignado", maestro_asignado_id: maestroId })
+    .eq("id", solicitudId)
+    .select()
+    .single();
+  if (solError || !solActualizada) {
+    throw new Error(`[solicitudes] error asignando solicitud: ${solError?.message ?? "sin datos"}`);
+  }
+
+  const idsANoSeleccionar = destinatarios
+    .filter(d => d.id !== elegido.id && !ESTADOS_QUE_NO_CAMBIAN_AL_ASIGNAR.includes(d.estado))
+    .map(d => d.id);
+
+  let destinatariosFinal = destinatarios;
+  if (idsANoSeleccionar.length > 0) {
+    const { data: movidos, error: movError } = await supabase
+      .from("solicitud_destinatarios")
+      .update({ estado: "no_seleccionado", resuelta_at: ahora })
+      .in("id", idsANoSeleccionar)
+      .select();
+    if (movError) {
+      throw new Error(`[solicitudes] error actualizando destinatarios no seleccionados: ${movError.message}`);
+    }
+    const movidosMap = new Map(
+      (movidos ?? []).map(r => [(r as SolicitudDestinatarioRow).id, rowToDestinatario(r as SolicitudDestinatarioRow)])
+    );
+    destinatariosFinal = destinatarios.map(d => movidosMap.get(d.id) ?? d);
+  }
+
+  // Notificaciones — mismo criterio que Sprint 21: no deben tumbar la
+  // asignación si fallan, ya se guardó lo importante.
+  const identidades = await obtenerIdentidadMaestros(destinatarios.map(d => d.maestroId));
+  const especialidadTxt = solicitudActual.especialidad ? ` de ${solicitudActual.especialidad}` : "";
+
+  const clerkIdElegido = identidades[elegido.maestroId]?.clerkUserId;
+  const notificaciones: Promise<void>[] = [];
+  if (clerkIdElegido) {
+    notificaciones.push(notificarMaestro(clerkIdElegido, "solicitud_asignada", `El cliente te asignó el trabajo${especialidadTxt}.`));
+  }
+  for (const id of idsANoSeleccionar) {
+    const dest = destinatarios.find(d => d.id === id);
+    const clerkId = dest ? identidades[dest.maestroId]?.clerkUserId : null;
+    if (clerkId) {
+      notificaciones.push(notificarMaestro(clerkId, "solicitud_no_seleccionado", `El cliente eligió a otro maestro para su solicitud${especialidadTxt}.`));
+    }
+  }
+  await Promise.all(notificaciones);
+
+  return { solicitud: rowToSolicitud(solActualizada as SolicitudRow), destinatarios: destinatariosFinal };
 }
