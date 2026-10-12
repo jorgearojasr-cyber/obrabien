@@ -26,11 +26,12 @@ function relativeDate(iso: string): string {
 export function ConsultasSection({
   itemId,
   sellerName,
-  sellerClerkId,
+  viewerIsSeller,
 }: {
   itemId: string;
   sellerName: string;
-  sellerClerkId: string | null;
+  /** Lo calcula el servidor con la sesión (N1); solo decide si se MUESTRA la opción de responder. La autorización real está en /api/marketplace/responder. */
+  viewerIsSeller: boolean;
 }) {
   const { user, isLoaded } = useUser();
 
@@ -50,7 +51,7 @@ export function ConsultasSection({
   const isLoggedIn = isLoaded && !!user;
   const userEmail  = user?.primaryEmailAddress?.emailAddress?.toLowerCase() ?? "";
   const isAdmin    = userEmail === ADMIN_EMAIL;
-  const isSeller   = !!sellerClerkId && !!user && user.id === sellerClerkId;
+  const isSeller   = viewerIsSeller && !!user;
   const canRespond = isAdmin || isSeller;
 
   // Fetch existing questions

@@ -22,10 +22,23 @@ export async function GET() {
 
   if (!data) return NextResponse.json({ data: null });
 
+  // Hotfix 19A.1: el dueño ve su RUT (lo necesita el formulario), pero las URL/referencias de los documentos de identidad y el
+  // identificador interno de Clerk no vuelven al navegador: se informa solo si cada documento fue enviado.
+  const row = data as Record<string, unknown>;
+  const documentos = {
+    frente:  !!row.cedula_frente,
+    reverso: !!row.cedula_reverso,
+    selfie:  !!row.selfie_cedula,
+  };
+  delete row.cedula_frente;
+  delete row.cedula_reverso;
+  delete row.selfie_cedula;
+  delete row.clerk_user_id;
+
   // Merge Clerk publicMetadata as fallback for columns that may not exist in the
   // Supabase schema yet (frase_destacada, modalidad_cobro, formas_pago).
   // Supabase wins when the column is present and non-null; Clerk fills the gap otherwise.
-  let merged: Record<string, unknown> = data as Record<string, unknown>;
+  let merged: Record<string, unknown> = { ...row, documentos };
   try {
     const clerk = await clerkClient();
     const user = await clerk.users.getUser(userId);

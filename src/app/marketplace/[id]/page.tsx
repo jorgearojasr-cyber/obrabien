@@ -76,7 +76,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
 
   const [listing,       setListing]       = useState<MarketplaceListing | null>(() => getListing(id) ?? null);
   const [status,        setStatus]        = useState<"ok" | "loading" | "notfound">(() => getListing(id) ? "ok" : "loading");
-  const [sellerClerkId, setSellerClerkId] = useState<string | null>(null);
+  const [viewerIsSeller, setViewerIsSeller] = useState(false);
   const [showPhone,     setShowPhone]     = useState(false);
   const [fotosUrls,     setFotosUrls]     = useState<string[]>([]);
 
@@ -88,7 +88,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
         if (!d.item) { setStatus("notfound"); return; }
         const mapped = rowToListing(d.item);
         setListing(mapped);
-        setSellerClerkId((d.item.clerk_user_id as string) || null);
+        setViewerIsSeller(d.item.viewer_is_seller === true); // N1: el servidor ya no envía el identificador del vendedor
         const allUrls = mapped.fotosUrls?.length
           ? mapped.fotosUrls
           : mapped.photoUrl ? [mapped.photoUrl] : [];
@@ -263,7 +263,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
             </div>
 
             {/* Consultas */}
-            <ConsultasSection itemId={listing.id} sellerName={listing.seller.name} sellerClerkId={sellerClerkId} />
+            <ConsultasSection itemId={listing.id} sellerName={listing.seller.name} viewerIsSeller={viewerIsSeller} />
 
             {/* Disclaimer */}
             <div style={{ background: "var(--bg-2)", border: "1px solid var(--line)", padding: "12px 14px" }}>
@@ -342,7 +342,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
             </div>
 
             {/* Consultas */}
-            <ConsultasSection itemId={listing.id} sellerName={listing.seller.name} sellerClerkId={sellerClerkId} />
+            <ConsultasSection itemId={listing.id} sellerName={listing.seller.name} viewerIsSeller={viewerIsSeller} />
           </div>
 
           {/* RIGHT */}

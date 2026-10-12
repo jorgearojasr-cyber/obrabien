@@ -1,22 +1,13 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { isAdminUser } from "@/lib/authz";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const ADMIN_EMAIL = (
-  process.env.ADMIN_EMAIL ||
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL ||
-  "jorge.arojasr@gmail.com"
-).toLowerCase().trim();
 
 async function assertAdmin() {
   const user = await currentUser();
   if (!user) return null;
-  const email = (
-    user.primaryEmailAddress?.emailAddress ??
-    user.emailAddresses[0]?.emailAddress ??
-    ""
-  ).toLowerCase().trim();
-  return email === ADMIN_EMAIL ? user : null;
+  return isAdminUser(user) ? user : null;
 }
 
 export async function PATCH(req: NextRequest) {

@@ -1,13 +1,9 @@
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
+import { isAdminUser } from "@/lib/authz";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { Resend } from "resend";
 
-const ADMIN_EMAIL = (
-  process.env.ADMIN_EMAIL ||
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL ||
-  "jorge.arojasr@gmail.com"
-).toLowerCase().trim();
 
 // ── Email templates (same visual style as send-reminder/route.ts) ────────────
 
@@ -81,9 +77,8 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await currentUser();
-  const email = (user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses[0]?.emailAddress ?? "").toLowerCase().trim();
-  if (!email || email !== ADMIN_EMAIL) {
-    console.error("[revisar-perfil] Forbidden — caller:", email, "expected:", ADMIN_EMAIL);
+  if (!isAdminUser(user)) {
+    console.error("[revisar-perfil] Forbidden — llamada de un usuario que no es administrador");
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

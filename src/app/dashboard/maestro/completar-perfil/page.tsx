@@ -394,6 +394,8 @@ type VerifState = {
   frente: string; reverso: string; selfie: string;
   frenteUploading: boolean; reversoUploading: boolean; selfieUploading: boolean;
   estado: string; sending: boolean; sent: boolean;
+  // Hotfix 19A.1: vista previa local (URL de objeto del archivo elegido); el servidor ya no entrega una URL del documento.
+  frentePreview?: string; reversoPreview?: string; selfiePreview?: string;
 };
 
 const VERIF_INITIAL: VerifState = {
@@ -474,9 +476,10 @@ export default function CompletarPerfilPage() {
           setModalidadCobro(mc);
           setVerif(v => ({
             ...v,
-            frente:  (d.cedula_frente   as string) ?? "",
-            reverso: (d.cedula_reverso  as string) ?? "",
-            selfie:  (d.selfie_cedula   as string) ?? "",
+            // Hotfix 19A.1: el servidor ya no devuelve las referencias de los documentos, solo si fueron enviados.
+            frente:  (d.documentos as { frente?: boolean } | undefined)?.frente  ? "enviado" : "",
+            reverso: (d.documentos as { reverso?: boolean } | undefined)?.reverso ? "enviado" : "",
+            selfie:  (d.documentos as { selfie?: boolean } | undefined)?.selfie   ? "enviado" : "",
             estado:  (d.verificacion_estado as string) ?? "sin_enviar",
           }));
         }
@@ -631,7 +634,8 @@ export default function CompletarPerfilPage() {
       const res = await fetch("/api/upload-foto?type=cedula", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      setVerif(v => ({ ...v, [field]: data.url, [loadingKey]: false }));
+      // Hotfix 19A.1: la subida devuelve una referencia (documento de entrega autenticada). La vista previa usa el archivo local.
+      setVerif(v => ({ ...v, [field]: data.ref, [`${field}Preview`]: URL.createObjectURL(file), [loadingKey]: false }));
     } catch {
       setVerif(v => ({ ...v, [loadingKey]: false }));
       setErrors(["Error al subir el documento. Intenta de nuevo."]);
@@ -1460,6 +1464,7 @@ export default function CompletarPerfilPage() {
                 { key: "selfie"  as const, loadKey: "selfieUploading"  as const, label: "Selfie sosteniendo la cédula",  hint: "Foto tuya sujetando la cédula junto a tu rostro.", isSelfie: true },
               ]).map(({ key, loadKey, label, hint, isSelfie }) => {
                 const url = verif[key] as string;
+                const preview = verif[`${key}Preview` as "frentePreview" | "reversoPreview" | "selfiePreview"];
                 const uploading = verif[loadKey] as boolean;
                 const inputId = `doc-${key}`;
                 return (
@@ -1483,7 +1488,13 @@ export default function CompletarPerfilPage() {
                     >
                       {url ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={url} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: uploading ? 0.5 : 1 }} />
+                        preview ? (
+                          <img src={preview} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: uploading ? 0.5 : 1 }} />
+                        ) : (
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#15803d", textAlign: "center", padding: 8 }}>
+                            ✓ Documento enviado
+                          </div>
+                        )
                       ) : (
                         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
                           {!isSelfie && (

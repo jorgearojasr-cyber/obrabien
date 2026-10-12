@@ -13,6 +13,11 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Pruebas y scripts de seguridad (hotfix 19A.1): se escriben con tipos laxos y CommonJS a propósito.
+  {
+    files: ["tests/**/*.{ts,js}", "scripts/**/*.{cjs,js}"],
+    rules: { "@typescript-eslint/no-explicit-any": "off", "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

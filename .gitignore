@@ -50,3 +50,6 @@ next-env.d.ts
 /e2e-results/
 /test-results/
 /playwright-report/
+
+# supabase CLI local state
+/supabase/.temp/

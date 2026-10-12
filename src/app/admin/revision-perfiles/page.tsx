@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { isAdminUser } from "@/lib/authz";
 import { redirect } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import RevisionPerfilesList from "./RevisionPerfilesList";
@@ -9,9 +10,7 @@ export default async function RevisionPerfilesAdmin() {
   const user = await currentUser();
   if (!user) redirect("/login");
 
-  const adminEmail = (process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "jorge.arojasr@gmail.com").toLowerCase().trim();
-  const email = (user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? "").toLowerCase().trim();
-  if (!email || email !== adminEmail) redirect("/");
+  if (!isAdminUser(user)) redirect("/");
 
   const supabase = getSupabaseAdmin();
 

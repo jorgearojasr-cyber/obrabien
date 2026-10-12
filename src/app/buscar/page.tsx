@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { PUBLIC_MAESTRO_SELECT } from "@/lib/public-maestro";
 import { type Master } from "@/lib/data";
 import BuscarContent from "./_content";
 
@@ -87,7 +88,7 @@ function rowToMaster(row: Record<string, unknown>): Master {
 export default async function BuscarPage() {
   const { data: rows, error } = await getSupabaseAdmin()
     .from("maestros")
-    .select("*, verificado, verificacion_estado")
+    .select(PUBLIC_MAESTRO_SELECT) // hotfix 19A.1: lista explícita; nunca "*" (RUT, clerk_user_id y documentos quedan fuera)
     .eq("activo", true)
     .order("created_at", { ascending: false });
 

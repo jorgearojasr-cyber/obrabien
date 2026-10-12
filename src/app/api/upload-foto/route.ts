@@ -1,12 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import { isAdminUser } from "@/lib/authz";
+import { documentFolder } from "@/lib/cloudinary-docs";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key:    process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "image/gif"]); // sin SVG: puede llevar scripts
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -23,6 +27,17 @@ export async function POST(req: NextRequest) {
   if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
   const type = new URL(req.url).searchParams.get("type");
+
+  // Hotfix 19A.1: las carpetas de la biblioteca de recursos son solo para el administrador (antes, cualquier sesión podía escribir ahí).
+  if (type === "recurso-pdf" || type === "recurso-imagen") {
+    if (!isAdminUser(await currentUser())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  // Solo se aceptan imágenes (o PDF en la biblioteca): el tipo declarado por el navegador no puede ser cualquier cosa.
+  const expectsPdf = type === "recurso-pdf";
+  if (expectsPdf ? file.type !== "application/pdf" : !IMAGE_TYPES.has(file.type)) {
+    return NextResponse.json({ error: "Tipo de archivo no permitido" }, { status: 415 });
+  }
+
   const maxSize = type === "recurso-pdf" ? 10 * 1024 * 1024 : 4 * 1024 * 1024;
   if (file.size > maxSize) {
     return NextResponse.json(
@@ -38,7 +53,7 @@ export async function POST(req: NextRequest) {
   const folder = type === "perfil"
     ? `ObraBien/perfiles/${userId}`
     : type === "cedula"
-      ? `ObraBien/cedulas/${userId}`
+      ? documentFolder(userId)
       : type === "foro"
         ? `ObraBien/foro`
         : type === "marketplace"
@@ -66,6 +81,11 @@ export async function POST(req: NextRequest) {
     : [{ width: 1600, height: 1200, crop: "limit" as const, quality: "auto:good" as const }];
 
   try {
+    // Documentos de identidad: entrega AUTENTICADA (sin URL pública) y se devuelve solo la referencia (public_id).
+    if (type === "cedula") {
+      const doc = await cloudinary.uploader.upload(dataUri, { folder, transformation, type: "authenticated" });
+      return NextResponse.json({ ref: doc.public_id });
+    }
     const result = await cloudinary.uploader.upload(dataUri, { folder, transformation });
     return NextResponse.json({ url: result.secure_url });
   } catch (err) {

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:security": "tsx --test tests/security/lib.test.ts tests/security/imagen-proxy.test.ts tests/security/handlers.test.ts tests/security/backup.test.ts tests/security/backup-v2.test.ts tests/security/cloudinary-protect.test.ts tests/security/cloudinary-resolve.test.ts tests/security/g-target.test.ts tests/security/runbook.test.ts tests/security/openapi-privileges.test.ts tests/security/marketplace-item.test.ts tests/security/sql/hotfix.test.ts",
+    "security:rollback-sql": "node scripts/security/generate-rollback.cjs",
+    "backup:inventory": "tsx scripts/security/backup-19a3.ts inventory"
   },
   "dependencies": {
     "@clerk/localizations": "^4.7.0",
@@ -26,6 +29,7 @@
   },
   "devDependencies": {
     "@clerk/testing": "^2.2.7",
+    "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -35,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

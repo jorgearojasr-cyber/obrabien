@@ -1,22 +1,13 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { isAdminUser } from "@/lib/authz";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const ADMIN_EMAIL = (
-  process.env.ADMIN_EMAIL ||
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL ||
-  "jorge.arojasr@gmail.com"
-).toLowerCase().trim();
 
 async function isAdmin(): Promise<boolean> {
   const user = await currentUser();
   if (!user) return false;
-  const email = (
-    user.primaryEmailAddress?.emailAddress ??
-    user.emailAddresses[0]?.emailAddress ??
-    ""
-  ).toLowerCase().trim();
-  return email === ADMIN_EMAIL;
+  return isAdminUser(user);
 }
 
 function buildFields(body: Record<string, unknown>) {

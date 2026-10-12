@@ -1,5 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { isAdminUser } from "@/lib/authz";
 import { redirect } from "next/navigation";
+import { adminDocumentLink } from "@/lib/admin-documents";
 import Link from "next/link";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import VerifList from "./VerifList";
@@ -14,11 +16,18 @@ export default async function VerificacionesAdmin({
   const user = await currentUser();
   if (!user) redirect("/login");
 
-  const adminEmail = (process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "jorge.arojasr@gmail.com").toLowerCase().trim();
-  const email = (user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? "").toLowerCase().trim();
-  if (!email || email !== adminEmail) redirect("/");
+  if (!isAdminUser(user)) redirect("/");
 
   const { maestroId } = await searchParams;
+
+  // Hotfix 19A.1: las referencias a Cloudinary no viajan al navegador; cada documento se abre por /api/admin/documento (enlace firmado de 2 minutos).
+  type Fila = { id: string; cedula_frente: string | null; cedula_reverso: string | null; selfie_cedula: string | null };
+  const conEnlaces = <T extends Fila>(m: T): T => ({
+    ...m,
+    cedula_frente:  m.cedula_frente  ? adminDocumentLink(m.id, "frente")  : null,
+    cedula_reverso: m.cedula_reverso ? adminDocumentLink(m.id, "reverso") : null,
+    selfie_cedula:  m.selfie_cedula  ? adminDocumentLink(m.id, "selfie")  : null,
+  });
 
   let maestros;
   let isSingle = false;
@@ -30,14 +39,14 @@ export default async function VerificacionesAdmin({
       .select("id, nombre, rut, cedula_frente, cedula_reverso, selfie_cedula, created_at, verificacion_estado")
       .eq("id", maestroId)
       .single();
-    maestros = data ? [data] : [];
+    maestros = data ? [conEnlaces(data)] : [];
   } else {
     const { data } = await getSupabaseAdmin()
       .from("maestros")
       .select("id, nombre, rut, cedula_frente, cedula_reverso, selfie_cedula, created_at, verificacion_estado")
       .eq("verificacion_estado", "pendiente")
       .order("created_at", { ascending: true });
-    maestros = data ?? [];
+    maestros = (data ?? []).map(conEnlaces);
   }
 
   return (

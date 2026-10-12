@@ -1,4 +1,5 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { isAdminEmail } from "@/lib/authz";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -18,9 +19,9 @@ export async function POST(req: NextRequest) {
     const clerk = await clerkClient();
     const user = await clerk.users.getUser(userId);
 
-    const adminEmail = (process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "jorge.arojasr@gmail.com").toLowerCase().trim();
+    // Hotfix 19A.1: solo se asigna «maestro» o «cliente» (validado arriba); la cuenta del administrador no puede cambiar su rol.
     const userEmail = (user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? "").toLowerCase().trim();
-    if (userEmail && userEmail === adminEmail) {
+    if (isAdminEmail(userEmail)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     await clerk.users.updateUser(userId, {

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { normalizeRut, MSG_RUT_DUPLICADO } from "@/lib/maestro-shared";
+import { allowRequest } from "@/lib/privacy";
 
 // Real-time hint only, called on RUT-field blur in registro-basico and completar-perfil.
 // The definitive check still happens server-side on save (registro-basico/update-profile
@@ -10,6 +11,11 @@ import { normalizeRut, MSG_RUT_DUPLICADO } from "@/lib/maestro-shared";
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Hotfix 19A.1: límite de intentos por usuario (evita usar este aviso para enumerar RUT ajenos).
+  if (!allowRequest(`check-rut:${userId}`, 30, 5 * 60 * 1000)) {
+    return NextResponse.json({ error: "Demasiados intentos. Espera unos minutos." }, { status: 429 });
+  }
 
   const body = await req.json() as Record<string, unknown>;
   const rut = ((body.rut as string) ?? "").trim();

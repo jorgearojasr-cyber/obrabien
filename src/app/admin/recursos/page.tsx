@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 
 type PdfItem = { label: string; url: string };
 
@@ -201,13 +200,12 @@ export default function AdminRecursosPage() {
     setPdfsUploading(prev => { const n = [...prev]; n[idx] = true; return n; });
     setError("");
     try {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const path = `archivos/${Date.now()}-${safeName}`;
-      const { error: uploadErr } = await supabase.storage
-        .from("recursos")
-        .upload(path, file, { contentType: fileContentType(file.name), upsert: false });
-      if (uploadErr) throw new Error(uploadErr.message);
-      const { data: { publicUrl } } = supabase.storage.from("recursos").getPublicUrl(path);
+      const fd = new FormData();
+      fd.append("file", file);
+      const upRes = await fetch("/api/admin/upload-pdf", { method: "POST", body: fd });
+      const upData = await upRes.json().catch(() => ({}));
+      if (!upRes.ok || !upData.url) throw new Error(upData.error ?? "Error al subir el archivo.");
+      const publicUrl = upData.url as string;
       setForm(prev => {
         const newPdfs = [...prev.pdfs];
         newPdfs[idx] = { ...newPdfs[idx], url: publicUrl };

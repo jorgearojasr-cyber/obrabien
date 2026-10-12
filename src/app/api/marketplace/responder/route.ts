@@ -1,12 +1,8 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { isAdminUser } from "@/lib/authz";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const ADMIN_EMAIL = (
-  process.env.ADMIN_EMAIL ||
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL ||
-  "jorge.arojasr@gmail.com"
-).toLowerCase().trim();
 
 export async function PATCH(req: NextRequest) {
   const { userId } = await auth();
@@ -39,9 +35,8 @@ export async function PATCH(req: NextRequest) {
     .single();
 
   const user = await currentUser();
-  const email = (user?.primaryEmailAddress?.emailAddress ?? "").toLowerCase().trim();
   const isOwner = item?.clerk_user_id === userId;
-  const isAdmin = email === ADMIN_EMAIL;
+  const isAdmin = isAdminUser(user);
 
   if (!isOwner && !isAdmin) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });

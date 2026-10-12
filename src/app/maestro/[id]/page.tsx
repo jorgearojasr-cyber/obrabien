@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { SAMPLE_MASTERS, type Master } from "@/lib/data";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { PUBLIC_PROFILE_SELECT } from "@/lib/public-maestro";
 import { notFound } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
@@ -279,7 +280,7 @@ export default async function PerfilMaestro({ params }: { params: Promise<{ id: 
     const [{ data: row }, { data: resenaData }, fetchedClerkUser, { data: existingReview }, { data: clienteProfile }] = await Promise.all([
       getSupabaseAdmin()
         .from("maestros")
-        .select("*, verificado, verificacion_estado, fotos_trabajos(url, descripcion)")
+        .select(PUBLIC_PROFILE_SELECT) // hotfix 19A.1: lista explícita; clerk_user_id solo se usa en servidor para isOwnProfile
         .eq("id", id)
         .eq("activo", true)
         .single(),

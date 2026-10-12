@@ -1,24 +1,15 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { isAdminUser } from "@/lib/authz";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const ADMIN_EMAIL = (
-  process.env.ADMIN_EMAIL ||
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL ||
-  "jorge.arojasr@gmail.com"
-).toLowerCase().trim();
 
 export async function POST(req: NextRequest) {
   try {
     const user = await currentUser();
     if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const email = (
-      user.primaryEmailAddress?.emailAddress ??
-      user.emailAddresses[0]?.emailAddress ??
-      ""
-    ).toLowerCase().trim();
-    if (email !== ADMIN_EMAIL) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    if (!isAdminUser(user)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     let formData: FormData;
     try {
@@ -30,12 +21,24 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null;
     if (!file) return NextResponse.json({ error: "No se recibió ningún archivo" }, { status: 400 });
 
-    if (!file.type.includes("pdf") && !file.name.toLowerCase().endsWith(".pdf")) {
-      return NextResponse.json({ error: "Solo se aceptan archivos PDF" }, { status: 400 });
+    // Hotfix 19A.1: este endpoint reemplaza la subida directa con la clave anon. Mismos tipos que la pantalla de recursos.
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const CONTENT_TYPES: Record<string, string> = {
+      pdf:  "application/pdf",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      xls:  "application/vnd.ms-excel",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      doc:  "application/msword",
+      pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      ppt:  "application/vnd.ms-powerpoint",
+    };
+    const contentType = CONTENT_TYPES[ext];
+    if (!contentType) {
+      return NextResponse.json({ error: "Tipo de archivo no permitido (PDF, Word, Excel o PowerPoint)" }, { status: 400 });
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "El PDF no puede superar 10 MB" }, { status: 400 });
+    if (file.size > 20 * 1024 * 1024) {
+      return NextResponse.json({ error: "El archivo no puede superar 20 MB" }, { status: 400 });
     }
 
     const supabase = getSupabaseAdmin();
@@ -43,20 +46,20 @@ export async function POST(req: NextRequest) {
     // Create the bucket if it doesn't exist — ignore error if it already exists
     const { error: bucketErr } = await supabase.storage.createBucket("recursos", {
       public: true,
-      fileSizeLimit: 10 * 1024 * 1024,
+      fileSizeLimit: 20 * 1024 * 1024,
     });
     if (bucketErr && !bucketErr.message.toLowerCase().includes("already exists")) {
       console.warn("[upload-pdf] bucket create warning:", bucketErr.message);
     }
 
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const path = `pdfs/${Date.now()}-${safeName}`;
+    const path = `${ext === "pdf" ? "pdfs" : "archivos"}/${Date.now()}-${safeName}`;
 
     const bytes = await file.arrayBuffer();
     const { error: uploadErr } = await supabase.storage
       .from("recursos")
       .upload(path, bytes, {
-        contentType: "application/pdf",
+        contentType,
         upsert: false,
       });
 
